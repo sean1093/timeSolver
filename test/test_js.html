@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="../timeSolver.js"></script>
+	<title>Test page for timeSolver.js</title>
+</head>
+	<body>
+		<script type="text/javascript">
+		var today = new Date();
+
+		console.log(today.toString());
+		console.log("TimezoneOffset: "+today.getTimezoneOffset());
+
+		console.log("== date manipulate ==");
+		console.log("+ 5 hour: "+timeSolver.add(new Date(),5,"hour"));
+		console.log("+ 10 min: "+timeSolver.add(new Date(),10,"minute"));
+		console.log("+ 5 day: "+timeSolver.add("2016/03/28",5,"day"));
+		console.log("+ 5 day: "+timeSolver.add(new Date(),5,"day"));
+		console.log("+ 7 year: "+timeSolver.add(new Date(),7,"year"));
+		console.log("- 4 day: "+timeSolver.subtract(new Date(),4));
+		console.log("- 14 month: "+timeSolver.subtract(new Date(),14,"month"));
+
+		console.log("equal?: "+timeSolver.equal(new Date(),today));
+		console.log("equal?: "+timeSolver.equal(new Date(),timeSolver.add(timeSolver.subtract(new Date(),14,"month"),14,"month")));
+		console.log("between MILLISECOND?: "+timeSolver.between(new Date(),today,"MILLISECOND"));
+		console.log("between second?: "+timeSolver.between(new Date(),today,"second"));
+
+		console.log("== date format ==");
+		console.log(timeSolver.getString(today,"YYYYMMDD"));
+		console.log(timeSolver.getString(today,"YYYY/MM/DD"));
+		console.log(timeSolver.getString(today,"YYYY-MM-DD"));
+		console.log(timeSolver.getString(today,"YYYY/MM/DD hh:mm:ss"));
+		console.log(timeSolver.getString(today,"YYYY/MM/DD hh:mm:ss.sss"));
+		console.log(timeSolver.getString(today,"YYYY-MM-DD HH:mm:ss"));
+		console.log(timeSolver.getString(today,"YYYY-MM-DD hh:MM:SS.SSS"));
+
+		console.log("== get date info ==");
+		console.log("Today's week: "+timeSolver.getAbbrWeek(today));
+		console.log("Today's week(full name): "+timeSolver.getFullWeek(today));
+		console.log("Today's month: "+timeSolver.getAbbrMonth(today));
+		console.log("Today's month(full name): "+timeSolver.getFullMonth(today));
+
+		console.log("== date validation ==");
+		console.log("Valid date: "+timeSolver.isValid("2016/03/30"));
+		console.log("Wrong date: "+timeSolver.isValid("2016/1212"));
+		console.log("Valid date: "+timeSolver.isValid("2004/12/12", "yyyy/mm/dd"));
+		console.log("Wrong date: "+timeSolver.isValid("2015-12-12", "yyyy/mm/dd"));
+		console.log("Valid date: "+timeSolver.isValid("2004-12-12", "yyyy-mm-dd"));
+		console.log("Wrong date: "+timeSolver.isValid("2015/12/12", "yyyy-mm-dd"));
+
+
+		</script>
+	</body>
+</html>
