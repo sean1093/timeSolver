@@ -3,7 +3,7 @@
 * version: v1.0.3
 *
 * This is a small date time tool in JavaScript
-* Please go to see https://github.com/sean1093/smallTool/
+* Please go to see https://github.com/sean1093/timeSolver
 *
 * Author: Sean Chou
 **********************************************/
