@@ -1,12 +1,11 @@
-/*********************************************
-* timeSolver.js
-* version: v1.0.3
-*
-* This is a small date time tool in JavaScript
-* Please go to see https://github.com/sean1093/smallTool/
-*
-* Author: Sean Chou
-**********************************************/
+/*!
+timeSolver.js 
+version: v1.0.3
+Author: Sean Chou
+
+A small date time tool in JavaScript
+see: https://github.com/sean1093/smallTool/ for details
+*/
 
 var timeSolver = (function () {
 
