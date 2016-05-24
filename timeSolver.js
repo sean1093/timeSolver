@@ -1,14 +1,14 @@
 /*!
 timeSolver.js 
-version: v1.0.3
+version: v1.0.4-dev
 Author: Sean Chou
-
 A small date time tool in JavaScript
-see: https://github.com/sean1093/smallTool/ for details
+see: https://github.com/sean1093/timeSolver/ for details
 */
 
 var timeSolver = (function () {
 
+	//private 
 	var _m = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var _w = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 	var _r = {
@@ -16,16 +16,24 @@ var timeSolver = (function () {
 		b: /^(\d{4})([-])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
 		c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/
 	};
-						
+	var _v = function(d){
+		if(typeof d != "object"){
+			d = new Date(d);
+		}
+		return d;
+	}
+	var _t = function(t){
+		if(t == undefined){
+			t = "MILLISECOND";
+		}
+		return t = t.toUpperCase();
+	}
+	
+	//public 					
 	var t = {
 		add: function(d, c, t){
-			if(t == undefined){
-				t = "MILLISECOND";
-			}
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
-			t = t.toUpperCase();
+			t = _t(t);
+			d = _v(d);			
 			switch(t){
 				case "MILLISECOND":
 					return new Date(d.setMilliseconds(d.getMilliseconds()+c));
@@ -54,13 +62,8 @@ var timeSolver = (function () {
 			}
 		},
 		subtract: function(d, c, t){
-			if(t == undefined){
-				t = "MILLISECOND";
-			}
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
-			t = t.toUpperCase();
+			t = _t(t);
+			d = _v(d);
 			switch(t){
 				case "MILLISECOND":
 					return new Date(d.setMilliseconds(d.getMilliseconds()-c));
@@ -90,26 +93,15 @@ var timeSolver = (function () {
 			}		
 		},
 		equal: function(d1, d2){ //return true or false
-			if(typeof d1 != "object"){
-				d1 = new Date(d1);
-			}
-			if(typeof d2 != "object"){
-				d2 = new Date(d2);
-			}
+			d1 = _v(d1);
+			d2 = _v(d2);
 			return d1.toString() === d2.toString();
 		},
-		between: function(d1, d2, type){
-			if(t == undefined){
-				t = "MILLISECOND";
-			}
-			if(typeof d1 != "object"){
-				d1 = new Date(d1);
-			}
-			if(typeof d2 != "object"){
-				d2 = new Date(d2);
-			}
-			type = type.toUpperCase();
-			switch(type){
+		between: function(d1, d2, t){
+			t = _t(t);
+			d1 = _v(d1);
+			d2 = _v(d2);
+			switch(t){
 				case "MILLISECOND":
 					return d2.getTime() - d1.getTime();
 				break;
@@ -137,21 +129,42 @@ var timeSolver = (function () {
 				break;
 			}
 		},
+		after: function(d1, d2, t){ //if d1 after d2 or not
+			if(t.between(d1,d2,t)>0){
+				return false;
+			}
+			else{
+				return true;
+			}
+		},
+		afterToday: function(d1){ //if d1 after today or not
+			return t.after(d1, new Date(), "Day");
+		},
+		before: function(d1, d2, t){ //if d1 before d2 or not
+			if(t.between(d1,d2,t)>0){
+				return true;
+			}
+			else{
+				return false;
+			}
+		},
+		beforeToday: function(d1){ //if d1 before today or not
+			return t.before(d1, new Date(), "Day");
+		},
 		getString: function(d, f){
-			if(f == undefined){
-				t = "MILLISECOND";
+			if(f === undefined){
+				f = "YYYYMMDD";
 			}
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
+			f = f.toUpperCase();
+			d = _v(d);
+
 			var year = d.getFullYear();
 			var month = (d.getMonth()+1);
 			var date = d.getDate();
 			var hour = d.getHours();
 			var min = d.getMinutes();
 			var sec = d.getSeconds();
-			var millsec = d.getMilliseconds();
-			f = f.toUpperCase();
+			var millsec = d.getMilliseconds();			
 			var YYYYMMDD = year.toString()+month.toString()+date.toString();
 			var YYYYMMDDwithSlash = year.toString()+"/"+month.toString()+"/"+date.toString();
 			var YYYYMMDDwithdash = year.toString()+"-"+month.toString()+"-"+date.toString();
@@ -185,27 +198,19 @@ var timeSolver = (function () {
 			}
 		},
 		getAbbrWeek: function(d){ //return abbr. weekday name
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
+			d = _v(d);
 			return d.toString().substring(0,3);
 		},
 		getFullWeek: function(d){ //return full weekday name
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
+			d = _v(d);
 			return _w[d.getDay()];
 		},
 		getAbbrMonth: function(d){ //return abbr. month name
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
+			d = _v(d);
 			return d.toString().substring(3,7);
 		},
 		getFullMonth: function(d){ //return full month name
-			if(typeof d != "object"){
-				d = new Date(d);
-			}
+			d = _v(d);
 			return _m[d.getMonth()];
 		},
 		isValid: function(st, f){ //input date string and return true/ false
@@ -249,5 +254,3 @@ var timeSolver = (function () {
 
     return t;
 }());
-
-

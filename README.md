@@ -1,4 +1,4 @@
-# timeSolver.js - v1.0.3
+# timeSolver.js - v1.0
 
 ## [method]
 	
@@ -28,13 +28,46 @@ equal(date1, date2)
 * date1 and date2: standard JavaScript Date object or date string
 	
 	
+### After
+#### return true/ false if date1 after date2 
+```js
+after(date1, date2, type)
+```
+* date1 and date2: standard JavaScript Date object or date string
+* type: by this unit 
+
+
+### After Today
+#### return true/ false if date1 after today 
+```js
+afterToday(date)
+```
+* date: standard JavaScript Date object or date string
+
+
+### Before
+#### return true/ false if date1 before date2 
+```js
+before(date1, date2, type)
+```
+* date1 and date2: standard JavaScript Date object or date string
+* type: by this unit 
+
+
+### Before Today
+#### return true/ false if date1 after today 
+```js
+beforeToday(date)
+```
+* date: standard JavaScript Date object or date string
+
+
 ### Between
 #### count time by unit(type) between date1 and date2 
 ```js
 between(date1, date2, type)
 ```
-* date1 and date2: standard JavaScript Date object or date string
-		
+* date1 and date2: standard JavaScript Date object or date string		
 	
 ### Get Date String
 #### get date time string by different format 
