@@ -28,7 +28,7 @@ var timeSolver = (function () {
 		}
 		return (t = t.toUpperCase());
 	};
-	
+	 
 	//public 					
 	var t = {
 		add: function(d, c, t){
