@@ -5,9 +5,9 @@ Author: Sean Chou
 A small date time tool in JavaScript
 see: https://github.com/sean1093/timeSolver/ for details
 */
-
+   	
 var timeSolver = (function () {
-
+	"use strict"; //strict mode
 	//private 
 	var _m = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var _w = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
