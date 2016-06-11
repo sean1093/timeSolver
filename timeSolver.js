@@ -21,76 +21,79 @@ var timeSolver = (function () {
 			d = new Date(d);
 		}
 		return d;
-	}
+	};
 	var _t = function(t){
-		if(t == undefined){
+		if(t === undefined){
 			t = "MILLISECOND";
 		}
-		return t = t.toUpperCase();
-	}
+		return (t = t.toUpperCase());
+	};
 	
 	//public 					
 	var t = {
 		add: function(d, c, t){
 			t = _t(t);
-			d = _v(d);			
+			d = _v(d);
+			var result = null;			
 			switch(t){
 				case "MILLISECOND":
-					return new Date(d.setMilliseconds(d.getMilliseconds()+c));
+					result = new Date(d.setMilliseconds(d.getMilliseconds()+c));
 				break;
 				case "SECOND":
-					return new Date(d.setSeconds(d.getSeconds()+c));
+					result = new Date(d.setSeconds(d.getSeconds()+c));
 				break;
 				case "MINUTE":
-					return new Date(d.setMinutes(d.getMinutes()+c));
+					result = new Date(d.setMinutes(d.getMinutes()+c));
 				break;
 				case "HOUR":
-					return new Date(d.setHours(d.getHours()+c));
+					result = new Date(d.setHours(d.getHours()+c));
 				break;
 				case "DAY":
-					return new Date(d.setDate(d.getDate()+c));
+					result = new Date(d.setDate(d.getDate()+c));
 				break;
 				case "MONTH":
-					return new Date(d.setMonth(d.getMonth()+c));
+					result = new Date(d.setMonth(d.getMonth()+c));
 				break;
 				case "YEAR":
-					return new Date(d.setFullYear(d.getFullYear()+c));
+					result = new Date(d.setFullYear(d.getFullYear()+c));
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
 				break;
 			}
+			return result;
 		},
 		subtract: function(d, c, t){
 			t = _t(t);
 			d = _v(d);
+			var result = null;
 			switch(t){
 				case "MILLISECOND":
-					return new Date(d.setMilliseconds(d.getMilliseconds()-c));
+					result = new Date(d.setMilliseconds(d.getMilliseconds()-c));
 				break;
 				case "SECOND":
-					return new Date(d.setSeconds(d.getSeconds()-c));
+					result = new Date(d.setSeconds(d.getSeconds()-c));
 				break;
 				case "MINUTE":
-					return new Date(d.setMinutes(d.getMinutes()-c));
+					result = new Date(d.setMinutes(d.getMinutes()-c));
 				break;
 				case "HOUR":
-					return new Date(d.setHours(d.getHours()-c));
+					result = new Date(d.setHours(d.getHours()-c));
 				break;
 				case "DAY":
-					return new Date(d.setDate(d.getDate()-c));
+					result = new Date(d.setDate(d.getDate()-c));
 				break;
 				case "MONTH":
-					return new Date(d.setMonth(d.getMonth()-c));
+					result = new Date(d.setMonth(d.getMonth()-c));
 				break;
 				case "YEAR":
-					return new Date(d.setFullYear(d.getFullYear()-c));
+					result = new Date(d.setFullYear(d.getFullYear()-c));
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
-					return null;
 				break;
-			}		
+			}
+			return result;		
 		},
 		equal: function(d1, d2){ //return true or false
 			d1 = _v(d1);
@@ -101,33 +104,34 @@ var timeSolver = (function () {
 			t = _t(t);
 			d1 = _v(d1);
 			d2 = _v(d2);
+			var result = null;
 			switch(t){
 				case "MILLISECOND":
-					return d2.getTime() - d1.getTime();
+					result = d2.getTime() - d1.getTime();
 				break;
 				case "SECOND":
-					return (d2.getTime() - d1.getTime())/1000;
+					result = (d2.getTime() - d1.getTime())/1000;
 				break;
 				case "MINUTE":
-					return (d2.getTime() - d1.getTime())/60000;
+					result = (d2.getTime() - d1.getTime())/60000;
 				break;
 				case "HOUR":
-					return (d2.getTime() - d1.getTime())/3600000;
+					result = (d2.getTime() - d1.getTime())/3600000;
 				break;
 				case "DAY":
-					return (d2.getTime() - d1.getTime())/86400000;
+					result = (d2.getTime() - d1.getTime())/86400000;
 				break;
 				case "MONTH":
-					return (d2.getTime() - d1.getTime())/2629800000;
+					result = (d2.getTime() - d1.getTime())/2629800000;
 				break;
 				case "YEAR":
-					return (d2.getTime() - d1.getTime())/31557600000;
+					result = (d2.getTime() - d1.getTime())/31557600000;
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
-					return null;
 				break;
 			}
+			return result;
 		},
 		after: function(d1, d2, t){ //if d1 after d2 or not
 			if(t.between(d1,d2,t)>0){
@@ -151,13 +155,13 @@ var timeSolver = (function () {
 		beforeToday: function(d1){ //if d1 before today or not
 			return t.before(d1, new Date(), "Day");
 		},
-		getString: function(d, f){
+		getString: function(d, f){ //get date string in given format
 			if(f === undefined){
 				f = "YYYYMMDD";
 			}
 			f = f.toUpperCase();
 			d = _v(d);
-
+			var result = null;
 			var year = d.getFullYear();
 			var month = (d.getMonth()+1);
 			var date = d.getDate();
@@ -171,31 +175,31 @@ var timeSolver = (function () {
 			var HHMMSS = hour.toString()+":"+min.toString()+":"+sec.toString();
 			switch(f){
 				case "YYYYMMDD":
-					return YYYYMMDD;
+					result = YYYYMMDD;
 				break;
 				case "YYYY/MM/DD":
-					return YYYYMMDDwithSlash;
+					result =  YYYYMMDDwithSlash;
 				break;			
 				case "YYYY/MM/DD HH:MM:SS":
-					return YYYYMMDDwithSlash+" "+HHMMSS;
+					result =  YYYYMMDDwithSlash+" "+HHMMSS;
 				break;
 				case "YYYY/MM/DD HH:MM:SS.SSS":
-					return YYYYMMDDwithSlash+" "+HHMMSS+"."+millsec.toString();
+					result =  YYYYMMDDwithSlash+" "+HHMMSS+"."+millsec.toString();
 				break;
 				case "YYYY-MM-DD":
-					return YYYYMMDDwithdash;
+					result =  YYYYMMDDwithdash;
 				break;
 				case "YYYY-MM-DD HH:MM:SS":
-					return YYYYMMDDwithdash+" "+HHMMSS;
+					result =  YYYYMMDDwithdash+" "+HHMMSS;
 				break;
 				case "YYYY-MM-DD HH:MM:SS.SSS":
-					return YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
+					result =  YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
-					return null;
 				break;
 			}
+			return result;
 		},
 		getAbbrWeek: function(d){ //return abbr. weekday name
 			d = _v(d);
@@ -214,12 +218,10 @@ var timeSolver = (function () {
 			return _m[d.getMonth()];
 		},
 		isValid: function(st, f){ //input date string and return true/ false
-			if(f == undefined){
-				if(new Date(st) != "Invalid Date"){
-					return true;
-				}
-				else{
-					return false;
+			var result = true;
+			if(f === undefined){
+				if(new Date(st) == "Invalid Date"){
+					result = false;
 				}			
 			}
 			else{
@@ -227,30 +229,27 @@ var timeSolver = (function () {
 				switch(f){
 					case "YYYY/MM/DD":
 						if (!_r.a.test(st)){
-							return false;
+							result = false;
 						}
-						return true;
 					break;
 					case "YYYY-MM-DD":
 						if (!_r.b.test(st)){
-							return false;
+							result = false;
 						}
-						return true;
 					break;
 					case "YYYY.MM.DD":
 						if (!_r.c.test(st)){
-							return false;
+							result = false;
 						}
-						return true;
 					break;
 					default:
 						console.error("[timeSolver.js] Input Type Error");
-						return null;
+						result = null;
 					break;
 				}
 			}
+			return result;
 		}
 	};
-
     return t;
 }());
