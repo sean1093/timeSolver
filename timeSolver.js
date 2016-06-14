@@ -1,6 +1,6 @@
 /*!
 timeSolver.js 
-version: v1.0.4-dev
+version: v1.0.4
 Author: Sean Chou
 A small date time tool in JavaScript
 see: https://github.com/sean1093/timeSolver/ for details
