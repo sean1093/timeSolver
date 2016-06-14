@@ -1,4 +1,4 @@
-# timeSolver.js - v1.0
+# timeSolver.js - v1.0 (1.0.4)
 
 ## [method]
 	
@@ -107,14 +107,17 @@ isValid(dateString, format)
 
 		
 ## [Update log]
+v1.0.4
+Bug fix
+
 v1.0.3
 Restructure
 
 v1.0.2
-Fix bug - between()
+Bug fix: between()
 
 v1.0.1
-Add new function - isValid()
+Add new function: isValid()
 
 v1.0.0
 This is a small date time tool in JavaScript
