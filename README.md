@@ -1,6 +1,6 @@
 # timeSolver.js - v1.0 (1.0.4)
 
-## A small library for manipulating, validating and formatting JavaScript date object
+A small library for manipulating, validating and formatting JavaScript date object
 
 ## [How to use]
 #### You need to use timeSolver object to manipulate JavaScript date object.
