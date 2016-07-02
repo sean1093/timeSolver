@@ -38,7 +38,7 @@ after(date1, date2, type)
 
 
 ### After Today
-#### return true/ false if date1 after today 
+#### return true/ false if date after today 
 ```js
 afterToday(date)
 ```
@@ -55,7 +55,7 @@ before(date1, date2, type)
 
 
 ### Before Today
-#### return true/ false if date1 after today 
+#### return true/ false if date after today 
 ```js
 beforeToday(date)
 ```

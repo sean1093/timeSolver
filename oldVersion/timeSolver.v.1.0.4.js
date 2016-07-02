@@ -34,9 +34,6 @@ var timeSolver = (function () {
 		add: function(d, c, t){
 			t = _t(t);
 			d = _v(d);
-			if(c === undefined){
-				c = 0;
-			}
 			var result = null;			
 			switch(t){
 				case "MILLISECOND":
@@ -69,9 +66,6 @@ var timeSolver = (function () {
 		subtract: function(d, c, t){
 			t = _t(t);
 			d = _v(d);
-			if(c === undefined){
-				c = 0;
-			}
 			var result = null;
 			switch(t){
 				case "MILLISECOND":
