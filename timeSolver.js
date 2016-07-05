@@ -140,7 +140,7 @@ var timeSolver = (function () {
 			return result;
 		},
 		after: function(d1, d2, t){ //if d1 after d2 or not
-			if(t.between(d1,d2,t)>0){
+			if(this.between(d1,d2,t)>0){
 				return false;
 			}
 			else{
@@ -148,10 +148,10 @@ var timeSolver = (function () {
 			}
 		},
 		afterToday: function(d1){ //if d1 after today or not
-			return t.after(d1, new Date(), "Day");
+			return this.after(d1, new Date(), "Day");
 		},
 		before: function(d1, d2, t){ //if d1 before d2 or not
-			if(t.between(d1,d2,t)>0){
+			if(this.between(d1,d2,t)>0){
 				return true;
 			}
 			else{
@@ -159,7 +159,7 @@ var timeSolver = (function () {
 			}
 		},
 		beforeToday: function(d1){ //if d1 before today or not
-			return t.before(d1, new Date(), "Day");
+			return this.before(d1, new Date(), "Day");
 		},
 		getString: function(d, f){ //get date string in given format
 			if(f === undefined){
