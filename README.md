@@ -1,15 +1,16 @@
 # timeSolver.js - v1.0 (1.0.5)
 
-A small library for manipulating, validating and formatting JavaScript date object
+A small library for manipulating, validating and formatting JavaScript date object.
 
 ### [How to use]
 You need to use timeSolver object to manipulate JavaScript date object.
+For example, if you want to get datetime string with format "YYYYMMDD", you need to do by following:
 ```js
 var dateString = timeSolver.getString(new Date(), "YYYYMMDD");
 ```
 
 ### [method]
-	
+
 #### Add and Subtract
 basic manipulate on date by different unit(type)
 ```js
@@ -28,6 +29,7 @@ subtract(date, count, type)
 	* "MONTH"
 	* "YEAR"	
 	
+
 #### Equal
 return true/ false if date1 equals date2 
 ```js
@@ -77,12 +79,13 @@ between(date1, date2, type)
 ```
 * date1 and date2: standard JavaScript Date object or date string		
 	
+
 #### Get Date String
 get date time string by different format 
 ```js
 getString(date, format)
 ```
-* date1: standard JavaScript Date object or date string
+* date: standard JavaScript Date object or date string
 * timeSolver format list:
 	* "YYYYMMDD"
 	* "YYYY/MM/DD"
@@ -108,8 +111,7 @@ getFullMonth(date)
 return true/ false if dateString valid or not
 ```js
 isValid(dateString, format)
-```	
-
+```
 * dateString: date string
 * timeSolver format list:
 	* "YYYY/MM/DD"
@@ -123,4 +125,4 @@ isValid(dateString, format)
 * v1.0.3 Restructure
 * v1.0.2 Bug fix: between()
 * v1.0.1 Add new function: isValid()
-* v1.0.0 This is a small date time tool in JavaScript
+
