@@ -1,17 +1,17 @@
-# timeSolver.js - v1.0 (1.0.4)
+# timeSolver.js - v1.0 (1.0.5)
 
 A small library for manipulating, validating and formatting JavaScript date object
 
-## [How to use]
+### [How to use]
 You need to use timeSolver object to manipulate JavaScript date object.
 ```js
 var dateString = timeSolver.getString(new Date(), "YYYYMMDD");
 ```
 
-## [method]
+### [method]
 	
-### Add and Subtract
-#### basic manipulate on date by different unit(type)
+#### Add and Subtract
+basic manipulate on date by different unit(type)
 ```js
 add(date, count, type)
 subtract(date, count, type)
@@ -28,16 +28,16 @@ subtract(date, count, type)
 	* "MONTH"
 	* "YEAR"	
 	
-### Equal
-#### return true/ false if date1 equals date2 
+#### Equal
+return true/ false if date1 equals date2 
 ```js
 equal(date1, date2)
 ```
 * date1 and date2: standard JavaScript Date object or date string
 	
 	
-### After
-#### return true/ false if date1 after date2 
+#### After
+return true/ false if date1 after date2 
 ```js
 after(date1, date2, type)
 ```
@@ -45,16 +45,16 @@ after(date1, date2, type)
 * type: by this unit 
 
 
-### After Today
-#### return true/ false if date after today 
+#### After Today
+return true/ false if date after today 
 ```js
 afterToday(date)
 ```
 * date: standard JavaScript Date object or date string
 
 
-### Before
-#### return true/ false if date1 before date2 
+#### Before
+return true/ false if date1 before date2 
 ```js
 before(date1, date2, type)
 ```
@@ -62,23 +62,23 @@ before(date1, date2, type)
 * type: by this unit 
 
 
-### Before Today
-#### return true/ false if date after today 
+#### Before Today
+return true/ false if date after today 
 ```js
 beforeToday(date)
 ```
 * date: standard JavaScript Date object or date string
 
 
-### Between
-#### count time by unit(type) between date1 and date2 
+#### Between
+count time by unit(type) between date1 and date2 
 ```js
 between(date1, date2, type)
 ```
 * date1 and date2: standard JavaScript Date object or date string		
 	
-### Get Date String
-#### get date time string by different format 
+#### Get Date String
+get date time string by different format 
 ```js
 getString(date, format)
 ```
@@ -92,8 +92,8 @@ getString(date, format)
 	* "YYYY-MM-DD HH:MM:SS"
 	* "YYYY-MM-DD HH:MM:SS.SSS"
 
-### Get Week and Month
-#### get date's weekday or month name, it will return abbr. or full name by different method
+#### Get Week and Month
+get date's weekday or month name, it will return abbr. or full name by different method
 ```js
 getAbbrWeek(date)
 getFullWeek(date)
@@ -101,12 +101,12 @@ getAbbrMonth(date)
 getFullMonth(date)
 ```
 	
-		
-### isValid
-#### return true/ false if dateString valid or not
+#### isValid
+return true/ false if dateString valid or not
 ```js
 isValid(dateString, format)
 ```	
+
 * dateString: date string
 * timeSolver format list:
 	* "YYYY/MM/DD"
@@ -114,18 +114,10 @@ isValid(dateString, format)
 	* "YYYY.MM.DD"
 
 		
-## [Update log]
-v1.0.4
-Bug fix
-
-v1.0.3
-Restructure
-
-v1.0.2
-Bug fix: between()
-
-v1.0.1
-Add new function: isValid()
-
-v1.0.0
-This is a small date time tool in JavaScript
+### [Update log]
+* v1.0.5 Module load compatibility
+* v1.0.4 Bug fix
+* v1.0.3 Restructure
+* v1.0.2 Bug fix: between()
+* v1.0.1 Add new function: isValid()
+* v1.0.0 This is a small date time tool in JavaScript

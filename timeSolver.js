@@ -4,33 +4,11 @@
  * see: https://github.com/sean1093/timeSolver/ for details
  * @version: v1.0.5
  * @author: Sean Chou
- * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * Licensed under MIT (https://github.com/sean1093/timeSolver/blob/master/LICENSE)
  */
 
 (function () {
 	"use strict";
-
-	//private 
-	var _m = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-	var _w = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-	var _r = {
-		a: /^(\d{4})([/])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,	
-		b: /^(\d{4})([-])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
-		c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/
-	};
-	var _v = function(d){
-		if(typeof d != "object"){
-			d = new Date(d);
-		}
-		return d;
-	};
-	var _t = function(t){
-		if(t === undefined){
-			t = "MILLISECOND";
-		}
-		return (t = t.toUpperCase());
-	};
-
 	//public 
 	var timeSolver = {	 
 							
@@ -262,6 +240,26 @@
 	};
 
 	
+	//private 
+	var _m = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+	var _w = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	var _r = {
+		a: /^(\d{4})([/])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,	
+		b: /^(\d{4})([-])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
+		c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/
+	};
+	var _v = function(d){
+		if(typeof d != "object"){
+			d = new Date(d);
+		}
+		return d;
+	};
+	var _t = function(t){
+		if(t === undefined){
+			t = "MILLISECOND";
+		}
+		return (t = t.toUpperCase());
+	};
 
 	if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
     	module.exports = timeSolver;
