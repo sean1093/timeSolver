@@ -91,6 +91,9 @@ getString(date, format)
 	* "YYYY-MM-DD"
 	* "YYYY-MM-DD HH:MM:SS"
 	* "YYYY-MM-DD HH:MM:SS.SSS"
+	* "YYYY.MM.DD"
+	* "YYYY.MM.DD HH:MM:SS"
+	* "YYYY.MM.DD HH:MM:SS.SSS"
 
 #### Get Week and Month
 get date's weekday or month name, it will return abbr. or full name by different method

@@ -9,9 +9,9 @@
 
 (function () {
 	"use strict";
+	
 	//public 
-	var timeSolver = {	 
-							
+	var timeSolver = {	 							
 		add: function(d, c, t){
 			t = _t(t);
 			d = _v(d);
@@ -159,6 +159,7 @@
 			var YYYYMMDD = year.toString()+month.toString()+date.toString();
 			var YYYYMMDDwithSlash = year.toString()+"/"+month.toString()+"/"+date.toString();
 			var YYYYMMDDwithdash = year.toString()+"-"+month.toString()+"-"+date.toString();
+			var YYYYMMDDwithdot = year.toString()+"."+month.toString()+"."+date.toString();
 			var HHMMSS = hour.toString()+":"+min.toString()+":"+sec.toString();
 			switch(f){
 				case "YYYYMMDD":
@@ -181,6 +182,15 @@
 				break;
 				case "YYYY-MM-DD HH:MM:SS.SSS":
 					result =  YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
+				break;
+				case "YYYY.MM.DD":
+					result =  YYYYMMDDwithdot;
+				break;
+				case "YYYY.MM.DD HH:MM:SS":
+					result =  YYYYMMDDwithdot+" "+HHMMSS;
+				break;
+				case "YYYY.MM.DD HH:MM:SS.SSS":
+					result =  YYYYMMDDwithdot+" "+HHMMSS+"."+millsec.toString();
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
