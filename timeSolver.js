@@ -1,13 +1,15 @@
-/*!
-timeSolver.js 
-version: v1.0.4
-Author: Sean Chou
-A small date time tool in JavaScript
-see: https://github.com/sean1093/timeSolver/ for details
-*/
-   	
-var timeSolver = (function () {
-	"use strict"; //strict mode
+/**
+ * timeSolver.js
+ * [A small date time tool in JavaScript] 
+ * see: https://github.com/sean1093/timeSolver/ for details
+ * @version: v1.0.5
+ * @author: Sean Chou
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ */
+
+(function () {
+	"use strict";
+
 	//private 
 	var _m = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 	var _w = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -28,9 +30,10 @@ var timeSolver = (function () {
 		}
 		return (t = t.toUpperCase());
 	};
-	 
-	//public 					
-	var t = {
+
+	//public 
+	var timeSolver = {	 
+							
 		add: function(d, c, t){
 			t = _t(t);
 			d = _v(d);
@@ -257,5 +260,11 @@ var timeSolver = (function () {
 			return result;
 		}
 	};
-    return t;
-}());
+
+	
+
+	if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
+    	module.exports = timeSolver;
+ 	else
+    	window.timeSolver = timeSolver;
+})();
