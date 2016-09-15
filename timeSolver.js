@@ -165,9 +165,13 @@
 			var MMDDYYYYwithdash = month.toString()+"-"+date.toString()+"-"+year.toString();
 			var MMDDYYYYwithdot = month.toString()+"."+date.toString()+"."+year.toString();
 			var HHMMSS = hour.toString()+":"+min.toString()+":"+sec.toString();
+			var HHMMSSnoDot = hour.toString()+min.toString()+sec.toString();
 			switch(f){
 				case "YYYYMMDD":
 					result = YYYYMMDD;
+				break;
+				case "YYYYMMDD HHMMSS":
+					result = YYYYMMDD + HHMMSSnoDot;
 				break;
 				case "YYYY/MM/DD":
 					result =  YYYYMMDDwithSlash;
