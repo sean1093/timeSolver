@@ -2,7 +2,7 @@
  * timeSolver.js
  * [A small date time tool in JavaScript] 
  * see: https://github.com/sean1093/timeSolver/ for details
- * @version: v1.0.6
+ * @version: v1.0.5
  * @author: Sean Chou
  * Licensed under MIT (https://github.com/sean1093/timeSolver/blob/master/LICENSE)
  */
@@ -160,10 +160,6 @@
 			var YYYYMMDDwithSlash = year.toString()+"/"+month.toString()+"/"+date.toString();
 			var YYYYMMDDwithdash = year.toString()+"-"+month.toString()+"-"+date.toString();
 			var YYYYMMDDwithdot = year.toString()+"."+month.toString()+"."+date.toString();
-			var MMDDYYYY = month.toString()+date.toString()+year.toString();
-			var MMDDYYYYwithSlash = month.toString()+"/"+date.toString()+"/"+year.toString();
-			var MMDDYYYYwithdash = month.toString()+"-"+date.toString()+"-"+year.toString();
-			var MMDDYYYYwithdot = month.toString()+"."+date.toString()+"."+year.toString();
 			var HHMMSS = hour.toString()+":"+min.toString()+":"+sec.toString();
 			switch(f){
 				case "YYYYMMDD":
@@ -195,15 +191,6 @@
 				break;
 				case "YYYY.MM.DD HH:MM:SS.SSS":
 					result =  YYYYMMDDwithdot+" "+HHMMSS+"."+millsec.toString();
-				break;
-				case "MM/DD/YYYY":
-					result =  MMDDYYYYwithSlash;
-				break;
-				case "MM-DD-YYYY":
-					result =  MMDDYYYYwithdash;
-				break;
-				case "MM.DD.YYYY":
-					result =  MMDDYYYYwithdot;
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
