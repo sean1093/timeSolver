@@ -7,7 +7,7 @@
 	<body>
 		<script type="text/javascript">
 		var today = new Date();
-
+	
 		console.log(today.toString());
 		console.log(today.toJSON());
 		console.log("TimezoneOffset: "+today.getTimezoneOffset());
@@ -40,6 +40,7 @@
 		console.log(timeSolver.getString(today,"YYYY/MM/DD hh:mm:ss.sss"));
 		console.log(timeSolver.getString(today,"YYYY-MM-DD HH:mm:ss"));
 		console.log(timeSolver.getString(today,"YYYY-MM-DD hh:MM:SS.SSS"));
+		console.log(timeSolver.getString(today,"MM/DD/YYYY"));
 
 		console.log("== get date info ==");
 		console.log("Today's week: "+timeSolver.getAbbrWeek(today));

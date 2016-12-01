@@ -97,6 +97,9 @@ getString(date, format)
 	* "YYYY.MM.DD"
 	* "YYYY.MM.DD HH:MM:SS"
 	* "YYYY.MM.DD HH:MM:SS.SSS"
+	* "MM/DD/YYYY"
+	* "MM-DD-YYYY"
+	* "MM.DD.YYYY"
 
 #### Get Week and Month
 get date's weekday or month name, it will return abbr. or full name by different method
@@ -120,6 +123,7 @@ isValid(dateString, format)
 
 		
 ### [Update log]
+* v1.0.6 Update new feature
 * v1.0.5 Module load compatibility
 * v1.0.4 Bug fix
 * v1.0.3 Restructure

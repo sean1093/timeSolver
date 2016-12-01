@@ -2,7 +2,7 @@
  * timeSolver.js
  * [A small date time tool in JavaScript] 
  * see: https://github.com/sean1093/timeSolver/ for details
- * @version: v1.0.6
+ * @version: v1.0.5
  * @author: Sean Chou
  * Licensed under MIT (https://github.com/sean1093/timeSolver/blob/master/LICENSE)
  */
@@ -155,63 +155,42 @@
 			var hour = d.getHours();
 			var min = d.getMinutes();
 			var sec = d.getSeconds();
-			var millsec = d.getMilliseconds();	
-			var YYYYMM = year.toString()+month.toString();		
+			var millsec = d.getMilliseconds();			
 			var YYYYMMDD = year.toString()+month.toString()+date.toString();
 			var YYYYMMDDwithSlash = year.toString()+"/"+month.toString()+"/"+date.toString();
 			var YYYYMMDDwithdash = year.toString()+"-"+month.toString()+"-"+date.toString();
 			var YYYYMMDDwithdot = year.toString()+"."+month.toString()+"."+date.toString();
-			var MMDDYYYY = month.toString()+date.toString()+year.toString();
-			var MMDDYYYYwithSlash = month.toString()+"/"+date.toString()+"/"+year.toString();
-			var MMDDYYYYwithdash = month.toString()+"-"+date.toString()+"-"+year.toString();
-			var MMDDYYYYwithdot = month.toString()+"."+date.toString()+"."+year.toString();
 			var HHMMSS = hour.toString()+":"+min.toString()+":"+sec.toString();
-			var HHMMSSnoDot = hour.toString()+min.toString()+sec.toString();
 			switch(f){
-				case "YYYYMM":
-					result = YYYYMM;
-				break;
-				case "YYYYMMDD HHMMSS":
-					result = YYYYMMDD + HHMMSSnoDot;
+				case "YYYYMMDD":
+					result = YYYYMMDD;
 				break;
 				case "YYYY/MM/DD":
-					result = YYYYMMDDwithSlash;
+					result =  YYYYMMDDwithSlash;
 				break;			
 				case "YYYY/MM/DD HH:MM:SS":
-					result = YYYYMMDDwithSlash+" "+HHMMSS;
+					result =  YYYYMMDDwithSlash+" "+HHMMSS;
 				break;
 				case "YYYY/MM/DD HH:MM:SS.SSS":
-					result = YYYYMMDDwithSlash+" "+HHMMSS+"."+millsec.toString();
+					result =  YYYYMMDDwithSlash+" "+HHMMSS+"."+millsec.toString();
 				break;
 				case "YYYY-MM-DD":
-					result = YYYYMMDDwithdash;
+					result =  YYYYMMDDwithdash;
 				break;
 				case "YYYY-MM-DD HH:MM:SS":
-					result = YYYYMMDDwithdash+" "+HHMMSS;
+					result =  YYYYMMDDwithdash+" "+HHMMSS;
 				break;
 				case "YYYY-MM-DD HH:MM:SS.SSS":
-					result = YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
+					result =  YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
 				break;
 				case "YYYY.MM.DD":
-					result = YYYYMMDDwithdot;
+					result =  YYYYMMDDwithdot;
 				break;
 				case "YYYY.MM.DD HH:MM:SS":
-					result = YYYYMMDDwithdot+" "+HHMMSS;
+					result =  YYYYMMDDwithdot+" "+HHMMSS;
 				break;
 				case "YYYY.MM.DD HH:MM:SS.SSS":
-					result = YYYYMMDDwithdot+" "+HHMMSS+"."+millsec.toString();
-				break;
-				case "HH:MM:SS":
-					result = HHMMSS;
-				break;
-				case "MM/DD/YYYY":
-					result =  MMDDYYYYwithSlash;
-				break;
-				case "MM-DD-YYYY":
-					result =  MMDDYYYYwithdash;
-				break;
-				case "MM.DD.YYYY":
-					result =  MMDDYYYYwithdot;
+					result =  YYYYMMDDwithdot+" "+HHMMSS+"."+millsec.toString();
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
