@@ -155,42 +155,46 @@
 			var hour = d.getHours();
 			var min = d.getMinutes();
 			var sec = d.getSeconds();
-			var millsec = d.getMilliseconds();			
+			var millsec = d.getMilliseconds();	
+			var YYYYMM = year.toString()+month.toString();		
 			var YYYYMMDD = year.toString()+month.toString()+date.toString();
 			var YYYYMMDDwithSlash = year.toString()+"/"+month.toString()+"/"+date.toString();
 			var YYYYMMDDwithdash = year.toString()+"-"+month.toString()+"-"+date.toString();
 			var YYYYMMDDwithdot = year.toString()+"."+month.toString()+"."+date.toString();
 			var HHMMSS = hour.toString()+":"+min.toString()+":"+sec.toString();
 			switch(f){
-				case "YYYYMMDD":
-					result = YYYYMMDD;
+				case "YYYYMM":
+					result = YYYYMM;
 				break;
 				case "YYYY/MM/DD":
-					result =  YYYYMMDDwithSlash;
+					result = YYYYMMDDwithSlash;
 				break;			
 				case "YYYY/MM/DD HH:MM:SS":
-					result =  YYYYMMDDwithSlash+" "+HHMMSS;
+					result = YYYYMMDDwithSlash+" "+HHMMSS;
 				break;
 				case "YYYY/MM/DD HH:MM:SS.SSS":
-					result =  YYYYMMDDwithSlash+" "+HHMMSS+"."+millsec.toString();
+					result = YYYYMMDDwithSlash+" "+HHMMSS+"."+millsec.toString();
 				break;
 				case "YYYY-MM-DD":
-					result =  YYYYMMDDwithdash;
+					result = YYYYMMDDwithdash;
 				break;
 				case "YYYY-MM-DD HH:MM:SS":
-					result =  YYYYMMDDwithdash+" "+HHMMSS;
+					result = YYYYMMDDwithdash+" "+HHMMSS;
 				break;
 				case "YYYY-MM-DD HH:MM:SS.SSS":
-					result =  YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
+					result = YYYYMMDDwithdash+" "+HHMMSS+"."+millsec.toString();
 				break;
 				case "YYYY.MM.DD":
-					result =  YYYYMMDDwithdot;
+					result = YYYYMMDDwithdot;
 				break;
 				case "YYYY.MM.DD HH:MM:SS":
-					result =  YYYYMMDDwithdot+" "+HHMMSS;
+					result = YYYYMMDDwithdot+" "+HHMMSS;
 				break;
 				case "YYYY.MM.DD HH:MM:SS.SSS":
-					result =  YYYYMMDDwithdot+" "+HHMMSS+"."+millsec.toString();
+					result = YYYYMMDDwithdot+" "+HHMMSS+"."+millsec.toString();
+				break;
+				case "HH:MM:SS":
+					result = HHMMSS;
 				break;
 				default:
 					console.error("[timeSolver.js] Input Type Error");
