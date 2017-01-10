@@ -2,7 +2,7 @@
 
 A small library for manipulating, validating and formatting JavaScript date object.
 
-#### <span style="color:red;"> Current Version : v1.0.6 </span>
+#### <font color="red"> Current Version : v1.0.6 <font>
 
 ## Getting Start
 
