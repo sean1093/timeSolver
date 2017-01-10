@@ -1,17 +1,25 @@
-# timeSolver.js - v1.0 (1.0.5)
+# timeSolver.js
 
 A small library for manipulating, validating and formatting JavaScript date object.
 
-### [How to use]
+#### Current Version : v1.0.6
+
+## Getting Start
+
+Include <code>timeSolver</code> in your HTML page. 
+```html
+<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver.min.js"></script>
+```
+
 You need to use timeSolver object to manipulate JavaScript date object.
 For example, if you want to get datetime string with format "YYYYMMDD", you need to do by following:
 ```js
 var dateString = timeSolver.getString(new Date(), "YYYYMMDD");
 ```
 
-### [method]
+## Method 
 
-#### Add and Subtract
+### Add and Subtract
 basic manipulate on date by different unit(type)
 ```js
 add(date, count, type)
@@ -21,16 +29,16 @@ subtract(date, count, type)
 * count: a number you want to add or subtract on date
 * type: add or subtract by this unit 
 * timeSolver type list:
-	* "MILLISECOND"
-	* "SECOND"
-	* "MINUTE"
-	* "HOUR"
-	* "DAY"
-	* "MONTH"
-	* "YEAR"	
+	* "MILLISECOND" / "mill"
+	* "SECOND" / "s"
+	* "MINUTE" / "min"
+	* "HOUR" / "h"
+	* "DAY" / "d"
+	* "MONTH" / "m"
+	* "YEAR" / "y"	
 	
 
-#### Equal
+### Equal
 return true/ false if date1 equals date2 
 ```js
 equal(date1, date2)
@@ -38,7 +46,7 @@ equal(date1, date2)
 * date1 and date2: standard JavaScript Date object or date string
 	
 	
-#### After
+### After
 return true/ false if date1 after date2 
 ```js
 after(date1, date2, type)
@@ -47,7 +55,7 @@ after(date1, date2, type)
 * type: by this unit 
 
 
-#### After Today
+### After Today
 return true/ false if date after today 
 ```js
 afterToday(date)
@@ -55,7 +63,7 @@ afterToday(date)
 * date: standard JavaScript Date object or date string
 
 
-#### Before
+### Before
 return true/ false if date1 before date2 
 ```js
 before(date1, date2, type)
@@ -64,7 +72,7 @@ before(date1, date2, type)
 * type: by this unit 
 
 
-#### Before Today
+### Before Today
 return true/ false if date after today 
 ```js
 beforeToday(date)
@@ -72,7 +80,7 @@ beforeToday(date)
 * date: standard JavaScript Date object or date string
 
 
-#### Between
+### Between
 count time by unit(type) between date1 and date2 
 ```js
 between(date1, date2, type)
@@ -80,14 +88,19 @@ between(date1, date2, type)
 * date1 and date2: standard JavaScript Date object or date string		
 	
 
-#### Get Date String
+### Get Date String
 get date time string by different format 
 ```js
 getString(date, format)
 ```
 * date: standard JavaScript Date object or date string
 * timeSolver format list:
+	* "YYYY"
+	* "YYYYMM"
 	* "YYYYMMDD"
+	* "MMDDYYYY"
+	* "HH:MM:SS"
+	* "HH:MM:SSS"
 	* "YYYY/MM/DD"
 	* "YYYY/MM/DD HH:MM:SS"
 	* "YYYY/MM/DD HH:MM:SS.SSS"
@@ -98,10 +111,17 @@ getString(date, format)
 	* "YYYY.MM.DD HH:MM:SS"
 	* "YYYY.MM.DD HH:MM:SS.SSS"
 	* "MM/DD/YYYY"
+	* "MM/DD/YYYY HH:MM:SS"
+	* "MM/DD/YYYY HH:MM:SS.SSS"
 	* "MM-DD-YYYY"
+	* "MM-DD-YYYY HH:MM:SS"
+	* "MM-DD-YYYY HH:MM:SS.SSS"
 	* "MM.DD.YYYY"
+	* "MM.DD.YYYY HH:MM:SS"
+	* "MM.DD.YYYY HH:MM:SS.SSS"
 
-#### Get Week and Month
+
+### Get Week and Month
 get date's weekday or month name, it will return abbr. or full name by different method
 ```js
 getAbbrWeek(date)
@@ -110,7 +130,7 @@ getAbbrMonth(date)
 getFullMonth(date)
 ```
 	
-#### isValid
+### isValid
 return true/ false if dateString valid or not
 ```js
 isValid(dateString, format)
@@ -123,7 +143,9 @@ isValid(dateString, format)
 
 		
 ### [Update log]
-* v1.0.6 Update new feature
+* v1.0.6 (2017/01/10) 
+	** Add some new feature
+	** Add minify version
 * v1.0.5 Module load compatibility
 * v1.0.4 Bug fix
 * v1.0.3 Restructure
