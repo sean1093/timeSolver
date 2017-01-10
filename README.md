@@ -28,7 +28,7 @@ subtract(date, count, type)
 * date: standard JavaScript Date object or date string
 * count: a number you want to add or subtract on date
 * type: add or subtract by this unit 
-* timeSolver type list:
+* type list:
 	* "MILLISECOND" / "mill"
 	* "SECOND" / "s"
 	* "MINUTE" / "min"
@@ -94,7 +94,7 @@ get date time string by different format
 getString(date, format)
 ```
 * date: standard JavaScript Date object or date string
-* timeSolver format list:
+* format list:
 	* "YYYY"
 	* "YYYYMM"
 	* "YYYYMMDD"
@@ -136,7 +136,7 @@ return true/ false if dateString valid or not
 isValid(dateString, format)
 ```
 * dateString: date string
-* timeSolver format list:
+* format list:
 	* "YYYY/MM/DD"
 	* "YYYY-MM-DD"
 	* "YYYY.MM.DD"
