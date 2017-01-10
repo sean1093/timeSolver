@@ -8,7 +8,7 @@ A small library for manipulating, validating and formatting JavaScript date obje
 
 Include <code>timeSolver</code> in your HTML page. 
 ```html
-<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver.min.js"></script>
+<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver/1.0.6/timeSolver.min.js"></script>
 ```
 
 You need to use timeSolver object to manipulate JavaScript date object.
