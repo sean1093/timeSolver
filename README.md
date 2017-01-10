@@ -2,7 +2,7 @@
 
 A small library for manipulating, validating and formatting JavaScript date object.
 
-#### Current Version : v1.0.6
+#### <span style="color:red;"> Current Version : v1.0.6 </span>
 
 ## Getting Start
 
@@ -144,8 +144,8 @@ isValid(dateString, format)
 		
 ### [Update log]
 * v1.0.6 (2017/01/10) 
-	** Add some new feature
-	** Add minify version
+	+ Add some new feature
+	+ Add minify version
 * v1.0.5 Module load compatibility
 * v1.0.4 Bug fix
 * v1.0.3 Restructure
