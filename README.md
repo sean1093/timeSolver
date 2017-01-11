@@ -20,15 +20,53 @@ var dateString = timeSolver.getString(new Date(), "YYYYMMDD");
 ## Method 
 
 ### Add and Subtract
-basic manipulate on date by different unit(type)
+You can use this basic manipulate on date, add or subtract, by different time unit(type)
 ```js
-add(date, count, type)
-subtract(date, count, type)
+var afterAdd = timeSolver.add(date, count, type)
+var afterSubtract = timeSolver.subtract(date, count, type)
 ```
 * date: standard JavaScript Date object or date string
 * count: a number you want to add or subtract on date
-* type: add or subtract by this unit 
+* type: add or subtract by this time unit 
 * type list:
+	<table>
+		<thead>
+			<tr>
+				<th>time unit</th>
+				<th>parameter</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Millisecond</td>
+				<td>"MILLISECOND" / "mill"</td>
+			</tr>
+			<tr>
+				<td>Second</td>
+				<td>"SECOND" / "s"</td>
+			</tr>
+			<tr>
+				<td>Minute</td>
+				<td>"MINUTE" / "min"</td>
+			</tr>
+			<tr>
+				<td>Hour</td>
+				<td>"HOUR" / "h"</td>
+			</tr>
+			<tr>
+				<td>Day</td>
+				<td>"DAY" / "d"</td>
+			</tr>
+			<tr>
+				<td>Month</td>
+				<td>"MONTH" / "m"</td>
+			</tr>
+			<tr>
+				<td>Year</td>
+				<td>"YEAR" / "y"</td>
+			</tr>
+		</tbody>
+	</table>
 	* "MILLISECOND" / "mill"
 	* "SECOND" / "s"
 	* "MINUTE" / "min"
