@@ -22,171 +22,217 @@ var dateString = timeSolver.getString(new Date(), "YYYYMMDD");
 ### Add and Subtract
 You can use this basic manipulate on date, add or subtract, by different time unit(type)
 ```js
-var afterAdd = timeSolver.add(date, count, type)
-var afterSubtract = timeSolver.subtract(date, count, type)
+var afterAdd = timeSolver.add(date, count, type);
+var afterSubtract = timeSolver.subtract(date, count, type);
 ```
-* date: standard JavaScript Date object or date string
-* count: a number you want to add or subtract on date
-* type: add or subtract by this time unit 
-* type list:
-	<table>
-		<thead>
-			<tr>
-				<th>time unit</th>
-				<th>parameter</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>Millisecond</td>
-				<td>"MILLISECOND" / "mill"</td>
-			</tr>
-			<tr>
-				<td>Second</td>
-				<td>"SECOND" / "s"</td>
-			</tr>
-			<tr>
-				<td>Minute</td>
-				<td>"MINUTE" / "min"</td>
-			</tr>
-			<tr>
-				<td>Hour</td>
-				<td>"HOUR" / "h"</td>
-			</tr>
-			<tr>
-				<td>Day</td>
-				<td>"DAY" / "d"</td>
-			</tr>
-			<tr>
-				<td>Month</td>
-				<td>"MONTH" / "m"</td>
-			</tr>
-			<tr>
-				<td>Year</td>
-				<td>"YEAR" / "y"</td>
-			</tr>
-		</tbody>
-	</table>
-	* "MILLISECOND" / "mill"
-	* "SECOND" / "s"
-	* "MINUTE" / "min"
-	* "HOUR" / "h"
-	* "DAY" / "d"
-	* "MONTH" / "m"
-	* "YEAR" / "y"	
-	
+* Parameter
+    + date: standard JavaScript Date object or date string
+    + count: a number you want to add or subtract on date
+    + type: add or subtract by this time unit  
+        - type list:
+
+    <table>
+        <thead>
+            <tr>
+                <th>time unit</th>
+                <th>parameter</th>
+                <th>abbr</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Millisecond</td>
+                <td>"MILLISECOND"</td>
+                <td>"mill"</td>
+            </tr>
+            <tr>
+                <td>Second</td>
+                <td>"SECOND"</td>
+                <td>"s"</td>
+            </tr>
+            <tr>
+                <td>Minute</td>
+                <td>"MINUTE"</td>
+                <td>"min"</td>
+            </tr>
+            <tr>
+                <td>Hour</td>
+                <td>"HOUR"</td>
+                <td>"h"</td>
+            </tr>
+            <tr>
+                <td>Day</td>
+                <td>"DAY"</td>
+                <td>"d"</td>
+            </tr>
+            <tr>
+                <td>Month</td>
+                <td>"MONTH"</td>
+                <td>"m"</td>
+            </tr>
+            <tr>
+                <td>Year</td>
+                <td>"YEAR"</td>
+                <td>"y"</td>
+            </tr>
+        </tbody>
+    </table>
+
+* Return type: string
+ 
+
 
 ### Equal
-return true/ false if date1 equals date2 
+Check whether date1 equals date2 or not 
 ```js
-equal(date1, date2)
+var result = timeSolver.equal(date1, date2);
 ```
-* date1 and date2: standard JavaScript Date object or date string
-	
-	
+* Parameter
+    + date1 and date2: standard JavaScript Date object or date string
+* Return type: boolean  
+    
+
 ### After
-return true/ false if date1 after date2 
+Check whether date1 after date2 or not 
 ```js
-after(date1, date2, type)
+var result = timeSolver.after(date1, date2, type);
 ```
-* date1 and date2: standard JavaScript Date object or date string
-* type: by this unit 
+* Parameter
+    + date1 and date2: standard JavaScript Date object or date string
+    + type: check after by this time unit (reference type list showed before)
+* Return type: boolean  
 
 
 ### After Today
-return true/ false if date after today 
+Check whether date after today or not 
 ```js
-afterToday(date)
+var result = timeSolver.afterToday(date);
 ```
-* date: standard JavaScript Date object or date string
+* Parameter
+    + date: standard JavaScript Date object or date string
+* Return type: boolean  
 
 
 ### Before
-return true/ false if date1 before date2 
+Check whether date1 before date2 or not 
 ```js
-before(date1, date2, type)
+var result = timeSolver.before(date1, date2, type);
 ```
-* date1 and date2: standard JavaScript Date object or date string
-* type: by this unit 
+* Parameter
+    + date1 and date2: standard JavaScript Date object or date string
+    + type: check before by this time unit (reference type list showed before)
+* Return type: boolean  
 
 
 ### Before Today
-return true/ false if date after today 
+Check whether date before today or not 
 ```js
-beforeToday(date)
+var result = timeSolver.beforeToday(date);
 ```
-* date: standard JavaScript Date object or date string
+* Parameter
+    + date: standard JavaScript Date object or date string
+* Return type: boolean  
 
 
 ### Between
-count time by unit(type) between date1 and date2 
+Count time by time unit between date1 and date2 
 ```js
-between(date1, date2, type)
+var result = timeSolver.between(date1, date2, type);
 ```
-* date1 and date2: standard JavaScript Date object or date string		
-	
+* Parameter
+    + date: standard JavaScript Date object or date string
+* Return type: number           
+    
 
 ### Get Date String
-get date time string by different format 
+Get date time string by different format 
 ```js
-getString(date, format)
+var dateString = timeSolver.getString(date, format);
 ```
-* date: standard JavaScript Date object or date string
-* format list:
-	* "YYYY"
-	* "YYYYMM"
-	* "YYYYMMDD"
-	* "MMDDYYYY"
-	* "HH:MM:SS"
-	* "HH:MM:SSS"
-	* "YYYY/MM/DD"
-	* "YYYY/MM/DD HH:MM:SS"
-	* "YYYY/MM/DD HH:MM:SS.SSS"
-	* "YYYY-MM-DD"
-	* "YYYY-MM-DD HH:MM:SS"
-	* "YYYY-MM-DD HH:MM:SS.SSS"
-	* "YYYY.MM.DD"
-	* "YYYY.MM.DD HH:MM:SS"
-	* "YYYY.MM.DD HH:MM:SS.SSS"
-	* "MM/DD/YYYY"
-	* "MM/DD/YYYY HH:MM:SS"
-	* "MM/DD/YYYY HH:MM:SS.SSS"
-	* "MM-DD-YYYY"
-	* "MM-DD-YYYY HH:MM:SS"
-	* "MM-DD-YYYY HH:MM:SS.SSS"
-	* "MM.DD.YYYY"
-	* "MM.DD.YYYY HH:MM:SS"
-	* "MM.DD.YYYY HH:MM:SS.SSS"
+* Parameter
+    + date: standard JavaScript Date object or date string
+    + format:
+    
+    <table>
+        <thead>
+            <tr>
+                <th>format</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>"YYYY"</td></tr>
+            <tr><td>"YYYYMM"</td></tr>
+            <tr><td>"YYYYMMDD"</td></tr>
+            <tr><td>"MMDDYYYY"</td></tr>
+            <tr><td>"HH:MM:SS"</td></tr>
+            <tr><td>"HH:MM:SSS"</td></tr>
+            <tr><td>"YYYY/MM/DD"</td></tr>
+            <tr><td>"YYYY/MM/DD HH:MM:SS"</td></tr>
+            <tr><td>"YYYY/MM/DD HH:MM:SS.SSS"</td></tr>
+            <tr><td>"YYYY-MM-DD"</td></tr>
+            <tr><td>"YYYY-MM-DD HH:MM:SS"</td></tr>
+            <tr><td>"YYYY-MM-DD HH:MM:SS.SSS"</td></tr>
+            <tr><td>"YYYY.MM.DD"</td></tr>
+            <tr><td>"YYYY.MM.DD HH:MM:SS"</td></tr>
+            <tr><td>"YYYY.MM.DD HH:MM:SS.SSS"</td></tr>
+            <tr><td>"MM/DD/YYYY"</td></tr>
+            <tr><td>"MM/DD/YYYY HH:MM:SS"</td></tr>
+            <tr><td>"MM/DD/YYYY HH:MM:SS.SSS"</td></tr>
+            <tr><td>"MM-DD-YYYY"</td></tr>
+            <tr><td>"MM-DD-YYYY HH:MM:SS"</td></tr>
+            <tr><td>"MM-DD-YYYY HH:MM:SS.SSS"</td></tr>
+            <tr><td>"MM.DD.YYYY"</td></tr>
+            <tr><td>"MM.DD.YYYY HH:MM:SS"</td></tr>
+            <tr><td>"MM.DD.YYYY HH:MM:SS.SSS"</td></tr>
+        </tbody>
+    </table>
 
 
 ### Get Week and Month
-get date's weekday or month name, it will return abbr. or full name by different method
+Get date's weekday or month name, it will return abbr. or full name by different method
 ```js
-getAbbrWeek(date)
-getFullWeek(date)
-getAbbrMonth(date)
-getFullMonth(date)
+var result1 = timeSolver.getAbbrWeek(date);
+var result2 = timeSolver.getFullWeek(date);
+var result3 = timeSolver.getAbbrMonth(date);
+var result4 = timeSolver.getFullMonth(date);
 ```
-	
+    
 ### isValid
 return true/ false if dateString valid or not
+Check whether date string is valid or not 
 ```js
-isValid(dateString, format)
+var result = timeSolver.isValid(dateString, format);
 ```
-* dateString: date string
-* format list:
-	* "YYYY/MM/DD"
-	* "YYYY-MM-DD"
-	* "YYYY.MM.DD"
+* Parameter
+    + dateString: date string
+    + format
 
-		
-### [Update log]
+    <table>
+        <thead>
+            <tr>
+                <th>format</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>"YYYY/MM/DD"</td></tr>
+            <tr><td>"YYYY-MM-DD"</td></tr>
+            <tr><td>"YYYY.MM.DD"</td></tr>
+        </tbody>
+    </table>
+
+* Return type: number
+
+        
+## Update log
 * v1.0.6 (2017/01/10) 
-	+ Add some new feature
-	+ Add minify version
-* v1.0.5 Module load compatibility
-* v1.0.4 Bug fix
-* v1.0.3 Restructure
+    + Add some new feature
+    + Add minify version
+* v1.0.5 (2016/08/13)
+    + Module load compatibility
+* v1.0.4 (2016/06/14)
+    + Bug fix
+* v1.0.3 (2016/04/25)
+    + Restructure
 * v1.0.2 Bug fix: between()
 * v1.0.1 Add new function: isValid()
 
