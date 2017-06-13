@@ -99,7 +99,10 @@ var result = timeSolver.beforeToday(date);
  */
 var result = timeSolver.between(date1, date2, type);
 ```
-  
+
+[timeSolver time unit]: <https://github.com/sean1093/timeSolver#timesolver-time-unit >
+
+
 
 ### Get Date String
 
