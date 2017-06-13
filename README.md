@@ -183,6 +183,7 @@ let result = timeSolver.isValid(dateString, format);
 
 
 #### timeSolver time unit
+* 
     <table>
         <thead>
             <tr>
@@ -232,7 +233,8 @@ let result = timeSolver.isValid(dateString, format);
 
 
 #### timeSolver string format
-    
+
+*     
     <table>
         <thead>
             <tr>
@@ -269,6 +271,7 @@ let result = timeSolver.isValid(dateString, format);
 
 
 #### timeSolver valid format
+* 
     <table>
         <thead>
             <tr>
