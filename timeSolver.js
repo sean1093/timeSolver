@@ -2,7 +2,7 @@
  * timeSolver.js
  * 
  * @description A small date time tool in JavaScript, see: https://github.com/sean1093/timeSolver/ for details
- * @version v1.0.6
+ * @version v1.0.7 -dev
  * @author Sean Chou
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
@@ -143,15 +143,16 @@
             d = _v(d);
             var result = null;
             var year = d.getFullYear();
-            var month = (d.getMonth()+1);
-            var date = d.getDate();
-            var hour = d.getHours();
-            var min = d.getMinutes();
-            var sec = d.getSeconds();
-            var millsec = d.getMilliseconds(); 
+            var month = _appendZero(d.getMonth()+1);
+            var date = _appendZero(d.getDate());
+            var hour = _appendZero(d.getHours());
+            var min = _appendZero(d.getMinutes());
+            var sec = _appendZero(d.getSeconds());
+            var millsec = _appendZero(d.getMilliseconds());
             var YYYY = year.toString();
             var MM = month.toString();
             var DD = date.toString();
+            var YYYYMMDD = YYYY + MM + DD;
             var HHMMSS = hour.toString() + ":" + min.toString() + ":" + sec.toString();
             var HHMMSSS = HHMMSS + "." + millsec.toString();
             switch(f){
@@ -162,7 +163,7 @@
                     result = YYYY + MM;
                 break;
                 case "YYYYMMDD":
-                    result = YYYY + MM + DD;
+                    result = YYYYMMDD;
                 break;
                 case "YYYY/MM/DD":
                     result = YYYY + "/" + MM + "/" + DD;
@@ -203,6 +204,12 @@
                 case "YYYY.MM.DD HH:MM:SS.SSS":
                     result = YYYY + "." + MM + "." + DD + " " + HHMMSS;
                 break;
+                case "YYYYMMDD HH:MM:SS":
+                    result = YYYYMMDD + " " + HHMMSS;
+                break;
+                case "YYYYMMDD HH:MM:SS.SSS":
+                    result = YYYYMMDD + " " + HHMMSSS;
+                break;
                 case "MM/DD/YYYY HH:MM:SS":
                     result = MM + "/" + DD + "/" + YYYY + " " + HHMMSS;
                 break;
@@ -219,7 +226,7 @@
                     result = MM + "." + DD + "." + YYYY + " " + HHMMSS;
                 break;
                 case "MM.DD.YYYY HH:MM:SS.SSS":
-                    result = MM + "." + DD + "." + YYYY + " " + HHMMSS;
+                    result = MM + "." + DD + "." + YYYY + " " + HHMMSSS;
                 break;
                 case "HH:MM:SS":
                     result = HHMMSS;
@@ -306,6 +313,9 @@
         else if(t == "MONTH" || t == "M") t = 5;
         else if(t == "YEAR" || t == "Y") t = 6;
         return t;
+    };
+    var _appendZero = function(s) {
+        return s < 10 ? "0"+s : s;
     };
 
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
