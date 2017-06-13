@@ -145,13 +145,19 @@ var result = timeSolver.between(date1, date2, type);
     
 
 ### Get Date String
-Get date time string by different format 
+
 ```js
+/**
+ * Get date time string by different format 
+ * 
+ * @param {date} [date] standard JavaScript Date object or date string
+ * @param {string} [format] timeSolver format
+ * @return {string} [dateString] return formated string
+ */
 var dateString = timeSolver.getString(date, format);
 ```
-* Parameter
-    + date: standard JavaScript Date object or date string
-    + format:
+
+* timeSolver format
     
     <table>
         <thead>
@@ -224,6 +230,8 @@ var result = timeSolver.isValid(dateString, format);
 
         
 ## Update log
+* 1.0.7 (20170613)
+    + Bug fix: YYYYMMDD: 2017613 -> 20170613
 * v1.0.6 (2017/01/10) 
     + Add some new feature
     + Add minify version
