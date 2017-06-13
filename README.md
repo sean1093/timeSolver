@@ -25,59 +25,11 @@ You can use this basic manipulate on date, add or subtract, by different time un
 var afterAdd = timeSolver.add(date, count, type);
 var afterSubtract = timeSolver.subtract(date, count, type);
 ```
-* Parameter
+
     + date: standard JavaScript Date object or date string
     + count: a number you want to add or subtract on date
     + type: add or subtract by this time unit  
         - type list:
-
-    <table>
-        <thead>
-            <tr>
-                <th>time unit</th>
-                <th>parameter</th>
-                <th>abbr</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Millisecond</td>
-                <td>"MILLISECOND"</td>
-                <td>"mill"</td>
-            </tr>
-            <tr>
-                <td>Second</td>
-                <td>"SECOND"</td>
-                <td>"s"</td>
-            </tr>
-            <tr>
-                <td>Minute</td>
-                <td>"MINUTE"</td>
-                <td>"min"</td>
-            </tr>
-            <tr>
-                <td>Hour</td>
-                <td>"HOUR"</td>
-                <td>"h"</td>
-            </tr>
-            <tr>
-                <td>Day</td>
-                <td>"DAY"</td>
-                <td>"d"</td>
-            </tr>
-            <tr>
-                <td>Month</td>
-                <td>"MONTH"</td>
-                <td>"m"</td>
-            </tr>
-            <tr>
-                <td>Year</td>
-                <td>"YEAR"</td>
-                <td>"y"</td>
-            </tr>
-        </tbody>
-    </table>
-
 * Return type: string
  
 
@@ -135,14 +87,19 @@ var result = timeSolver.beforeToday(date);
 
 
 ### Between
-Count time by time unit between date1 and date2 
+
 ```js
+/**
+ * Count time by time unit between two date 
+ * 
+ * @param {date/string} [date1] standard JavaScript Date object or date string
+ * @param {date/string} [date2] standard JavaScript Date object or date string
+ * @param {string} [type] timeSolver time unit
+ * @return {number} return count by time unit 
+ */
 var result = timeSolver.between(date1, date2, type);
 ```
-* Parameter
-    + date: standard JavaScript Date object or date string
-* Return type: number           
-    
+  
 
 ### Get Date String
 
@@ -150,9 +107,9 @@ var result = timeSolver.between(date1, date2, type);
 /**
  * Get date time string by different format 
  * 
- * @param {date} [date] standard JavaScript Date object or date string
+ * @param {date/string} [date] standard JavaScript Date object or date string
  * @param {string} [format] timeSolver format
- * @return {string} [dateString] return formated string
+ * @return {string} return formated string
  */
 var dateString = timeSolver.getString(date, format);
 ```
@@ -228,7 +185,56 @@ var result = timeSolver.isValid(dateString, format);
 
 * Return type: number
 
-        
+
+#### timeSolver time unit
+    <table>
+        <thead>
+            <tr>
+                <th>time unit</th>
+                <th>parameter</th>
+                <th>abbr</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Millisecond</td>
+                <td>"MILLISECOND"</td>
+                <td>"mill"</td>
+            </tr>
+            <tr>
+                <td>Second</td>
+                <td>"SECOND"</td>
+                <td>"s"</td>
+            </tr>
+            <tr>
+                <td>Minute</td>
+                <td>"MINUTE"</td>
+                <td>"min"</td>
+            </tr>
+            <tr>
+                <td>Hour</td>
+                <td>"HOUR"</td>
+                <td>"h"</td>
+            </tr>
+            <tr>
+                <td>Day</td>
+                <td>"DAY"</td>
+                <td>"d"</td>
+            </tr>
+            <tr>
+                <td>Month</td>
+                <td>"MONTH"</td>
+                <td>"m"</td>
+            </tr>
+            <tr>
+                <td>Year</td>
+                <td>"YEAR"</td>
+                <td>"y"</td>
+            </tr>
+        </tbody>
+    </table>      
+
+
 ## Update log
 * 1.0.7 (20170613)
     + Bug fix: YYYYMMDD: 2017613 -> 20170613
