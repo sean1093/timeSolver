@@ -100,7 +100,9 @@ var result = timeSolver.beforeToday(date);
 var result = timeSolver.between(date1, date2, type);
 ```
 
-[timeSolver time unit]: <https://github.com/sean1093/timeSolver#timesolver-time-unit >
+[timeSolver time unit]
+
+
 
 
 
@@ -253,3 +255,5 @@ var result = timeSolver.isValid(dateString, format);
 * v1.0.2 Bug fix: between()
 * v1.0.1 Add new function: isValid()
 
+
+[timeSolver time unit]: <https://github.com/sean1093/timeSolver#timesolver-time-unit>
