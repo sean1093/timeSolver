@@ -1,14 +1,14 @@
 # timeSolver.js
 
-A small library for manipulating, validating and formatting JavaScript date object.
+A small library for manipulating, validating and formatting JavaScript date object. Futhermore, it can helps you log your execution time by using timeLook.
 
-#### <font color="red"> Current Version : v1.0.7 <font>
+#### <font color="red"> Current Version : v1.1.0 <font>
 
 ## Getting Start
 
 Include <code>timeSolver</code> in your HTML page. 
 ```html
-<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver/1.0.7/timeSolver.min.js"></script>
+<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver/1.1.0/timeSolver.min.js"></script>
 ```
 
 You need to use timeSolver object to manipulate JavaScript date object.
@@ -182,6 +182,36 @@ let result = timeSolver.isValid(dateString, format);
 
 
 
+## timeLook
+It can helps you log your execution time by using timeLook
+
+1. start timeLook
+```js
+timeSolver.timeLookStart();
+```
+
+2. set your break point with label text
+```js
+timeSolver.timeLook("Hello World");
+...
+timeSolver.timeLook("Hello");
+...
+
+```
+
+3. see your time log report 
+```js
+timeSolver.timeLookReport();
+```
+
+For example, it will print on your browser console. 
+
+![timeLook](https://github.com/sean1093/timeSolver/blob/master/img/timeLook.png "timeLook")
+
+It will shows every execution time between your two break point, and mark the bottleneck with red color. 
+
+
+
 #### timeSolver time unit
 * 
     <table>
@@ -286,7 +316,8 @@ let result = timeSolver.isValid(dateString, format);
     </table>
 
 ### Update log
-
+* 1.1.0 (20170614)
+    + New feature: timeLook, helps you log your execution time
 * 1.0.7 (20170613)
     + Bug fix: YYYYMMDD: 2017613 -> 20170613
 * 1.0.6 (20170110) 
