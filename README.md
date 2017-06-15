@@ -1,8 +1,10 @@
 # timeSolver.js
 
-A small library for manipulating, validating and formatting JavaScript date object. Futhermore, it can helps you log your execution time by using timeLook.
+A small library for manipulating, validating and formatting JavaScript date object. Futhermore, it can helps you log your execution time by using [timelook].
 
-#### <font color="red"> Current Version : v1.1.0 <font>
+
+#### Current Version : v1.1.0 
+
 
 ## Getting Start
 
@@ -182,36 +184,6 @@ let result = timeSolver.isValid(dateString, format);
 
 
 
-## timeLook
-It can helps you log your execution time by using timeLook
-
-1. start timeLook
-```js
-timeSolver.timeLookStart();
-```
-
-2. set your break point with label text
-```js
-timeSolver.timeLook("Hello World");
-...
-timeSolver.timeLook("Hello");
-...
-
-```
-
-3. see your time log report 
-```js
-timeSolver.timeLookReport();
-```
-
-For example, it will print on your browser console. 
-
-![timeLook](https://github.com/sean1093/timeSolver/blob/master/img/timeLook.png "timeLook")
-
-It will shows every execution time between your two break point, and mark the bottleneck with red color. 
-
-
-
 #### timeSolver time unit
 * 
     <table>
@@ -315,6 +287,42 @@ It will shows every execution time between your two break point, and mark the bo
         </tbody>
     </table>
 
+
+
+
+## timeLook
+It can helps you log your execution time by using timeLook
+
+1. start timeLook
+```js
+timeSolver.timeLookStart();
+```
+
+2. set your break point with label text
+```js
+timeSolver.timeLook("test");
+...
+timeSolver.timeLook("date basic function");
+...
+...
+
+```
+
+3. see your time log report 
+```js
+timeSolver.timeLookReport();
+```
+
+For example, it will print on your browser console. 
+
+![timeLook](https://github.com/sean1093/timeSolver/blob/master/img/timeLook.png "timeLook")
+
+It will shows every execution time between your two break point, and mark the bottleneck with red color(Chrome Console). 
+
+
+
+
+
 ### Update log
 * 1.1.0 (20170614)
     + New feature: timeLook, helps you log your execution time
@@ -334,6 +342,8 @@ It will shows every execution time between your two break point, and mark the bo
 * 1.0.1 
     + Add new function: isValid()
 
+
+[timelook]: <https://github.com/sean1093/timeSolver#timelook>
 
 [timeSolver time unit]: <https://github.com/sean1093/timeSolver#timesolver-time-unit>
 

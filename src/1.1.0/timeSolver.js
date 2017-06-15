@@ -309,6 +309,7 @@
         timeLookReport: function() {
             var titleStyle = "font-weight: bold; color: #3F51B5";
             var reportStyle = "color: #2962FF";
+            var infoStyle = "color: #4CAF50";
             var maxStyle = "color: #ff0000";
             var now = new Date();
             console.log("%c=================================", reportStyle);
@@ -319,6 +320,9 @@
                 var style = this.timeLookMax == interval ? maxStyle : reportStyle;
                 console.log("%c["+ interval +"s] "+Math.round((interval/this.timeLookTotal)*100) +"%  "+label , style);
             }
+            var end = new Date();
+            console.log("%c[timeSolver] Spend "+this.between(now, end, "S")+"s to create this report", infoStyle);
+            console.log("%c[timeSolver] For more information: https://github.com/sean1093/timeSolver#timelook", infoStyle);
             console.log("%c=================================", reportStyle);
         }
     };
