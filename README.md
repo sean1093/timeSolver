@@ -3,14 +3,14 @@
 A small library for manipulating, validating and formatting JavaScript date object. Futhermore, it can helps you log your execution time by using [timelook].
 
 
-#### Current Version : v1.1.0 
+#### Current Version : v1.1.1 
 
 
 ## Getting Start
 
 Include <code>timeSolver</code> in your HTML page. 
 ```html
-<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver/1.1.0/timeSolver.min.js"></script>
+<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver/1.1.1/timeSolver.min.js"></script>
 ```
 
 You need to use timeSolver object to manipulate JavaScript date object.
