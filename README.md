@@ -59,7 +59,7 @@ let afterSubtract = timeSolver.subtract(date, count, type);
  * @param {date/string} [date2] standard JavaScript Date object or date string
  * @return {boolean} equals or not  
  */
-var result = timeSolver.equal(date1, date2);
+let result = timeSolver.equal(date1, date2);
 ```
 
 
@@ -166,6 +166,7 @@ let result2 = timeSolver.getFullWeek(date);
 let result3 = timeSolver.getAbbrMonth(date);
 let result4 = timeSolver.getFullMonth(date);
 ```
+    
     
 ### isValid
 
