@@ -284,6 +284,9 @@ let result = timeSolver.isValid(dateString, format);
             <tr><td>"YYYY/MM/DD"</td></tr>
             <tr><td>"YYYY-MM-DD"</td></tr>
             <tr><td>"YYYY.MM.DD"</td></tr>
+            <tr><td>"YYYY/MM/DD HH:MM:SS"</td></tr>
+            <tr><td>"YYYY-MM-DD HH:MM:SS"</td></tr>
+            <tr><td>"YYYY.MM.DD HH:MM:SS"</td></tr>
         </tbody>
     </table>
 
@@ -324,6 +327,9 @@ It will shows every execution time between your two break point, and mark the bo
 
 
 ### Update log
+
+* 1.1.1 (20170718)
+    + Enhance function: isValid(), add three timestamp format
 * 1.1.0 (20170614)
     + New feature: timeLook, helps you log your execution time
 * 1.0.7 (20170613)

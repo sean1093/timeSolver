@@ -5,7 +5,7 @@
 </head>
     <body>
         <div id="content"></div>
-        <script src="timeSolver.js"></script>
+        <script src="../timeSolver.js"></script>
         <script type="text/javascript">
         var div = document.getElementById('content');
 
@@ -86,7 +86,9 @@
         addContent("Wrong date: "+timeSolver.isValid("2015-12-12", "yyyy/mm/dd"));
         addContent("Valid date: "+timeSolver.isValid("2004-12-12", "yyyy-mm-dd"));
         addContent("Wrong date: "+timeSolver.isValid("2015/12/12", "yyyy-mm-dd"));
-
+        addContent("Valid time: "+timeSolver.isValid("23:13:10", "t"));
+        addContent("Wrong time: "+timeSolver.isValid("23:61:12", "t"));
+        addContent("Wrong date: "+timeSolver.isValid("2015/12/12 23:10:10", "YYYY/MM/DD HH:MM:SS"));
         timeSolver.timeLook("date validation");
 
         timeSolver.timeLookReport();
