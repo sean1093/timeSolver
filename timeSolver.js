@@ -2,7 +2,7 @@
  * timeSolver.js
  * 
  * @description A small date time tool in JavaScript, see: https://github.com/sean1093/timeSolver/ for details
- * @version v1.1.1
+ * @version v1.1.2 - dev
  * @author Sean Chou
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
@@ -177,6 +177,9 @@
                 case "MMDDYYYY":
                     result = MM + DD + YYYY;
                 break;
+                case "DDMMYYYY":
+                    result = DD + MM + YYYY;
+                break;
                 case "MM/DD/YYYY":
                     result = MM + "/" + DD + "/" + YYYY;
                 break; 
@@ -307,6 +310,27 @@
             }
             return result;
         },
+        getQuarterByMonth: function(m) { // input month and return quarter
+            if(1 <= m && m <= 3) return 1;
+            else if(4 <= m && m <= 6) return 2;
+            else if(7 <= m && m <= 9) return 3;
+            else if(10 <= m && m <= 12) return 4;
+            else return null;
+        },
+        getFirstMonthByQuarter: function(q) { // input quarter and return this quarter's first month
+            if(q == 1) return 1;
+            else if(q == 2) return 4;
+            else if(q == 3) return 7;
+            else if(q == 4) return 10;
+            else return null;
+        },
+        getDatePeriod: function(d1, d2, f, u) { // retrun d1 ~ d2 date array by u unit and f format
+            f = (f === undefined)? "YYYYMM" : f.toUpperCase();
+            d = _v(d);
+            u = (u === undefined)? _t(u) : 5;
+            //TODO
+
+        },
         timeArray: [],
         timeLookMax: 0,
         timeLookTotal: 0,
@@ -355,10 +379,10 @@
         c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
         t: /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/
     };
-    var _v = function(d){
+    var _v = function(d) {
         return (typeof d != "object")? new Date(d) : d;
     };
-    var _t = function(t){
+    var _t = function(t) {
         t = (t === undefined)? "MILLISECOND" : t.toUpperCase();
         if(t == "MILLISECOND" || t == "MILL") t = 0;
         else if(t == "SECOND" || t == "S") t = 1;
