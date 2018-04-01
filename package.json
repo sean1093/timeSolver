@@ -1,0 +1,35 @@
+{
+  "name": "timesolver",
+  "version": "1.1.1",
+  "description": "A small library for manipulating, validating and formatting JavaScript date object.",
+  "main": "src/1.1.1/timeSolver.min.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sean1093/timeSolver.git"
+  },
+  "keywords": [
+    "javascript",
+    "date",
+    "time",
+    "datetime",
+    "timesolver",
+    "utilities",
+    "date-time",
+    "times",
+    "logging",
+    "console",
+    "format-javascript"
+  ],
+  "author": "sean1093",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sean1093/timeSolver/issues"
+  },
+  "homepage": "https://github.com/sean1093/timeSolver#readme"
+}

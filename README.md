@@ -2,15 +2,19 @@
 
 A small library for manipulating, validating and formatting JavaScript date object. Futhermore, it can helps you log your execution time by using [timelook].
 
-
-#### Current Version : v1.1.1 
-
+Current Version : v1.1.1 
 
 ## Getting Start
 
+Install via npm
+
+```sh
+npm install timesolver
+```
+
 Include <code>timeSolver</code> in your HTML page. 
 ```html
-<script type="text/javascript" src="http://sean1093.github.io/lib/js/timeSolver/1.1.1/timeSolver.min.js"></script>
+<script type="text/javascript" src="timeSolver.min.js"></script>
 ```
 
 You need to use timeSolver object to manipulate JavaScript date object.
@@ -328,7 +332,8 @@ It will shows every execution time between your two break point, and mark the bo
 
 
 ### Update log
-
+* 1.1.2 (20180401)
+    + Add to npm
 * 1.1.1 (20170718)
     + Enhance function: isValid(), add three timestamp format
 * 1.1.0 (20170614)
