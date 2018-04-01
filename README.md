@@ -332,7 +332,7 @@ It will shows every execution time between your two break point, and mark the bo
 
 
 ### Update log
-* 1.1.2 (20180401)
+* 1.1.1 (20180401)
     + Add to npm
 * 1.1.1 (20170718)
     + Enhance function: isValid(), add three timestamp format
