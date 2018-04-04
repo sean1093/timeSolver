@@ -155,93 +155,36 @@
             var YYYYMMDD = YYYY + MM + DD;
             var HHMMSS = hour.toString() + ":" + min.toString() + ":" + sec.toString();
             var HHMMSSS = HHMMSS + "." + millsec.toString();
-            switch(f){
-                case "YYYY":
-                    result = YYYY;
-                break;
-                case "YYYYMM":
-                    result = YYYY + MM;
-                break;
-                case "YYYYMMDD":
-                    result = YYYYMMDD;
-                break;
-                case "YYYY/MM/DD":
-                    result = YYYY + "/" + MM + "/" + DD;
-                break; 
-                case "YYYY-MM-DD":
-                    result = YYYY + "-" + MM + "-" + DD;
-                break; 
-                case "YYYY.MM.DD":
-                    result = YYYY + "." + MM + "." + DD;
-                break;
-                case "MMDDYYYY":
-                    result = MM + DD + YYYY;
-                break;
-                case "DDMMYYYY":
-                    result = DD + MM + YYYY;
-                break;
-                case "MM/DD/YYYY":
-                    result = MM + "/" + DD + "/" + YYYY;
-                break; 
-                case "MM-DD-YYYY":
-                    result = MM + "-" + DD + "-" + YYYY;
-                break; 
-                case "MM.DD.YYYY":
-                    result = MM + "." + DD + "." + YYYY;
-                break; 
-                case "YYYY/MM/DD HH:MM:SS":
-                    result = YYYY + "/" + MM + "/" + DD + " " + HHMMSS;
-                break;
-                case "YYYY/MM/DD HH:MM:SS.SSS":
-                    result = YYYY + "/" + MM + "/" + DD + " " + HHMMSSS;
-                break;
-                case "YYYY-MM-DD HH:MM:SS":
-                    result = YYYY + "-" + MM + "-" + DD + " " + HHMMSS;
-                break;
-                case "YYYY-MM-DD HH:MM:SS.SSS":
-                    result = YYYY + "-" + MM + "-" + DD + " " + HHMMSSS;
-                break;
-                case "YYYY.MM.DD HH:MM:SS":
-                    result = YYYY + "." + MM + "." + DD + " " + HHMMSS;
-                break;
-                case "YYYY.MM.DD HH:MM:SS.SSS":
-                    result = YYYY + "." + MM + "." + DD + " " + HHMMSS;
-                break;
-                case "YYYYMMDD HH:MM:SS":
-                    result = YYYYMMDD + " " + HHMMSS;
-                break;
-                case "YYYYMMDD HH:MM:SS.SSS":
-                    result = YYYYMMDD + " " + HHMMSSS;
-                break;
-                case "MM/DD/YYYY HH:MM:SS":
-                    result = MM + "/" + DD + "/" + YYYY + " " + HHMMSS;
-                break;
-                case "MM/DD/YYYY HH:MM:SS.SSS":
-                    result = MM + "/" + DD + "/" + YYYY + " " + HHMMSSS;
-                break;
-                case "MM-DD-YYYY HH:MM:SS":
-                    result = MM + "-" + DD + "-" + YYYY + " " + HHMMSS;
-                break;
-                case "MM-DD-YYYY HH:MM:SS.SSS":
-                    result = MM + "-" + DD + "-" + YYYY + " " + HHMMSSS;
-                break;
-                case "MM.DD.YYYY HH:MM:SS":
-                    result = MM + "." + DD + "." + YYYY + " " + HHMMSS;
-                break;
-                case "MM.DD.YYYY HH:MM:SS.SSS":
-                    result = MM + "." + DD + "." + YYYY + " " + HHMMSSS;
-                break;
-                case "HH:MM:SS":
-                    result = HHMMSS;
-                break;
-                case "HH:MM:SS.SSS":
-                    result = HHMMSSS;
-                break;
-                default:
-                    console.error("[timeSolver.js] Input Type Error");
-                break;
+            var _f = {
+                "YYYY": YYYY,
+                "YYYYMM": YYYY + MM,
+                "YYYYMMDD": YYYYMMDD,
+                "YYYY/MM/DD": YYYY + "/" + MM + "/" + DD,
+                "YYYY-MM-DD": YYYY + "-" + MM + "-" + DD,
+                "YYYY.MM.DD": YYYY + "." + MM + "." + DD,
+                "MMDDYYYY": MM + DD + YYYY,               
+                "DDMMYYYY": DD + MM + YYYY,               
+                "MM/DD/YYYY": MM + "/" + DD + "/" + YYYY,                 
+                "MM-DD-YYYY": MM + "-" + DD + "-" + YYYY,                
+                "MM.DD.YYYY": MM + "." + DD + "." + YYYY,
+                "YYYY/MM/DD HH:MM:SS": YYYY + "/" + MM + "/" + DD + " " + HHMMSS,
+                "YYYY/MM/DD HH:MM:SS.SSS": YYYY + "/" + MM + "/" + DD + " " + HHMMSSS,
+                "YYYY-MM-DD HH:MM:SS": YYYY + "-" + MM + "-" + DD + " " + HHMMSS,
+                "YYYY-MM-DD HH:MM:SS.SSS":YYYY + "-" + MM + "-" + DD + " " + HHMMSSS,
+                "YYYY.MM.DD HH:MM:SS": YYYY + "." + MM + "." + DD + " " + HHMMSS,
+                "YYYY.MM.DD HH:MM:SS.SSS":YYYY + "." + MM + "." + DD + " " + HHMMSS,
+                "YYYYMMDD HH:MM:SS": YYYYMMDD + " " + HHMMSS,
+                "YYYYMMDD HH:MM:SS.SSS":YYYYMMDD + " " + HHMMSSS,
+                "MM/DD/YYYY HH:MM:SS": MM + "/" + DD + "/" + YYYY + " " + HHMMSS,
+                "MM/DD/YYYY HH:MM:SS.SSS": MM + "/" + DD + "/" + YYYY + " " + HHMMSSS,
+                "MM-DD-YYYY HH:MM:SS": MM + "-" + DD + "-" + YYYY + " " + HHMMSS,
+                "MM-DD-YYYY HH:MM:SS.SSS": MM + "-" + DD + "-" + YYYY + " " + HHMMSSS,
+                "MM.DD.YYYY HH:MM:SS": MM + "." + DD + "." + YYYY + " " + HHMMSS,
+                "MM.DD.YYYY HH:MM:SS.SSS": MM + "." + DD + "." + YYYY + " " + HHMMSSS,
+                "HH:MM:SS": HHMMSS,
+                "HH:MM:SS.SSS": HHMMSSS
             }
-            return result;
+            return _f[f] ? _f[f] : _errorMsg[0];
         },
         getAbbrWeek: function(d){ //return abbr. weekday name
             d = _v(d);
@@ -379,6 +322,9 @@
         c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
         t: /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/
     };
+    var _errorMsg = {
+        0: 'Input Type Error'
+    }
     var _v = function(d) {
         return (typeof d != "object")? new Date(d) : d;
     };
