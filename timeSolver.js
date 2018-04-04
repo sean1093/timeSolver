@@ -2,7 +2,7 @@
  * timeSolver.js
  * 
  * @description A small date time tool in JavaScript, see: https://github.com/sean1093/timeSolver/ for details
- * @version v1.1.2 - dev
+ * @version v1.2.0 - dev
  * @author Sean Chou
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
