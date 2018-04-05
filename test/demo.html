@@ -67,6 +67,7 @@
         addContent(timeSolver.getString(today,"YYYY-MM-DD HH:mm:ss"));
         addContent(timeSolver.getString(today,"YYYY-MM-DD hh:MM:SS.SSS"));
         addContent(timeSolver.getString(today,"MM/DD/YYYY"));
+        addContent(timeSolver.getString(today,"MM/DD/YYYYR"));
 
         timeSolver.timeLook("date format");
 
@@ -86,15 +87,14 @@
         addContent("Wrong date: "+timeSolver.isValid("2015-12-12", "yyyy/mm/dd"));
         addContent("Valid date: "+timeSolver.isValid("2004-12-12", "yyyy-mm-dd"));
         addContent("Wrong date: "+timeSolver.isValid("2015/12/12", "yyyy-mm-dd"));
-        addContent("Valid time: "+timeSolver.isValid("23:13:10", "t"));
-        addContent("Wrong time: "+timeSolver.isValid("23:61:12", "t"));
+        // addContent("Valid time: "+timeSolver.isValid("23:13:10", "HH:MM:SS"));
+        // addContent("Wrong time: "+timeSolver.isValid("23:61:12", "HH:MM:SS"));
         addContent("Wrong date: "+timeSolver.isValid("2015/12/12 23:10:10", "YYYY/MM/DD HH:MM:SS"));
         timeSolver.timeLook("date validation");
 
 
         addContent("== 1.1.2 new function ==", true);
         addContent("getQuarterByMonth: "+timeSolver.getQuarterByMonth(7));
-
 
 
         timeSolver.timeLookReport();
