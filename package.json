@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/sean1093/timeSolver/issues"
   },
-  "homepage": "https://github.com/sean1093/timeSolver#readme"
+  "homepage": "https://github.com/sean1093/timeSolver#readme",
+  "devDependencies": {
+    "jest": "^22.4.3"
+  }
 }

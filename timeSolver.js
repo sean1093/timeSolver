@@ -2,7 +2,7 @@
  * timeSolver.js
  * 
  * @description A small date time tool in JavaScript, see: https://github.com/sean1093/timeSolver/ for details
- * @version v1.2.0 - dev
+ * @version v1.2.0 
  * @author Sean Chou
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
@@ -40,7 +40,7 @@
                     result = new Date(d.setFullYear(d.getFullYear()+c));
                 break;
                 default:
-                    console.error('[timeSolver.js] Input Type Error');
+                    console.error(_errorMsg[0]);
                 break;
             }
             return result;
@@ -118,23 +118,13 @@
             return result / base;
         },
         after: function(d1, d2, t) { //if d1 after d2 or not
-            if(this.between(d1,d2,t)>0) {
-                return false;
-            }
-            else{
-                return true;
-            }
+            return (this.between(d1, d2, t) > 0) ? false : true;
         },
         afterToday: function(d1) { //if d1 after today or not
             return this.after(d1, new Date(), 'd');
         },
         before: function(d1, d2, t) { //if d1 before d2 or not
-            if(this.between(d1,d2,t)>0) {
-                return true;
-            }
-            else{
-                return false;
-            }
+            return (this.between(d1, d2, t) > 0) ? true : false;
         },
         beforeToday: function(d1) { //if d1 before today or not
             return this.before(d1, new Date(), 'd');
@@ -144,7 +134,7 @@
             d = _v(d);
             var result = null;
             var year = d.getFullYear();
-            var month = _appendZero(d.getMonth()+1);
+            var month = _appendZero(d.getMonth() + 1);
             var date = _appendZero(d.getDate());
             var hour = _appendZero(d.getHours());
             var min = _appendZero(d.getMinutes());
@@ -185,52 +175,19 @@
                 25: HHMMSS,
                 26: HHMMSSS
             }
-            // var dateString = {
-            //     'YYYY': YYYY,
-            //     'YYYYMM': YYYY + MM,
-            //     'YYYYMMDD': YYYYMMDD,
-            //     'YYYY/MM/DD': YYYY + '/' + MM + '/' + DD,
-            //     'YYYY-MM-DD': YYYY + '-' + MM + '-' + DD,
-            //     'YYYY.MM.DD': YYYY + '.' + MM + '.' + DD,
-            //     'MMDDYYYY': MM + DD + YYYY,               
-            //     'DDMMYYYY': DD + MM + YYYY,               
-            //     'MM/DD/YYYY': MM + '/' + DD + '/' + YYYY,                 
-            //     'MM-DD-YYYY': MM + '-' + DD + '-' + YYYY,                
-            //     'MM.DD.YYYY': MM + '.' + DD + '.' + YYYY,
-            //     'YYYY/MM/DD HH:MM:SS': YYYY + '/' + MM + '/' + DD + ' ' + HHMMSS,
-            //     'YYYY/MM/DD HH:MM:SS.SSS': YYYY + '/' + MM + '/' + DD + ' ' + HHMMSSS,
-            //     'YYYY-MM-DD HH:MM:SS': YYYY + '-' + MM + '-' + DD + ' ' + HHMMSS,
-            //     'YYYY-MM-DD HH:MM:SS.SSS':YYYY + '-' + MM + '-' + DD + ' ' + HHMMSSS,
-            //     'YYYY.MM.DD HH:MM:SS': YYYY + '.' + MM + '.' + DD + ' ' + HHMMSS,
-            //     'YYYY.MM.DD HH:MM:SS.SSS':YYYY + '.' + MM + '.' + DD + ' ' + HHMMSS,
-            //     'YYYYMMDD HH:MM:SS': YYYYMMDD + ' ' + HHMMSS,
-            //     'YYYYMMDD HH:MM:SS.SSS':YYYYMMDD + ' ' + HHMMSSS,
-            //     'MM/DD/YYYY HH:MM:SS': MM + '/' + DD + '/' + YYYY + ' ' + HHMMSS,
-            //     'MM/DD/YYYY HH:MM:SS.SSS': MM + '/' + DD + '/' + YYYY + ' ' + HHMMSSS,
-            //     'MM-DD-YYYY HH:MM:SS': MM + '-' + DD + '-' + YYYY + ' ' + HHMMSS,
-            //     'MM-DD-YYYY HH:MM:SS.SSS': MM + '-' + DD + '-' + YYYY + ' ' + HHMMSSS,
-            //     'MM.DD.YYYY HH:MM:SS': MM + '.' + DD + '.' + YYYY + ' ' + HHMMSS,
-            //     'MM.DD.YYYY HH:MM:SS.SSS': MM + '.' + DD + '.' + YYYY + ' ' + HHMMSSS,
-            //     'HH:MM:SS': HHMMSS,
-            //     'HH:MM:SS.SSS': HHMMSSS
-            // }
             return dateString[_f[f]] ? dateString[_f[f]] : _errorMsg[0];
         },
         getAbbrWeek: function(d) { //return abbr. weekday name
-            d = _v(d);
-            return d.toString().substring(0,3);
+            return _v(d) !== null ? _v(d).toString().substring(0, 3) : new Error(_errorMsg[1]);    
         },
         getFullWeek: function(d) { //return full weekday name
-            d = _v(d);
-            return _w[d.getDay()];
+            return _w[_v(d).getDay()];
         },
         getAbbrMonth: function(d) { //return abbr. month name
-            d = _v(d);
-            return d.toString().substring(3,7);
+            return _v(d) !== null ? _v(d).toString().substring(3, 7) : new Error(_errorMsg[1]);   
         },
         getFullMonth: function(d) { //return full month name
-            d = _v(d);
-            return _m[d.getMonth()];
+            return _m[_v(d).getMonth()];
         },
         isValid: function(st, f) { //input date string and return true/ false
             var result = true;
@@ -302,13 +259,6 @@
             else if(q == 3) return 7;
             else if(q == 4) return 10;
             else return null;
-        },
-        getDatePeriod: function(d1, d2, f, u) { // retrun d1 ~ d2 date array by u unit and f format
-            f = (f === undefined)? 'YYYYMM' : f.toUpperCase();
-            d = _v(d);
-            u = (u === undefined)? _t(u) : 5;
-            //TODO
-
         },
         timeArray: [],
         timeLookMax: 0,
@@ -388,10 +338,16 @@
         'HH:MM:SS.SSS': 26
     }
     var _errorMsg = {
-        0: '[timeSolver] Input Type Error'
+        0: '[timeSolver] Input Type Error',
+        1: '[timeSolver] Invalid Date'
     }
     var _v = function(d) {
-        return (typeof d != 'object')? new Date(d) : d;
+        var returnDate = typeof d != 'object' ? new Date(d) : d
+        if(returnDate == 'Invalid Date') {
+            console.error(_errorMsg[1]);
+            return null;
+        }
+        return returnDate;
     };
     var _t = function(t) {
         t = (t === undefined)? 'MILLISECOND' : t.toUpperCase();
