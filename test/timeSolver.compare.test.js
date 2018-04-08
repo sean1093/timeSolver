@@ -1,14 +1,18 @@
 const timeSolver = require('./../timeSolver');
 
 test('compare equals', () => {
-    const expectResult = timeSolver.equal(new Date(), new Date());
+    const date = new Date();
+    const copiedDate = new Date(date.getTime());
+    const expectResult = timeSolver.equal(date, copiedDate);
     expect(expectResult).toBe(true);
 });
 
 test('compare equals after manipulating', () => {
-    const expectResult = timeSolver.equal(new Date(), 
+    const date = new Date();
+    const copiedDate = new Date(date.getTime());
+    const expectResult = timeSolver.equal(date, 
         timeSolver.add(
-            timeSolver.subtract(new Date(), 14, 'month'), 
+            timeSolver.subtract(copiedDate, 14, 'month'), 
         14, 'month')
     );
     expect(expectResult).toBe(true);
@@ -24,12 +28,12 @@ test('2015/11/18 before 2015/12/12 => true', () => {
     expect(expectResult).toBe(true);
 });
 
-test('2015/11/18 after today => false', () => {
+test('2015/11/18 after new Date() => false', () => {
     const expectResult = timeSolver.afterToday(new Date('2015/11/18 '));
     expect(expectResult).toBe(false);
 });
 
-test('2015/11/18 before today => true', () => {
+test('2015/11/18 before new Date() => true', () => {
     const expectResult = timeSolver.beforeToday(new Date('2015/11/18 '));
     expect(expectResult).toBe(true);
 });
