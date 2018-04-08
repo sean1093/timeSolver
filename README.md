@@ -2,25 +2,51 @@
 
 A small library for manipulating, validating and formatting JavaScript date object. Futhermore, it can helps you log your execution time by using [timelook].
 
-Current Version : v1.1.1 
+Current Version : v1.2.0
 
 ## Getting Start
 
-Install via npm
+
+### Installation
+
+Install via npm or download source file directly
+
+* npm 
 
 ```sh
 npm install timesolver
 ```
 
-Include <code>timeSolver</code> in your HTML page. 
+* source
+
+https://github.com/sean1093/timeSolver/tree/master/src
+
+
+
+
+
+### Usage
+
+You need to use timeSolver object to manipulate JavaScript date object.
+
+
+
+Include <code>timeSolver</code>, You can use global object in your page.
+
 ```html
 <script type="text/javascript" src="timeSolver.min.js"></script>
 ```
 
-You need to use timeSolver object to manipulate JavaScript date object.
-For example, if you want to get datetime string with format "YYYYMMDD", you need to do by following:
+You also can use via <code>require</code>.
+
 ```js
-let dateString = timeSolver.getString(new Date(), "YYYYMMDD");
+const timeSolver = require('./../timeSolver');
+```
+
+For example, if you want to get datetime string with format "YYYYMMDD", you need to do by following:
+
+```js
+const dateString = timeSolver.getString(new Date(), "YYYYMMDD");
 ```
 
 ## Method 
@@ -36,7 +62,7 @@ You can use this basic manipulate on date, add or subtract, by different time un
  * @param {string} [type] timeSolver time unit
  * @return {date} standard JavaScript Date object
  */
-let afterAdd = timeSolver.add(date, count, type);
+const afterAdd = timeSolver.add(date, count, type);
 
 /**
  * Subtract time by time unit
@@ -46,7 +72,7 @@ let afterAdd = timeSolver.add(date, count, type);
  * @param {string} [type] timeSolver time unit
  * @return {date} standard JavaScript Date object
  */
-let afterSubtract = timeSolver.subtract(date, count, type);
+const afterSubtract = timeSolver.subtract(date, count, type);
 ```
 
 [timeSolver time unit]
@@ -63,7 +89,7 @@ let afterSubtract = timeSolver.subtract(date, count, type);
  * @param {date/string} [date2] standard JavaScript Date object or date string
  * @return {boolean} equals or not  
  */
-let result = timeSolver.equal(date1, date2);
+const result = timeSolver.equal(date1, date2);
 ```
 
 
@@ -77,7 +103,7 @@ let result = timeSolver.equal(date1, date2);
  * @param {date/string} [date2] standard JavaScript Date object or date string
  * @return {boolean} date1 after date2 or not  
  */
-let result = timeSolver.after(date1, date2, type);
+const result = timeSolver.after(date1, date2, type);
 ```
 
 
@@ -91,7 +117,7 @@ let result = timeSolver.after(date1, date2, type);
  * @param {date/string} [date] standard JavaScript Date object or date string
  * @return {boolean} date1 after today or not  
  */
-let result = timeSolver.afterToday(date);
+const result = timeSolver.afterToday(date);
 ```
 
 
@@ -106,7 +132,7 @@ let result = timeSolver.afterToday(date);
  * @param {date/string} [date2] standard JavaScript Date object or date string
  * @return {boolean} date1 before date2 or not  
  */
-let result = timeSolver.before(date1, date2, type);
+const result = timeSolver.before(date1, date2, type);
 ```
   
 
@@ -120,7 +146,7 @@ let result = timeSolver.before(date1, date2, type);
  * @param {date/string} [date] standard JavaScript Date object or date string
  * @return {boolean} date1 before today or not  
  */
-let result = timeSolver.beforeToday(date);
+const result = timeSolver.beforeToday(date);
 ```
 
 
@@ -136,11 +162,10 @@ let result = timeSolver.beforeToday(date);
  * @param {string} [type] timeSolver time unit
  * @return {number} return count by time unit 
  */
-let result = timeSolver.between(date1, date2, type);
+const result = timeSolver.between(date1, date2, type);
 ```
 
 [timeSolver time unit]
-
 
 
 
@@ -155,7 +180,7 @@ let result = timeSolver.between(date1, date2, type);
  * @param {string} [format] timeSolver string format
  * @return {string} return formated string
  */
-let dateString = timeSolver.getString(date, format);
+const dateString = timeSolver.getString(date, format);
 ```
 
 [timeSolver string format]
@@ -165,10 +190,10 @@ let dateString = timeSolver.getString(date, format);
 ### Get Week and Month
 Get date's weekday or month name, it will return abbr. or full name by different method
 ```js
-let result1 = timeSolver.getAbbrWeek(date);
-let result2 = timeSolver.getFullWeek(date);
-let result3 = timeSolver.getAbbrMonth(date);
-let result4 = timeSolver.getFullMonth(date);
+const result1 = timeSolver.getAbbrWeek(date);
+const result2 = timeSolver.getFullWeek(date);
+const result3 = timeSolver.getAbbrMonth(date);
+const result4 = timeSolver.getFullMonth(date);
 ```
     
     
@@ -182,11 +207,35 @@ let result4 = timeSolver.getFullMonth(date);
  * @param {string} [format] timeSolver valid format
  * @return {boolean} dateString is valid or not
  */
-let result = timeSolver.isValid(dateString, format);
+const result = timeSolver.isValid(dateString, format);
 ```
 
 [timeSolver valid format]
 
+
+### getQuarterByMonth
+
+```js
+/**
+ * Get quarter by give month
+ * 
+ * @param {number} [month] month number
+ * @return {number} return quarter number
+ */
+const quarter = timeSolver.getQuarterByMonth(month);
+```
+
+### getFirstMonthByQuarter
+
+```js
+/**
+ * Get quarter's first month string by give quarter
+ * 
+ * @param {number} [quarter] quarter number
+ * @return {number} return month number
+ */
+const firstMonth = timeSolver.getFirstMonthByQuarter(quarter);
+```
 
 
 #### timeSolver time unit
@@ -328,10 +377,16 @@ For example, it will print on your browser console.
 It will shows every execution time between your two break point, and mark the bottleneck with red color(Chrome Console). 
 
 
+### License
 
+MIT
 
 
 ### Update log
+
+* 1.2.0 (20180408)
+    + Add unit-test
+    + New feature: getQuarterByMonth and getFirstMonthByQuarter
 * 1.1.1 (20180401)
     + Add to npm
 * 1.1.1 (20170718)

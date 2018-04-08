@@ -4,97 +4,97 @@
     <title>Test page for timeSolver.js</title>
 </head>
     <body>
-        <div id="content"></div>
-        <script src="../timeSolver.js"></script>
-        <script type="text/javascript">
+        <div id='content'></div>
+        <script src='../timeSolver.js'></script>
+        <script type='text/javascript'>
         var div = document.getElementById('content');
 
         timeSolver.timeLookStart();
 
         function addContent(t, boolean){
             if(boolean){
-               div.innerHTML += "<p style='color:red'>==="+t+"===</p>"; 
+               div.innerHTML += '<p style="color:red">==='+t+'===</p>'; 
             }
             else {
-                div.innerHTML += t+"</br>";
+                div.innerHTML += t+'</br>';
             }
-            
         }
         var today = new Date();
 
-        addContent("== test ==", true);
-        addContent(timeSolver.getString(new Date("2015/01/09"),"YYYYMMDD HH:MM:SS"));
+        addContent('== test ==', true);
+        addContent(timeSolver.getString(new Date('2015/01/09'),'YYYYMMDD HH:MM:SS'));
 
         addContent(today.toString());
         addContent(today.toJSON());
-        addContent("TimezoneOffset: "+today.getTimezoneOffset());
+        addContent('TimezoneOffset: '+today.getTimezoneOffset());
         
-        timeSolver.timeLook("test");
+        timeSolver.timeLook('test');
 
 
-        addContent("== date basic function ==", true);
+        addContent('== date basic function ==', true);
  
-        addContent("2014/12/12 after 2015/12/12?: "+
-            timeSolver.after(new Date("2014/12/12"),new Date("2015/12/12")));
-        addContent("2014/12/12 after today?: "+timeSolver.afterToday(new Date("2014/12/12")));
-        addContent("2014/12/12 before today?: "+timeSolver.beforeToday(new Date("2014/12/12")));
+        addContent('2014/12/12 after 2015/12/12?: '+
+            timeSolver.after(new Date('2014/12/12'),new Date('2015/12/12')));
+        addContent('2014/12/12 after today?: '+timeSolver.afterToday(new Date('2014/12/12')));
+        addContent('2014/12/12 before today?: '+timeSolver.beforeToday(new Date('2014/12/12')));
 
-        timeSolver.timeLook("date basic function");
+        timeSolver.timeLook('date basic function');
 
-        addContent("== date manipulate ==", true);
-        addContent("+ 5 hour: "+timeSolver.add(new Date(),5,"hour"));
-        addContent("+ 10 min: "+timeSolver.add(new Date(),10,"minute"));
-        addContent("+ 5 day: "+timeSolver.add("2016/03/28",5,"day"));
-        addContent("+ 5 day: "+timeSolver.add(new Date(),5,"day"));
-        addContent("+ 7 year: "+timeSolver.add(new Date(),7,"year"));
-        addContent("- 4 day: "+timeSolver.subtract(new Date(),4));
-        addContent("- 14 month: "+timeSolver.subtract(new Date(),14,"month"));
+        addContent('== date manipulate ==', true);
+        addContent('+ 5 hour: '+timeSolver.add(new Date(),5,'hour'));
+        addContent('+ 10 min: '+timeSolver.add(new Date(),10,'minute'));
+        addContent('+ 5 day: '+timeSolver.add('2016/03/28',5,'day'));
+        addContent('+ 5 day: '+timeSolver.add(new Date(),5,'day'));
+        addContent('+ 7 year: '+timeSolver.add(new Date(),7,'year'));
+        addContent('- 4 day: '+timeSolver.subtract(new Date(),4));
+        addContent('- 14 month: '+timeSolver.subtract(new Date(),14,'month'));
 
-        addContent("equal?: "+timeSolver.equal(new Date(),today));
-        addContent("equal?: "+timeSolver.equal(new Date(),timeSolver.add(timeSolver.subtract(new Date(),14,"month"),14,"month")));
-        addContent("between MILLISECOND?: "+timeSolver.between(new Date(),today,"MILLISECOND"));
-        addContent("between second?: "+timeSolver.between(new Date(),today,"second"));
+        addContent('equal?: '+timeSolver.equal(new Date(),today));
+        addContent('equal?: '+timeSolver.equal(new Date(),timeSolver.add(timeSolver.subtract(new Date(),14,'month'),14,'month')));
+        addContent('between MILLISECOND?: '+timeSolver.between(new Date(),today,'MILLISECOND'));
+        addContent('between second?: '+timeSolver.between(new Date(),today,'second'));
 
-        timeSolver.timeLook("date manipulate");
-
-
-        addContent("== date format ==", true);
-        addContent(timeSolver.getString(today,"YYYYMMDD"));
-        addContent(timeSolver.getString(today,"YYYY/MM/DD"));
-        addContent(timeSolver.getString(today,"YYYY-MM-DD"));
-        addContent(timeSolver.getString(today,"YYYY/MM/DD hh:mm:ss"));
-        addContent(timeSolver.getString(today,"YYYY/MM/DD hh:mm:ss.sss"));
-        addContent(timeSolver.getString(today,"YYYY-MM-DD HH:mm:ss"));
-        addContent(timeSolver.getString(today,"YYYY-MM-DD hh:MM:SS.SSS"));
-        addContent(timeSolver.getString(today,"MM/DD/YYYY"));
-
-        timeSolver.timeLook("date format");
+        timeSolver.timeLook('date manipulate');
 
 
-        addContent("== get date info ==", true);
-        addContent("Today's week: "+timeSolver.getAbbrWeek(today));
-        addContent("Today's week(full name): "+timeSolver.getFullWeek(today));
-        addContent("Today's month: "+timeSolver.getAbbrMonth(today));
-        addContent("Today's month(full name): "+timeSolver.getFullMonth(today));
+        addContent('== date format ==', true);
+        addContent(timeSolver.getString(today,'YYYYMMDD'));
+        addContent(timeSolver.getString(today,'YYYY/MM/DD'));
+        addContent(timeSolver.getString(today,'YYYY-MM-DD'));
+        addContent(timeSolver.getString(today,'YYYY/MM/DD hh:mm:ss'));
+        addContent(timeSolver.getString(today,'YYYY/MM/DD hh:mm:ss.sss'));
+        addContent(timeSolver.getString(today,'YYYY-MM-DD HH:mm:ss'));
+        addContent(timeSolver.getString(today,'YYYY-MM-DD hh:MM:SS.SSS'));
+        addContent(timeSolver.getString(today,'MM/DD/YYYY'));
+        addContent(timeSolver.getString(today,'MM/DD/YYYYR'));
 
-        timeSolver.timeLook("get date info");
-
-        addContent("== date validation ==", true);
-        addContent("Valid date: "+timeSolver.isValid("2016/03/30"));
-        addContent("Wrong date: "+timeSolver.isValid("2016/1212"));
-        addContent("Valid date: "+timeSolver.isValid("2004/12/12", "yyyy/mm/dd"));
-        addContent("Wrong date: "+timeSolver.isValid("2015-12-12", "yyyy/mm/dd"));
-        addContent("Valid date: "+timeSolver.isValid("2004-12-12", "yyyy-mm-dd"));
-        addContent("Wrong date: "+timeSolver.isValid("2015/12/12", "yyyy-mm-dd"));
-        addContent("Valid time: "+timeSolver.isValid("23:13:10", "t"));
-        addContent("Wrong time: "+timeSolver.isValid("23:61:12", "t"));
-        addContent("Wrong date: "+timeSolver.isValid("2015/12/12 23:10:10", "YYYY/MM/DD HH:MM:SS"));
-        timeSolver.timeLook("date validation");
+        timeSolver.timeLook('date format');
 
 
-        addContent("== 1.1.2 new function ==", true);
-        addContent("getQuarterByMonth: "+timeSolver.getQuarterByMonth(7));
+        addContent('== get date info ==', true);
+        addContent('Today week: '+timeSolver.getAbbrWeek(today));
+        addContent('Today week(full name): '+timeSolver.getFullWeek(today));
+        addContent('Today month: '+timeSolver.getAbbrMonth(today));
+        addContent('Today month(full name): '+timeSolver.getFullMonth(today));
+        addContent('Today week error: '+timeSolver.getAbbrWeek('today'));
 
+        timeSolver.timeLook('get date info');
+
+        addContent('== date validation ==', true);
+        addContent('Valid date: '+timeSolver.isValid('2016/03/30'));
+        addContent('Wrong date: '+timeSolver.isValid('2016/1212'));
+        addContent('Valid date: '+timeSolver.isValid('2004/12/12', 'yyyy/mm/dd'));
+        addContent('Wrong date: '+timeSolver.isValid('2015-12-12', 'yyyy/mm/dd'));
+        addContent('Valid date: '+timeSolver.isValid('2004-12-12', 'yyyy-mm-dd'));
+        addContent('Wrong date: '+timeSolver.isValid('2015/12/12', 'yyyy-mm-dd'));
+        // addContent('Valid time: '+timeSolver.isValid('23:13:10', 'HH:MM:SS'));
+        // addContent('Wrong time: '+timeSolver.isValid('23:61:12', 'HH:MM:SS'));
+        addContent('Wrong date: '+timeSolver.isValid('2015/12/12 23:10:10', 'YYYY/MM/DD HH:MM:SS'));
+        timeSolver.timeLook('date validation');
+
+
+        addContent('== 1.1.2 new function ==', true);
+        addContent('getQuarterByMonth: '+timeSolver.getQuarterByMonth(7));
 
 
         timeSolver.timeLookReport();
