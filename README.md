@@ -170,7 +170,6 @@ const result = timeSolver.between(date1, date2, type);
 
 
 
-
 ### Get Date String
 
 ```js
@@ -213,6 +212,30 @@ const result = timeSolver.isValid(dateString, format);
 
 [timeSolver valid format]
 
+
+### getQuarterByMonth
+
+```js
+/**
+ * Get quarter by give month
+ * 
+ * @param {number} [month] month number
+ * @return {number} return quarter number
+ */
+const quarter = timeSolver.getQuarterByMonth(month);
+```
+
+### getFirstMonthByQuarter
+
+```js
+/**
+ * Get quarter's first month string by give quarter
+ * 
+ * @param {number} [quarter] quarter number
+ * @return {number} return month number
+ */
+const firstMonth = timeSolver.getFirstMonthByQuarter(quarter);
+```
 
 
 #### timeSolver time unit
@@ -361,7 +384,7 @@ MIT
 
 ### Update log
 
-* 1.2.0 (201804)
+* 1.2.0 (20180408)
     + Add unit-test
     + New feature: getQuarterByMonth and getFirstMonthByQuarter
 * 1.1.1 (20180401)
