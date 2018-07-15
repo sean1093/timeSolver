@@ -1,4 +1,4 @@
-const timeSolver = require('./../timeSolver');
+const timeSolver = require('./../src/1.2.0/timeSolver');
 
 test('add 300 second', () => {
     const date = new Date();

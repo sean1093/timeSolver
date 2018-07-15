@@ -1,12 +1,27 @@
-const timeSolver = require('./../timeSolver');
+const timeSolver = require('./../src/1.2.0/timeSolver');
 
 test('Valid date', () => {
-    const expectResult = timeSolver.isValid('2016/03/30');
+    const expectResult = timeSolver.isValid('2018.12.12');
+    expect(expectResult).toBe(true);
+});
+
+test('Valid date', () => {
+    const expectResult = timeSolver.isValid('2018-12-12');
+    expect(expectResult).toBe(true);
+});
+
+test('Valid date', () => {
+    const expectResult = timeSolver.isValid('2018.12.12');
     expect(expectResult).toBe(true);
 });
 
 test('Invalid date', () => {
     const expectResult = timeSolver.isValid('2016/1212');
+    expect(expectResult).toBe(false);
+});
+
+test('Invalid date', () => {
+    const expectResult = timeSolver.isValid('1231212');
     expect(expectResult).toBe(false);
 });
 
