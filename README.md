@@ -383,7 +383,10 @@ MIT
 
 
 ### Update log
-
+* 1.2.1
+    + Separate timeLook and timeSolver javascript file
+    + Add unit test coverage rate report (node_modules/.bin/jest --coverage)
+    + Increase unit test coverage rate
 * 1.2.0 (20180408)
     + Add unit-test
     + New feature: getQuarterByMonth and getFirstMonthByQuarter

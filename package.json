@@ -1,13 +1,14 @@
 {
   "name": "timesolver",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A small library for manipulating, validating and formatting JavaScript date object.",
-  "main": "src/1.1.1/timeSolver.min.js",
+  "main": "src/1.2.0/timeSolver.min.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
@@ -34,5 +35,9 @@
   "homepage": "https://github.com/sean1093/timeSolver#readme",
   "devDependencies": {
     "jest": "^22.4.3"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageReporters": ["json", "html"]
   }
 }

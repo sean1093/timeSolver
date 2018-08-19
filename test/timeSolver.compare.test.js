@@ -38,3 +38,38 @@ test('2015/11/18 before new Date() => true', () => {
     expect(expectResult).toBe(true);
 });
 
+describe('between function test', () => {
+    let date;
+    beforeEach(() => {
+        date = new Date();
+    });
+
+    test('between in 1 millisecond', () => {
+        const expectResult = timeSolver.between(
+            date, 
+            new Date(date.getTime() + 1), 
+            'mill');
+        expect(expectResult).toBe(1);
+    });
+
+    test('between in 5 second', () => {
+        const expectResult = timeSolver.between(
+            date, 
+            new Date(date.getTime() + 5000), 
+            's');
+        expect(expectResult).toBe(5);
+    });
+
+    test('between in 5 min', () => {
+        const expectResult = timeSolver.between(
+            date, 
+            new Date(date.getTime() + 5000 * 60), 
+            'min');
+        expect(expectResult).toBe(5);
+    });
+
+    test('between in one day', () => {
+        const expectResult = timeSolver.between('2015/11/18', '2015/11/19', 'd');
+        expect(expectResult).toBe(1);
+    });
+});

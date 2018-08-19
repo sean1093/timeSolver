@@ -6,10 +6,11 @@
     <body>
         <div id='content'></div>
         <script src='../timeSolver.js'></script>
+        <script src='../timeSolver.timelook.js'></script>
         <script type='text/javascript'>
         var div = document.getElementById('content');
 
-        timeSolver.timeLookStart();
+        timeLook.timeLookStart();
 
         function addContent(t, boolean){
             if(boolean){
@@ -28,7 +29,7 @@
         addContent(today.toJSON());
         addContent('TimezoneOffset: '+today.getTimezoneOffset());
         
-        timeSolver.timeLook('test');
+        timeLook.timeLook('test');
 
 
         addContent('== date basic function ==', true);
@@ -38,7 +39,7 @@
         addContent('2014/12/12 after today?: '+timeSolver.afterToday(new Date('2014/12/12')));
         addContent('2014/12/12 before today?: '+timeSolver.beforeToday(new Date('2014/12/12')));
 
-        timeSolver.timeLook('date basic function');
+        timeLook.timeLook('date basic function');
 
         addContent('== date manipulate ==', true);
         addContent('+ 5 hour: '+timeSolver.add(new Date(),5,'hour'));
@@ -54,7 +55,7 @@
         addContent('between MILLISECOND?: '+timeSolver.between(new Date(),today,'MILLISECOND'));
         addContent('between second?: '+timeSolver.between(new Date(),today,'second'));
 
-        timeSolver.timeLook('date manipulate');
+        timeLook.timeLook('date manipulate');
 
 
         addContent('== date format ==', true);
@@ -68,7 +69,7 @@
         addContent(timeSolver.getString(today,'MM/DD/YYYY'));
         addContent(timeSolver.getString(today,'MM/DD/YYYYR'));
 
-        timeSolver.timeLook('date format');
+        timeLook.timeLook('date format');
 
 
         addContent('== get date info ==', true);
@@ -78,7 +79,7 @@
         addContent('Today month(full name): '+timeSolver.getFullMonth(today));
         addContent('Today week error: '+timeSolver.getAbbrWeek('today'));
 
-        timeSolver.timeLook('get date info');
+        timeLook.timeLook('get date info');
 
         addContent('== date validation ==', true);
         addContent('Valid date: '+timeSolver.isValid('2016/03/30'));
@@ -90,14 +91,14 @@
         // addContent('Valid time: '+timeSolver.isValid('23:13:10', 'HH:MM:SS'));
         // addContent('Wrong time: '+timeSolver.isValid('23:61:12', 'HH:MM:SS'));
         addContent('Wrong date: '+timeSolver.isValid('2015/12/12 23:10:10', 'YYYY/MM/DD HH:MM:SS'));
-        timeSolver.timeLook('date validation');
+        timeLook.timeLook('date validation');
 
 
         addContent('== 1.1.2 new function ==', true);
         addContent('getQuarterByMonth: '+timeSolver.getQuarterByMonth(7));
 
 
-        timeSolver.timeLookReport();
+        timeLook.timeLookReport();
 
         </script>
     </body>

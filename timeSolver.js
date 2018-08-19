@@ -2,7 +2,7 @@
  * timeSolver.js
  * 
  * @description A small date time tool in JavaScript, see: https://github.com/sean1093/timeSolver/ for details
- * @version v1.2.0 
+ * @version v1.2.1 - dev 
  * @author Sean Chou
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
@@ -259,42 +259,6 @@
             else if(q == 3) return 7;
             else if(q == 4) return 10;
             else return null;
-        },
-        timeArray: [],
-        timeLookMax: 0,
-        timeLookTotal: 0,
-        timeLookStart: function() {
-            this.timeArray.length = 0;
-            this.timeLookMax = 0;
-            this.timeLookTotal = 0;
-            this.timeArray.push({label: 'start', time: new Date(), interval: 0});
-        },
-        timeLook: function(label) {
-            var last = this.timeArray[this.timeArray.length-1];
-            var now = new Date();
-            var interval = this.between(last.time, now, 'S');
-            this.timeLookTotal += interval;
-            this.timeLookMax = interval > this.timeLookMax ? interval : this.timeLookMax;
-            this.timeArray.push({label: label, time: new Date(), interval: interval});
-        },
-        timeLookReport: function() {
-            var titleStyle = 'font-weight: bold; color: #3F51B5';
-            var reportStyle = 'color: #2962FF';
-            var infoStyle = 'color: #4CAF50';
-            var maxStyle = 'color: #ff0000';
-            var now = new Date();
-            console.log('%c=================================', reportStyle);
-            console.log('%c[timeSolver] Time Look Report', titleStyle);
-            for(var i = 1; i < timeSolver.timeArray.length; i++) {
-                var label = timeSolver.timeArray[i].label;
-                var interval = timeSolver.timeArray[i].interval;
-                var style = this.timeLookMax == interval ? maxStyle : reportStyle;
-                console.log('%c['+ interval +'s] '+Math.round((interval/this.timeLookTotal)*100) +'%  '+label , style);
-            }
-            var end = new Date();
-            console.log('%c[timeSolver] Spend '+this.between(now, end, 'S')+'s to create this report', infoStyle);
-            console.log('%c[timeSolver] For more information: https://github.com/sean1093/timeSolver#timelook', infoStyle);
-            console.log('%c=================================', reportStyle);
         }
     };
 
@@ -350,14 +314,16 @@
         return returnDate;
     };
     var _t = function(t) {
-        t = (t === undefined)? 'MILLISECOND' : t.toUpperCase();
-        if(t == 'MILLISECOND' || t == 'MILL') t = 0;
-        else if(t == 'SECOND' || t == 'S') t = 1;
-        else if(t == 'MINUTE' || t == 'MIN') t = 2;
-        else if(t == 'HOUR' || t == 'H') t = 3;
-        else if(t == 'DAY' || t == 'D') t = 4;
-        else if(t == 'MONTH' || t == 'M') t = 5;
-        else if(t == 'YEAR' || t == 'Y') t = 6;
+        if (!t)
+            return t;
+        t = t.toUpperCase();
+        if (t == 'MILLISECOND' || t == 'MILL') t = 0;
+        else if (t == 'SECOND' || t == 'S') t = 1;
+        else if (t == 'MINUTE' || t == 'MIN') t = 2;
+        else if (t == 'HOUR' || t == 'H') t = 3;
+        else if (t == 'DAY' || t == 'D') t = 4;
+        else if (t == 'MONTH' || t == 'M') t = 5;
+        else t = 6;
         return t;
     };
     var _appendZero = function(s) {
