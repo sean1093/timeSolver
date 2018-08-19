@@ -1,4 +1,4 @@
-const timeSolver = require('./../timeSolver');
+const timeSolver = require('./../src/1.2.0/timeSolver');
 
 describe('add function', () => {
     let date;
