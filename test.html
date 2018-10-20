@@ -1,0 +1,10 @@
+<!-- <script src='timeSolver.js'></script> -->
+<script>
+// import timeSolver from 'timeSolver';
+import { timeSolver } from "./timeSolver";
+const expectResult = timeSolver.add('2018/02/01', 2, 'm').getTime();
+const toBeResult = new Date('2018/04/01').getTime() ;
+
+console.log(expectResult)
+console.log(toBeResult)
+</script>
