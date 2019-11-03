@@ -2,7 +2,7 @@
   "name": "timesolver",
   "version": "1.2.0",
   "description": "A small library for manipulating, validating and formatting JavaScript date object.",
-  "main": "src/1.1.1/timeSolver.min.js",
+  "main": "timeSolver.min.js",
   "directories": {
     "test": "test"
   },
