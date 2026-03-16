@@ -7,7 +7,7 @@
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
 
-(function () {
+const _timeSolver = (function () {
     'use strict';
  
     //public 
@@ -139,7 +139,7 @@
             var hour = _appendZero(d.getHours());
             var min = _appendZero(d.getMinutes());
             var sec = _appendZero(d.getSeconds());
-            var millsec = _appendZero(d.getMilliseconds());
+            var millsec = _appendZero(d.getMilliseconds(), 3);
             var YYYY = year.toString();
             var MM = month.toString();
             var DD = date.toString();
@@ -191,57 +191,56 @@
         },
         isValid: function(st, f) { //input date string and return true/ false
             var result = true;
-            if(f === undefined) {
-                if(new Date(st) == 'Invalid Date') {
+            if (f === undefined) {
+                if (isNaN(new Date(st).getTime())) {
                     result = false;
-                }           
-            }
-            else{
+                }
+            } else {
                 f = f.toUpperCase();
-                switch(_f[f]) {
+                switch (_f[f]) {
                     case 3:
                         if (!_r.a.test(st)) {
                             result = false;
                         }
-                    break;
+                        break;
                     case 4:
                         if (!_r.b.test(st)) {
                             result = false;
                         }
-                    break;
+                        break;
                     case 5:
                         if (!_r.c.test(st)) {
                             result = false;
                         }
-                    break;
+                        break;
                     case 11:
                         var str = st.split(' ');
-                        if (!_r.a.test(str[0]) || !_r.t.test(str[1])) {
+                        if (str.length < 2 || !_r.a.test(str[0]) || !_r.t.test(str[1])) {
                             result = false;
                         }
-                    break;
+                        break;
                     case 13:
                         var str = st.split(' ');
-                        if (!_r.b.test(str[0]) || !_r.t.test(str[1])) {
+                        if (str.length < 2 || !_r.b.test(str[0]) || !_r.t.test(str[1])) {
                             result = false;
                         }
-                    break;
+                        break;
                     case 15:
                         var str = st.split(' ');
-                        if (!_r.c.test(str[0]) || !_r.t.test(str[1])) {
+                        if (str.length < 2 || !_r.c.test(str[0]) || !_r.t.test(str[1])) {
                             result = false;
                         }
-                    break;
+                        break;
                     case 25:
                         var str = st.split(' ');
-                        if (!_r.t.test(str[1])) {
+                        if (str.length < 2 || !_r.t.test(str[1])) {
                             result = false;
                         }
-                    break;
+                        break;
                     default:
                         console.error(_errorMsg[0]);
                         result = null;
-                    break;
+                        break;
                 }
             }
             return result;
@@ -342,8 +341,8 @@
         1: '[timeSolver] Invalid Date'
     }
     var _v = function(d) {
-        var returnDate = typeof d != 'object' ? new Date(d) : d
-        if(returnDate == 'Invalid Date') {
+        var returnDate = (d instanceof Date) ? d : new Date(d);
+        if (isNaN(returnDate.getTime())) {
             console.error(_errorMsg[1]);
             return null;
         }
@@ -360,12 +359,20 @@
         else if(t == 'YEAR' || t == 'Y') t = 6;
         return t;
     };
-    var _appendZero = function(s) {
-        return s < 10 ? '0'+s : s;
+    var _appendZero = function(s, width) {
+        width = width || 2;
+        var str = String(s);
+        while (str.length < width) str = '0' + str;
+        return str;
     };
 
-    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined')
-        module.exports = timeSolver;
-    else
-        window.timeSolver = timeSolver;
+    return timeSolver;
 })();
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = _timeSolver;
+} else if (typeof window !== 'undefined') {
+    window.timeSolver = _timeSolver;
+}
+
+export default _timeSolver;

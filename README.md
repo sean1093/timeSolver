@@ -199,225 +199,84 @@ const result4 = timeSolver.getFullMonth(date);
     
 ### isValid
 
-```js
-/**
- * Check whether date string is valid or not and return true/ false if dateString valid or not 
- * 
- * @param {string} [dateString] date string
- * @param {string} [format] timeSolver valid format
- * @return {boolean} dateString is valid or not
- */
-const result = timeSolver.isValid(dateString, format);
+# timeSolver
+
+timeSolver is a small, zero-dependency JavaScript utility library for manipulating,
+validating and formatting Date objects. It also includes a simple timing helper
+(`timeLook`) for quick performance measurements during development.
+
+Current version: v1.2.0
+
+--
+
+## Installation
+
+Install from npm:
+
+```bash
+npm install timesolver
 ```
 
-[timeSolver valid format]
+Or include the bundled UMD script directly in a browser:
 
-
-### getQuarterByMonth
-
-```js
-/**
- * Get quarter by give month
- * 
- * @param {number} [month] month number
- * @return {number} return quarter number
- */
-const quarter = timeSolver.getQuarterByMonth(month);
+```html
+<script src="dist/timeSolver.umd.min.js"></script>
+<script>
+  console.log(window.timeSolver.getString(new Date(), 'YYYYMMDD'));
+</script>
 ```
 
-### getFirstMonthByQuarter
+## Usage
+
+CommonJS:
 
 ```js
-/**
- * Get quarter's first month string by give quarter
- * 
- * @param {number} [quarter] quarter number
- * @return {number} return month number
- */
-const firstMonth = timeSolver.getFirstMonthByQuarter(quarter);
+const timeSolver = require('timesolver');
 ```
 
+ES Module:
 
-#### timeSolver time unit
-* 
-    <table>
-        <thead>
-            <tr>
-                <th>time unit</th>
-                <th>parameter</th>
-                <th>abbr</th>
+```js
+import timeSolver from 'timesolver';
+```
+
+Browser global:
+
+```js
+// after including dist/timeSolver.umd.min.js
+timeSolver.getString(new Date(), 'YYYYMMDD');
+```
+
+## API (high level)
+
+- `timeSolver.add(date, count, unit)` — add time to a date
+- `timeSolver.subtract(date, count, unit)` — subtract time from a date
+- `timeSolver.between(d1, d2, unit)` — difference between two dates in given unit
+- `timeSolver.getString(date, format)` — format a date string (many formats supported)
+- `timeSolver.isValid(dateString, format)` — validate a date string by supported formats
+- `timeSolver.timeLookStart()`, `timeSolver.timeLook(label)`, `timeSolver.timeLookReport()` — simple timing helper
+
+See original README for full method reference and format tables.
+
+## Contributing
+
+Contributions are welcome. Please open issues for bugs or feature requests and
+submit pull requests with tests for new functionality.
+
+Guidelines:
+
+- Fork the repo and create a topic branch.
+- Add tests under `test/` and ensure `npm test` passes.
+- Follow existing code style and include clear commit messages.
+
+## License
+
+MIT — see [LICENSE](LICENSE)
             </tr>
-        </thead>
-        <tbody>
+
             <tr>
-                <td>Millisecond</td>
-                <td>"MILLISECOND"</td>
-                <td>"mill"</td>
-            </tr>
-            <tr>
-                <td>Second</td>
-                <td>"SECOND"</td>
-                <td>"s"</td>
-            </tr>
-            <tr>
-                <td>Minute</td>
-                <td>"MINUTE"</td>
-                <td>"min"</td>
-            </tr>
-            <tr>
-                <td>Hour</td>
-                <td>"HOUR"</td>
-                <td>"h"</td>
-            </tr>
-            <tr>
-                <td>Day</td>
-                <td>"DAY"</td>
-                <td>"d"</td>
-            </tr>
-            <tr>
+
                 <td>Month</td>
+
                 <td>"MONTH"</td>
-                <td>"m"</td>
-            </tr>
-            <tr>
-                <td>Year</td>
-                <td>"YEAR"</td>
-                <td>"y"</td>
-            </tr>
-        </tbody>
-    </table>      
-
-
-#### timeSolver string format
-
-*     
-    <table>
-        <thead>
-            <tr>
-                <th>format</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>"YYYY"</td></tr>
-            <tr><td>"YYYYMM"</td></tr>
-            <tr><td>"YYYYMMDD"</td></tr>
-            <tr><td>"MMDDYYYY"</td></tr>
-            <tr><td>"HH:MM:SS"</td></tr>
-            <tr><td>"HH:MM:SSS"</td></tr>
-            <tr><td>"YYYY/MM/DD"</td></tr>
-            <tr><td>"YYYY/MM/DD HH:MM:SS"</td></tr>
-            <tr><td>"YYYY/MM/DD HH:MM:SS.SSS"</td></tr>
-            <tr><td>"YYYY-MM-DD"</td></tr>
-            <tr><td>"YYYY-MM-DD HH:MM:SS"</td></tr>
-            <tr><td>"YYYY-MM-DD HH:MM:SS.SSS"</td></tr>
-            <tr><td>"YYYY.MM.DD"</td></tr>
-            <tr><td>"YYYY.MM.DD HH:MM:SS"</td></tr>
-            <tr><td>"YYYY.MM.DD HH:MM:SS.SSS"</td></tr>
-            <tr><td>"MM/DD/YYYY"</td></tr>
-            <tr><td>"MM/DD/YYYY HH:MM:SS"</td></tr>
-            <tr><td>"MM/DD/YYYY HH:MM:SS.SSS"</td></tr>
-            <tr><td>"MM-DD-YYYY"</td></tr>
-            <tr><td>"MM-DD-YYYY HH:MM:SS"</td></tr>
-            <tr><td>"MM-DD-YYYY HH:MM:SS.SSS"</td></tr>
-            <tr><td>"MM.DD.YYYY"</td></tr>
-            <tr><td>"MM.DD.YYYY HH:MM:SS"</td></tr>
-            <tr><td>"MM.DD.YYYY HH:MM:SS.SSS"</td></tr>
-        </tbody>
-    </table>
-
-
-#### timeSolver valid format
-* 
-    <table>
-        <thead>
-            <tr>
-                <th>format</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr><td>"YYYY/MM/DD"</td></tr>
-            <tr><td>"YYYY-MM-DD"</td></tr>
-            <tr><td>"YYYY.MM.DD"</td></tr>
-            <tr><td>"YYYY/MM/DD HH:MM:SS"</td></tr>
-            <tr><td>"YYYY-MM-DD HH:MM:SS"</td></tr>
-            <tr><td>"YYYY.MM.DD HH:MM:SS"</td></tr>
-        </tbody>
-    </table>
-
-
-
-
-## timeLook
-It can helps you log your execution time by using timeLook
-
-1. start timeLook
-```js
-timeSolver.timeLookStart();
-```
-
-2. set your break point with label text
-```js
-timeSolver.timeLook("test");
-...
-timeSolver.timeLook("date basic function");
-...
-...
-
-```
-
-3. see your time log report 
-```js
-timeSolver.timeLookReport();
-```
-
-For example, it will print on your browser console. 
-
-![timeLook](https://github.com/sean1093/timeSolver/blob/master/img/timeLook.png "timeLook")
-
-It will shows every execution time between your two break point, and mark the bottleneck with red color(Chrome Console). 
-
-
-### License
-
-MIT
-
-
-### Update log
-
-* 1.2.0 (20180408)
-    + Add unit-test
-    + New feature: getQuarterByMonth and getFirstMonthByQuarter
-* 1.1.1 (20180401)
-    + Add to npm
-* 1.1.1 (20170718)
-    + Enhance function: isValid(), add three timestamp format
-* 1.1.0 (20170614)
-    + New feature: timeLook, helps you log your execution time
-* 1.0.7 (20170613)
-    + Bug fix: YYYYMMDD: 2017613 -> 20170613
-* 1.0.6 (20170110) 
-    + Add some new feature
-    + Add minify version
-* 1.0.5 (20160813)
-    + Module load compatibility
-* 1.0.4 (20160614)
-    + Bug fix
-* 1.0.3 (20160425)
-    + Restructure
-* 1.0.2 
-    + Bug fix: between()
-* 1.0.1 
-    + Add new function: isValid()
-
-
-[timelook]: <https://github.com/sean1093/timeSolver#timelook>
-
-[timeSolver time unit]: <https://github.com/sean1093/timeSolver#timesolver-time-unit>
-
-[timeSolver string format]: <https://github.com/sean1093/timeSolver#timesolver-string-format>
-
-[timeSolver valid format]: <https://github.com/sean1093/timeSolver#timesolver-valid-format>
-
-
-
 
