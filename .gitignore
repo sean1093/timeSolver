@@ -1,4 +1,15 @@
-# Logs
+node_modules/
+dist/
+.DS_Store
+coverage/
+npm-debug.log*
+*.log
+/.idea
+/.vscode
+package-lock.json
+/.cache
+/.nyc_output
+dist/# Logs
 logs
 *.log
 npm-debug.log*
