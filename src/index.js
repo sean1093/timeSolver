@@ -374,5 +374,3 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
 } else if (typeof window !== 'undefined') {
     window.timeSolver = _timeSolver;
 }
-
-export default _timeSolver;
