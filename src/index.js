@@ -1,358 +1,77 @@
 /**
  * timeSolver.js
- * 
+ *
  * @description A small date time tool in JavaScript, see: https://github.com/sean1093/timeSolver/ for details
- * @version v1.2.0 
+ * @version v1.2.0
  * @author Sean Chou
  * @license [https://github.com/sean1093/timeSolver/blob/master/LICENSE] [Licensed under MIT]
  */
 
 const _timeSolver = (function () {
     'use strict';
- 
-    //public 
-    var timeSolver = {                              
-        add: function(d, c, t) {
-            t = unitToIndex(t);
-            d = parseDate(d);
-            c = (c === undefined) ? 0 : c;
-            var result = null;
-            switch(t) {
-                case 0:
-                    result = new Date(d.setMilliseconds(d.getMilliseconds()+c));
-                break;
-                case 1:
-                    result = new Date(d.setSeconds(d.getSeconds()+c));
-                break;
-                case 2:
-                    result = new Date(d.setMinutes(d.getMinutes()+c));
-                break;
-                case 3:
-                    result = new Date(d.setHours(d.getHours()+c));
-                break;
-                case 4:
-                    result = new Date(d.setDate(d.getDate()+c));
-                break;
-                case 5:
-                    result = new Date(d.setMonth(d.getMonth()+c));
-                break;
-                case 6:
-                    result = new Date(d.setFullYear(d.getFullYear()+c));
-                break;
-                default:
-                    console.error(_errorMsg[0]);
-                break;
-            }
-            return result;
-        },
-        subtract: function(d, c, t) {
-            t = unitToIndex(t);
-            d = parseDate(d);
-            c = (c === undefined) ? 0 : c;
-            var result = null;
-            switch(t) {
-                case 0:
-                    result = new Date(d.setMilliseconds(d.getMilliseconds()-c));
-                break;
-                case 1:
-                    result = new Date(d.setSeconds(d.getSeconds()-c));
-                break;
-                case 2:
-                    result = new Date(d.setMinutes(d.getMinutes()-c));
-                break;
-                case 3:
-                    result = new Date(d.setHours(d.getHours()-c));
-                break;
-                case 4:
-                    result = new Date(d.setDate(d.getDate()-c));
-                break;
-                case 5:
-                    result = new Date(d.setMonth(d.getMonth()-c));
-                break;
-                case 6:
-                    result = new Date(d.setFullYear(d.getFullYear()-c));
-                break;
-                default:
-                    console.error(_errorMsg[0]);
-                break;
-            }
-            return result;      
-        },
-        equal: function(d1, d2) { //return true or false
-            d1 = parseDate(d1);
-            d2 = parseDate(d2);
-            return d1.toString() === d2.toString();
-        },
-        between: function(d1, d2, t) {
-            t = unitToIndex(t);
-            d1 = parseDate(d1);
-            d2 = parseDate(d2);
-            var result = d2.getTime() - d1.getTime();
-            var base = 1;
-            switch(t) {
-                case 0:
-                    base = 1;
-                break;
-                case 1:
-                    base = 1000;
-                break;
-                case 2:
-                    base = 60000;
-                break;
-                case 3:
-                    base = 3600000;
-                break;
-                case 4:
-                    base = 86400000;
-                break;
-                case 5:
-                    base = 2629800000;
-                break;
-                case 6:
-                    base = 31557600000;
-                break;
-                default:
-                    console.error(_errorMsg[0]);
-                break;
-            }
-            return result / base;
-        },
-        after: function(d1, d2, t) { //if d1 after d2 or not
-            return (this.between(d1, d2, t) > 0) ? false : true;
-        },
-        afterToday: function(d1) { //if d1 after today or not
-            return this.after(d1, new Date(), 'D');
-        },
-        before: function(d1, d2, t) { //if d1 before d2 or not
-            return (this.between(d1, d2, t) > 0) ? true : false;
-        },
-        beforeToday: function(d1) { //if d1 before today or not
-            return this.before(d1, new Date(), 'D');
-        },
-        getString: function(d, f) { //get date string in given format
-            f = (f === undefined)? 'YYYYMMDD' : f.toUpperCase();
-            d = parseDate(d);
-            var result = null;
-            var year = d.getFullYear();
-            var month = padZero(d.getMonth() + 1);
-            var date = padZero(d.getDate());
-            var hour = padZero(d.getHours());
-            var min = padZero(d.getMinutes());
-            var sec = padZero(d.getSeconds());
-            var millsec = padZero(d.getMilliseconds(), 3);
-            var YYYY = year.toString();
-            var MM = month.toString();
-            var DD = date.toString();
-            var YYYYMMDD = YYYY + MM + DD;
-            var HHMMSS = hour.toString() + ':' + min.toString() + ':' + sec.toString();
-            var HHMMSSS = HHMMSS + '.' + millsec.toString();
-            var dateString = {
-                0: YYYY,
-                1: YYYY + MM,
-                2: YYYYMMDD,
-                3: YYYY + '/' + MM + '/' + DD,
-                4: YYYY + '-' + MM + '-' + DD,
-                5: YYYY + '.' + MM + '.' + DD,
-                6: MM + DD + YYYY,
-                7: DD + MM + YYYY,
-                8: MM + '/' + DD + '/' + YYYY,
-                9: MM + '-' + DD + '-' + YYYY,
-                10: MM + '.' + DD + '.' + YYYY,
-                11: YYYY + '/' + MM + '/' + DD + ' ' + HHMMSS,
-                12: YYYY + '/' + MM + '/' + DD + ' ' + HHMMSSS,
-                13: YYYY + '-' + MM + '-' + DD + ' ' + HHMMSS,
-                14: YYYY + '-' + MM + '-' + DD + ' ' + HHMMSSS,
-                15: YYYY + '.' + MM + '.' + DD + ' ' + HHMMSS,
-                16: YYYY + '.' + MM + '.' + DD + ' ' + HHMMSS,
-                17: YYYYMMDD + ' ' + HHMMSS,
-                18: YYYYMMDD + ' ' + HHMMSSS,
-                19: MM + '/' + DD + '/' + YYYY + ' ' + HHMMSS,
-                20: MM + '/' + DD + '/' + YYYY + ' ' + HHMMSSS,
-                21: MM + '-' + DD + '-' + YYYY + ' ' + HHMMSS,
-                22: MM + '-' + DD + '-' + YYYY + ' ' + HHMMSSS,
-                23: MM + '.' + DD + '.' + YYYY + ' ' + HHMMSS,
-                24: MM + '.' + DD + '.' + YYYY + ' ' + HHMMSSS,
-                25: HHMMSS,
-                26: HHMMSSS,
-                27: DD + '/' + MM + '/' + YYYY,
-                28: DD + '-' + MM + '-' + YYYY,
-                29: DD + '.' + MM + '.' + YYYY,
-                30: DD + '/' + MM + '/' + YYYY + ' ' + HHMMSS,
-                31: DD + '/' + MM + '/' + YYYY + ' ' + HHMMSSS,
-                32: DD + '-' + MM + '-' + YYYY + ' ' + HHMMSS,
-                33: DD + '-' + MM + '-' + YYYY + ' ' + HHMMSSS,
-                34: DD + '.' + MM + '.' + YYYY + ' ' + HHMMSS,
-                35: DD + '.' + MM + '.' + YYYY + ' ' + HHMMSSS
-            }
-            return dateString[_f[f]] ? dateString[_f[f]] : _errorMsg[0];
-        },
-        getAbbrWeek: function(d) { //return abbr. weekday name
-            return parseDate(d) !== null ? parseDate(d).toString().substring(0, 3) : new Error(_errorMsg[1]);    
-        },
-        getFullWeek: function(d) { //return full weekday name
-            return _w[parseDate(d).getDay()];
-        },
-        getAbbrMonth: function(d) { //return abbr. month name
-            return parseDate(d) !== null ? parseDate(d).toString().substring(3, 7) : new Error(_errorMsg[1]);   
-        },
-        getFullMonth: function(d) { //return full month name
-            return _m[parseDate(d).getMonth()];
-        },
-        isValid: function(st, f) { //input date string and return true/ false
-            var result = true;
-            if (f === undefined) {
-                if (isNaN(new Date(st).getTime())) {
-                    result = false;
-                }
-            } else {
-                f = f.toUpperCase();
-                switch (_f[f]) {
-                    case 3:
-                        if (!_r.a.test(st)) {
-                            result = false;
-                        }
-                        break;
-                    case 4:
-                        if (!_r.b.test(st)) {
-                            result = false;
-                        }
-                        break;
-                    case 5:
-                        if (!_r.c.test(st)) {
-                            result = false;
-                        }
-                        break;
-                    case 11:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.a.test(str[0]) || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    case 13:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.b.test(str[0]) || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    case 15:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.c.test(str[0]) || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    case 25:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    case 27:
-                        if (!_r.d.test(st)) {
-                            result = false;
-                        }
-                        break;
-                    case 28:
-                        if (!_r.e.test(st)) {
-                            result = false;
-                        }
-                        break;
-                    case 29:
-                        if (!_r.f.test(st)) {
-                            result = false;
-                        }
-                        break;
-                    case 30:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.d.test(str[0]) || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    case 32:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.e.test(str[0]) || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    case 34:
-                        var str = st.split(' ');
-                        if (str.length < 2 || !_r.f.test(str[0]) || !_r.t.test(str[1])) {
-                            result = false;
-                        }
-                        break;
-                    default:
-                        console.error(_errorMsg[0]);
-                        result = null;
-                        break;
-                }
-            }
-            return result;
-        },
-        getQuarterByMonth: function(m) { // input month and return quarter
-            if(1 <= m && m <= 3) return 1;
-            else if(4 <= m && m <= 6) return 2;
-            else if(7 <= m && m <= 9) return 3;
-            else if(10 <= m && m <= 12) return 4;
-            else return null;
-        },
-        getFirstMonthByQuarter: function(q) { // input quarter and return this quarter's first month
-            if(q == 1) return 1;
-            else if(q == 2) return 4;
-            else if(q == 3) return 7;
-            else if(q == 4) return 10;
-            else return null;
-        },
-        timeArray: [],
-        timeLookMax: 0,
-        timeLookTotal: 0,
-        timeLookStart: function() {
-            this.timeArray.length = 0;
-            this.timeLookMax = 0;
-            this.timeLookTotal = 0;
-            this.timeArray.push({label: 'start', time: new Date(), interval: 0});
-        },
-        timeLook: function(label) {
-            var last = this.timeArray[this.timeArray.length-1];
-            var now = new Date();
-            var interval = this.between(last.time, now, 'S');
-            this.timeLookTotal += interval;
-            this.timeLookMax = interval > this.timeLookMax ? interval : this.timeLookMax;
-            this.timeArray.push({label: label, time: new Date(), interval: interval});
-        },
-        timeLookReport: function() {
-            var titleStyle = 'font-weight: bold; color: #3F51B5';
-            var reportStyle = 'color: #2962FF';
-            var infoStyle = 'color: #4CAF50';
-            var maxStyle = 'color: #ff0000';
-            var now = new Date();
-            console.log('%c=================================', reportStyle);
-            console.log('%c[timeSolver] Time Look Report', titleStyle);
-            for(var i = 1; i < timeSolver.timeArray.length; i++) {
-                var label = timeSolver.timeArray[i].label;
-                var interval = timeSolver.timeArray[i].interval;
-                var style = this.timeLookMax == interval ? maxStyle : reportStyle;
-                console.log('%c['+ interval +'s] '+Math.round((interval/this.timeLookTotal)*100) +'%  '+label , style);
-            }
-            var end = new Date();
-            console.log('%c[timeSolver] Spend '+this.between(now, end, 'S')+'s to create this report', infoStyle);
-            console.log('%c[timeSolver] For more information: https://github.com/sean1093/timeSolver#timelook', infoStyle);
-            console.log('%c=================================', reportStyle);
-        }
+
+    // ============================================================================
+    // Constants
+    // ============================================================================
+
+    /**
+     * Time unit constants
+     */
+    const UNITS = {
+        MILLISECOND: 0,
+        SECOND: 1,
+        MINUTE: 2,
+        HOUR: 3,
+        DAY: 4,
+        MONTH: 5,
+        YEAR: 6
     };
 
-    
-    //private 
-    var _m = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    var _w = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    var _r = {
-        a: /^(\d{4})([/])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
-        b: /^(\d{4})([-])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
-        c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
-        d: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([/])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
-        e: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([-])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
-        f: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([.])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
-        t: /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/
+    /**
+     * Milliseconds conversion factors for each time unit
+     */
+    const MILLISECONDS_PER_UNIT = {
+        [UNITS.MILLISECOND]: 1,
+        [UNITS.SECOND]: 1000,
+        [UNITS.MINUTE]: 60000,
+        [UNITS.HOUR]: 3600000,
+        [UNITS.DAY]: 86400000,
+        [UNITS.MONTH]: 2629800000,    // Average month (30.44 days)
+        [UNITS.YEAR]: 31557600000      // Average year (365.25 days)
     };
-    var _f = {
+
+    /**
+     * Month names in English
+     */
+    const MONTH_NAMES = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    /**
+     * Weekday names in English
+     */
+    const WEEKDAY_NAMES = [
+        'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ];
+
+    /**
+     * Regular expressions for date format validation
+     */
+    const DATE_VALIDATION_PATTERNS = {
+        YYYY_SLASH_MM_DD: /^(\d{4})([/])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
+        YYYY_DASH_MM_DD: /^(\d{4})([-])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
+        YYYY_DOT_MM_DD: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
+        DD_SLASH_MM_YYYY: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([/])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
+        DD_DASH_MM_YYYY: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([-])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
+        DD_DOT_MM_YYYY: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([.])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
+        TIME: /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/
+    };
+
+    /**
+     * Format string to index mapping
+     */
+    const FORMAT_INDEX = {
         'YYYY': 0,
         'YYYYMM': 1,
         'YYYYMMDD': 2,
@@ -389,53 +108,557 @@ const _timeSolver = (function () {
         'DD-MM-YYYY HH:MM:SS.SSS': 33,
         'DD.MM.YYYY HH:MM:SS': 34,
         'DD.MM.YYYY HH:MM:SS.SSS': 35
+    };
+
+    /**
+     * Error messages
+     */
+    const ERROR_MESSAGES = {
+        INVALID_TYPE: '[timeSolver] Input Type Error',
+        INVALID_DATE: '[timeSolver] Invalid Date'
+    };
+
+    /**
+     * Default format for getString
+     */
+    const DEFAULT_DATE_FORMAT = 'YYYYMMDD';
+
+    /**
+     * Console styles for timeLook report
+     */
+    const CONSOLE_STYLES = {
+        TITLE: 'font-weight: bold; color: #3F51B5',
+        REPORT: 'color: #2962FF',
+        INFO: 'color: #4CAF50',
+        MAX: 'color: #ff0000'
+    };
+
+    // ============================================================================
+    // Helper Functions
+    // ============================================================================
+
+    /**
+     * Pad a number with leading zeros
+     * @param {number} value - The value to pad
+     * @param {number} width - The desired width (default: 2)
+     * @returns {string} The padded string
+     */
+    function padZero(value, width) {
+        width = width || 2;
+        var s = String(value);
+        while (s.length < width) {
+            s = '0' + s;
+        }
+        return s;
     }
-    var _errorMsg = {
-        0: '[timeSolver] Input Type Error',
-        1: '[timeSolver] Invalid Date'
-    }
-    // Semantic helper names for maintainability
-    var parseDate = function(input) {
+
+    /**
+     * Parse input to a valid Date object
+     * @param {Date|string|number} input - Input to parse
+     * @returns {Date|null} Parsed Date object or null if invalid
+     */
+    function parseDate(input) {
         var date = (input instanceof Date) ? input : new Date(input);
         if (isNaN(date.getTime())) {
-            console.error(_errorMsg[1]);
+            console.error(ERROR_MESSAGES.INVALID_DATE);
             return null;
         }
         return date;
-    };
+    }
 
-    var UNITS = {
-        MILLISECOND: 0,
-        SECOND: 1,
-        MINUTE: 2,
-        HOUR: 3,
-        DAY: 4,
-        MONTH: 5,
-        YEAR: 6
-    };
+    /**
+     * Convert unit string to unit index
+     * @param {string|undefined} unit - Unit string (e.g., 'D', 'HOUR')
+     * @returns {number} Unit index
+     */
+    function unitToIndex(unit) {
+        if (unit === undefined) {
+            return UNITS.MILLISECOND;
+        }
 
-    var unitToIndex = function(unit) {
-        unit = (unit === undefined) ? 'MILLISECOND' : String(unit).toUpperCase();
-        if (unit === 'MILLISECOND' || unit === 'MILL') return UNITS.MILLISECOND;
-        if (unit === 'SECOND' || unit === 'S') return UNITS.SECOND;
-        if (unit === 'MINUTE' || unit === 'MIN') return UNITS.MINUTE;
-        if (unit === 'HOUR' || unit === 'H') return UNITS.HOUR;
-        if (unit === 'DAY' || unit === 'D') return UNITS.DAY;
-        if (unit === 'MONTH' || unit === 'M') return UNITS.MONTH;
-        if (unit === 'YEAR' || unit === 'Y') return UNITS.YEAR;
-        return unit;
-    };
+        var normalizedUnit = String(unit).toUpperCase();
 
-    var padZero = function(value, width) {
-        width = width || 2;
-        var s = String(value);
-        while (s.length < width) s = '0' + s;
-        return s;
+        if (normalizedUnit === 'MILLISECOND' || normalizedUnit === 'MILL') return UNITS.MILLISECOND;
+        if (normalizedUnit === 'SECOND' || normalizedUnit === 'S') return UNITS.SECOND;
+        if (normalizedUnit === 'MINUTE' || normalizedUnit === 'MIN') return UNITS.MINUTE;
+        if (normalizedUnit === 'HOUR' || normalizedUnit === 'H') return UNITS.HOUR;
+        if (normalizedUnit === 'DAY' || normalizedUnit === 'D') return UNITS.DAY;
+        if (normalizedUnit === 'MONTH' || normalizedUnit === 'M') return UNITS.MONTH;
+        if (normalizedUnit === 'YEAR' || normalizedUnit === 'Y') return UNITS.YEAR;
+
+        return normalizedUnit;
+    }
+
+    /**
+     * Add or subtract time from a date
+     * @param {Date} date - The date to modify
+     * @param {number} count - Amount to add/subtract
+     * @param {number} unitIndex - Unit index
+     * @param {number} multiplier - 1 for add, -1 for subtract
+     * @returns {Date|null} Modified date
+     */
+    function modifyDate(date, count, unitIndex, multiplier) {
+        if (!date) return null;
+
+        count = (count === undefined) ? 0 : count * multiplier;
+
+        switch(unitIndex) {
+            case UNITS.MILLISECOND:
+                return new Date(date.setMilliseconds(date.getMilliseconds() + count));
+            case UNITS.SECOND:
+                return new Date(date.setSeconds(date.getSeconds() + count));
+            case UNITS.MINUTE:
+                return new Date(date.setMinutes(date.getMinutes() + count));
+            case UNITS.HOUR:
+                return new Date(date.setHours(date.getHours() + count));
+            case UNITS.DAY:
+                return new Date(date.setDate(date.getDate() + count));
+            case UNITS.MONTH:
+                return new Date(date.setMonth(date.getMonth() + count));
+            case UNITS.YEAR:
+                return new Date(date.setFullYear(date.getFullYear() + count));
+            default:
+                console.error(ERROR_MESSAGES.INVALID_TYPE);
+                return null;
+        }
+    }
+
+    /**
+     * Build a formatted date string
+     * @param {Date} date - The date object
+     * @param {number} formatIndex - The format index
+     * @returns {string} Formatted date string
+     */
+    function buildDateString(date, formatIndex) {
+        var year = date.getFullYear();
+        var month = padZero(date.getMonth() + 1);
+        var day = padZero(date.getDate());
+        var hour = padZero(date.getHours());
+        var minute = padZero(date.getMinutes());
+        var second = padZero(date.getSeconds());
+        var millisecond = padZero(date.getMilliseconds(), 3);
+
+        var YYYY = year.toString();
+        var MM = month.toString();
+        var DD = day.toString();
+        var YYYYMMDD = YYYY + MM + DD;
+        var HHMMSS = hour + ':' + minute + ':' + second;
+        var HHMMSSS = HHMMSS + '.' + millisecond;
+
+        var formatMap = {
+            0: YYYY,
+            1: YYYY + MM,
+            2: YYYYMMDD,
+            3: YYYY + '/' + MM + '/' + DD,
+            4: YYYY + '-' + MM + '-' + DD,
+            5: YYYY + '.' + MM + '.' + DD,
+            6: MM + DD + YYYY,
+            7: DD + MM + YYYY,
+            8: MM + '/' + DD + '/' + YYYY,
+            9: MM + '-' + DD + '-' + YYYY,
+            10: MM + '.' + DD + '.' + YYYY,
+            11: YYYY + '/' + MM + '/' + DD + ' ' + HHMMSS,
+            12: YYYY + '/' + MM + '/' + DD + ' ' + HHMMSSS,
+            13: YYYY + '-' + MM + '-' + DD + ' ' + HHMMSS,
+            14: YYYY + '-' + MM + '-' + DD + ' ' + HHMMSSS,
+            15: YYYY + '.' + MM + '.' + DD + ' ' + HHMMSS,
+            16: YYYY + '.' + MM + '.' + DD + ' ' + HHMMSSS,
+            17: YYYYMMDD + ' ' + HHMMSS,
+            18: YYYYMMDD + ' ' + HHMMSSS,
+            19: MM + '/' + DD + '/' + YYYY + ' ' + HHMMSS,
+            20: MM + '/' + DD + '/' + YYYY + ' ' + HHMMSSS,
+            21: MM + '-' + DD + '-' + YYYY + ' ' + HHMMSS,
+            22: MM + '-' + DD + '-' + YYYY + ' ' + HHMMSSS,
+            23: MM + '.' + DD + '.' + YYYY + ' ' + HHMMSS,
+            24: MM + '.' + DD + '.' + YYYY + ' ' + HHMMSSS,
+            25: HHMMSS,
+            26: HHMMSSS,
+            27: DD + '/' + MM + '/' + YYYY,
+            28: DD + '-' + MM + '-' + YYYY,
+            29: DD + '.' + MM + '.' + YYYY,
+            30: DD + '/' + MM + '/' + YYYY + ' ' + HHMMSS,
+            31: DD + '/' + MM + '/' + YYYY + ' ' + HHMMSSS,
+            32: DD + '-' + MM + '-' + YYYY + ' ' + HHMMSS,
+            33: DD + '-' + MM + '-' + YYYY + ' ' + HHMMSSS,
+            34: DD + '.' + MM + '.' + YYYY + ' ' + HHMMSS,
+            35: DD + '.' + MM + '.' + YYYY + ' ' + HHMMSSS
+        };
+
+        return formatMap[formatIndex];
+    }
+
+    /**
+     * Validate date string against specific format
+     * @param {string} dateString - The date string to validate
+     * @param {number} formatIndex - The format index
+     * @returns {boolean} True if valid, false otherwise
+     */
+    function validateDateFormat(dateString, formatIndex) {
+        var parts;
+
+        switch(formatIndex) {
+            case FORMAT_INDEX['YYYY/MM/DD']:
+                return DATE_VALIDATION_PATTERNS.YYYY_SLASH_MM_DD.test(dateString);
+
+            case FORMAT_INDEX['YYYY-MM-DD']:
+                return DATE_VALIDATION_PATTERNS.YYYY_DASH_MM_DD.test(dateString);
+
+            case FORMAT_INDEX['YYYY.MM.DD']:
+                return DATE_VALIDATION_PATTERNS.YYYY_DOT_MM_DD.test(dateString);
+
+            case FORMAT_INDEX['YYYY/MM/DD HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 &&
+                       DATE_VALIDATION_PATTERNS.YYYY_SLASH_MM_DD.test(parts[0]) &&
+                       DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            case FORMAT_INDEX['YYYY-MM-DD HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 &&
+                       DATE_VALIDATION_PATTERNS.YYYY_DASH_MM_DD.test(parts[0]) &&
+                       DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            case FORMAT_INDEX['YYYY.MM.DD HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 &&
+                       DATE_VALIDATION_PATTERNS.YYYY_DOT_MM_DD.test(parts[0]) &&
+                       DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            case FORMAT_INDEX['HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 && DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            case FORMAT_INDEX['DD/MM/YYYY']:
+                return DATE_VALIDATION_PATTERNS.DD_SLASH_MM_YYYY.test(dateString);
+
+            case FORMAT_INDEX['DD-MM-YYYY']:
+                return DATE_VALIDATION_PATTERNS.DD_DASH_MM_YYYY.test(dateString);
+
+            case FORMAT_INDEX['DD.MM.YYYY']:
+                return DATE_VALIDATION_PATTERNS.DD_DOT_MM_YYYY.test(dateString);
+
+            case FORMAT_INDEX['DD/MM/YYYY HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 &&
+                       DATE_VALIDATION_PATTERNS.DD_SLASH_MM_YYYY.test(parts[0]) &&
+                       DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            case FORMAT_INDEX['DD-MM-YYYY HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 &&
+                       DATE_VALIDATION_PATTERNS.DD_DASH_MM_YYYY.test(parts[0]) &&
+                       DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            case FORMAT_INDEX['DD.MM.YYYY HH:MM:SS']:
+                parts = dateString.split(' ');
+                return parts.length >= 2 &&
+                       DATE_VALIDATION_PATTERNS.DD_DOT_MM_YYYY.test(parts[0]) &&
+                       DATE_VALIDATION_PATTERNS.TIME.test(parts[1]);
+
+            default:
+                console.error(ERROR_MESSAGES.INVALID_TYPE);
+                return null;
+        }
+    }
+
+    // ============================================================================
+    // Public API
+    // ============================================================================
+
+    var timeSolver = {
+        /**
+         * Add time to a date
+         * @param {Date|string} date - The date
+         * @param {number} count - Amount to add
+         * @param {string} unit - Time unit
+         * @returns {Date|null} New date with time added
+         */
+        add: function(date, count, unit) {
+            var unitIndex = unitToIndex(unit);
+            var parsedDate = parseDate(date);
+            return modifyDate(parsedDate, count, unitIndex, 1);
+        },
+
+        /**
+         * Subtract time from a date
+         * @param {Date|string} date - The date
+         * @param {number} count - Amount to subtract
+         * @param {string} unit - Time unit
+         * @returns {Date|null} New date with time subtracted
+         */
+        subtract: function(date, count, unit) {
+            var unitIndex = unitToIndex(unit);
+            var parsedDate = parseDate(date);
+            return modifyDate(parsedDate, count, unitIndex, -1);
+        },
+
+        /**
+         * Check if two dates are equal
+         * @param {Date|string} date1 - First date
+         * @param {Date|string} date2 - Second date
+         * @returns {boolean} True if dates are equal
+         */
+        equal: function(date1, date2) {
+            var d1 = parseDate(date1);
+            var d2 = parseDate(date2);
+            return d1.toString() === d2.toString();
+        },
+
+        /**
+         * Calculate time difference between two dates
+         * @param {Date|string} date1 - Start date
+         * @param {Date|string} date2 - End date
+         * @param {string} unit - Unit to return difference in
+         * @returns {number} Time difference
+         */
+        between: function(date1, date2, unit) {
+            var unitIndex = unitToIndex(unit);
+            var d1 = parseDate(date1);
+            var d2 = parseDate(date2);
+            var timeDiff = d2.getTime() - d1.getTime();
+            var divisor = MILLISECONDS_PER_UNIT[unitIndex];
+
+            if (!divisor) {
+                console.error(ERROR_MESSAGES.INVALID_TYPE);
+                return 0;
+            }
+
+            return timeDiff / divisor;
+        },
+
+        /**
+         * Check if date1 is after date2
+         * @param {Date|string} date1 - First date
+         * @param {Date|string} date2 - Second date
+         * @param {string} unit - Unit for comparison
+         * @returns {boolean} True if date1 is after date2
+         */
+        after: function(date1, date2, unit) {
+            return this.between(date1, date2, unit) < 0;
+        },
+
+        /**
+         * Check if date is after today
+         * @param {Date|string} date - The date to check
+         * @returns {boolean} True if date is after today
+         */
+        afterToday: function(date) {
+            return this.after(date, new Date(), 'D');
+        },
+
+        /**
+         * Check if date1 is before date2
+         * @param {Date|string} date1 - First date
+         * @param {Date|string} date2 - Second date
+         * @param {string} unit - Unit for comparison
+         * @returns {boolean} True if date1 is before date2
+         */
+        before: function(date1, date2, unit) {
+            return this.between(date1, date2, unit) > 0;
+        },
+
+        /**
+         * Check if date is before today
+         * @param {Date|string} date - The date to check
+         * @returns {boolean} True if date is before today
+         */
+        beforeToday: function(date) {
+            return this.before(date, new Date(), 'D');
+        },
+
+        /**
+         * Get formatted date string
+         * @param {Date|string} date - The date
+         * @param {string} format - Format string (e.g., 'YYYY-MM-DD')
+         * @returns {string} Formatted date string
+         */
+        getString: function(date, format) {
+            format = (format === undefined) ? DEFAULT_DATE_FORMAT : format.toUpperCase();
+            var parsedDate = parseDate(date);
+            var formatIndex = FORMAT_INDEX[format];
+
+            if (formatIndex === undefined) {
+                return ERROR_MESSAGES.INVALID_TYPE;
+            }
+
+            var result = buildDateString(parsedDate, formatIndex);
+            return result || ERROR_MESSAGES.INVALID_TYPE;
+        },
+
+        /**
+         * Get abbreviated weekday name
+         * @param {Date|string} date - The date
+         * @returns {string|Error} Abbreviated weekday name or Error
+         */
+        getAbbrWeek: function(date) {
+            var parsedDate = parseDate(date);
+            return parsedDate !== null ?
+                   parsedDate.toString().substring(0, 3) :
+                   new Error(ERROR_MESSAGES.INVALID_DATE);
+        },
+
+        /**
+         * Get full weekday name
+         * @param {Date|string} date - The date
+         * @returns {string} Full weekday name
+         */
+        getFullWeek: function(date) {
+            var parsedDate = parseDate(date);
+            return WEEKDAY_NAMES[parsedDate.getDay()];
+        },
+
+        /**
+         * Get abbreviated month name
+         * @param {Date|string} date - The date
+         * @returns {string|Error} Abbreviated month name or Error
+         */
+        getAbbrMonth: function(date) {
+            var parsedDate = parseDate(date);
+            return parsedDate !== null ?
+                   parsedDate.toString().substring(4, 7) :
+                   new Error(ERROR_MESSAGES.INVALID_DATE);
+        },
+
+        /**
+         * Get full month name
+         * @param {Date|string} date - The date
+         * @returns {string} Full month name
+         */
+        getFullMonth: function(date) {
+            var parsedDate = parseDate(date);
+            return MONTH_NAMES[parsedDate.getMonth()];
+        },
+
+        /**
+         * Validate date string
+         * @param {string} dateString - The date string to validate
+         * @param {string} format - Expected format (optional)
+         * @returns {boolean|null} True if valid, false if invalid, null on error
+         */
+        isValid: function(dateString, format) {
+            if (format === undefined) {
+                return !isNaN(new Date(dateString).getTime());
+            }
+
+            var normalizedFormat = format.toUpperCase();
+            var formatIndex = FORMAT_INDEX[normalizedFormat];
+
+            if (formatIndex === undefined) {
+                console.error(ERROR_MESSAGES.INVALID_TYPE);
+                return null;
+            }
+
+            return validateDateFormat(dateString, formatIndex);
+        },
+
+        /**
+         * Get quarter by month number
+         * @param {number} month - Month number (1-12)
+         * @returns {number|null} Quarter number (1-4) or null
+         */
+        getQuarterByMonth: function(month) {
+            if (month >= 1 && month <= 3) return 1;
+            if (month >= 4 && month <= 6) return 2;
+            if (month >= 7 && month <= 9) return 3;
+            if (month >= 10 && month <= 12) return 4;
+            return null;
+        },
+
+        /**
+         * Get first month of quarter
+         * @param {number} quarter - Quarter number (1-4)
+         * @returns {number|null} First month of quarter or null
+         */
+        getFirstMonthByQuarter: function(quarter) {
+            var quarterToMonth = {
+                1: 1,
+                2: 4,
+                3: 7,
+                4: 10
+            };
+            return quarterToMonth[quarter] || null;
+        },
+
+        // ========================================================================
+        // TimeLook - Performance Profiling
+        // ========================================================================
+
+        timeArray: [],
+        timeLookMax: 0,
+        timeLookTotal: 0,
+
+        /**
+         * Start time profiling
+         */
+        timeLookStart: function() {
+            this.timeArray = [];
+            this.timeLookMax = 0;
+            this.timeLookTotal = 0;
+            this.timeArray.push({
+                label: 'start',
+                time: new Date(),
+                interval: 0
+            });
+        },
+
+        /**
+         * Mark a time checkpoint
+         * @param {string} label - Label for this checkpoint
+         */
+        timeLook: function(label) {
+            var last = this.timeArray[this.timeArray.length - 1];
+            var now = new Date();
+            var interval = this.between(last.time, now, 'S');
+
+            this.timeLookTotal += interval;
+            this.timeLookMax = Math.max(interval, this.timeLookMax);
+
+            this.timeArray.push({
+                label: label,
+                time: now,
+                interval: interval
+            });
+        },
+
+        /**
+         * Print time profiling report to console
+         */
+        timeLookReport: function() {
+            var reportStart = new Date();
+
+            console.log('%c=================================', CONSOLE_STYLES.REPORT);
+            console.log('%c[timeSolver] Time Look Report', CONSOLE_STYLES.TITLE);
+
+            for (var i = 1; i < this.timeArray.length; i++) {
+                var entry = this.timeArray[i];
+                var percentage = Math.round((entry.interval / this.timeLookTotal) * 100);
+                var style = (this.timeLookMax === entry.interval) ? CONSOLE_STYLES.MAX : CONSOLE_STYLES.REPORT;
+
+                console.log(
+                    '%c[' + entry.interval + 's] ' + percentage + '%  ' + entry.label,
+                    style
+                );
+            }
+
+            var reportEnd = new Date();
+            var reportTime = this.between(reportStart, reportEnd, 'S');
+
+            console.log(
+                '%c[timeSolver] Spend ' + reportTime + 's to create this report',
+                CONSOLE_STYLES.INFO
+            );
+            console.log(
+                '%c[timeSolver] For more information: https://github.com/sean1093/timeSolver#timelook',
+                CONSOLE_STYLES.INFO
+            );
+            console.log('%c=================================', CONSOLE_STYLES.REPORT);
+        }
     };
 
     return timeSolver;
 })();
 
+// Module exports
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
     module.exports = _timeSolver;
 } else if (typeof window !== 'undefined') {
