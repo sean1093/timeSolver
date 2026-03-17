@@ -1,8 +1,8 @@
-# timeSolver 使用說明
+# timeSolver Usage
 
-這份文件說明 `timeSolver` 函式庫的主要方法、參數與常用格式範例，方便開發者快速上手。
+This document describes the main functions, parameters, and common format examples for the `timeSolver` library to help developers get started quickly.
 
-## 安裝與引入
+## Installation and Import
 
 CommonJS:
 
@@ -21,27 +21,27 @@ Browser (UMD bundle):
 ```html
 <script src="dist/timeSolver.umd.min.js"></script>
 <script>
-  // 全域物件 timeSolver 可直接使用
+  // global `timeSolver` is available
   console.log(timeSolver.getString(new Date(), 'YYYYMMDD'));
 </script>
 ```
 
-## 常用方法總覽
+## Common API Overview
 
-- `timeSolver.add(date, count, unit)` — 在 `date` 上加上 `count` 個 `unit`。
-- `timeSolver.subtract(date, count, unit)` — 在 `date` 上減去 `count` 個 `unit`。
-- `timeSolver.between(d1, d2, unit)` — 回傳 `d2 - d1` 的差距，單位為 `unit`。
-- `timeSolver.equal(d1, d2)` — 判斷兩個日期是否相同（字串比對）。
-- `timeSolver.after(d1, d2, unit)` — 判斷 `d1` 是否在 `d2` 之後（以 `unit` 計算）。
-- `timeSolver.before(d1, d2, unit)` — 判斷 `d1` 是否在 `d2` 之前（以 `unit` 計算）。
-- `timeSolver.afterToday(d)` / `timeSolver.beforeToday(d)` — 相對於今天的判斷。
-- `timeSolver.getString(date, format)` — 將 `date` 轉成指定格式的字串。
-- `timeSolver.isValid(dateString, format?)` — 驗證字串是否為合法日期；若提供 `format`，則以指定格式驗證。
-- `timeSolver.getAbbrWeek(date)` / `timeSolver.getFullWeek(date)` — 取得星期（縮寫或全名）。
-- `timeSolver.getAbbrMonth(date)` / `timeSolver.getFullMonth(date)` — 取得月份（縮寫或全名）。
-- `timeSolver.getQuarterByMonth(m)` / `timeSolver.getFirstMonthByQuarter(q)` — 季度工具。
+- `timeSolver.add(date, count, unit)` — Add `count` units to `date`.
+- `timeSolver.subtract(date, count, unit)` — Subtract `count` units from `date`.
+- `timeSolver.between(d1, d2, unit)` — Return the difference `d2 - d1` in `unit`.
+- `timeSolver.equal(d1, d2)` — Check whether two dates are equal (string comparison).
+- `timeSolver.after(d1, d2, unit)` — Check whether `d1` is after `d2` (by `unit`).
+- `timeSolver.before(d1, d2, unit)` — Check whether `d1` is before `d2` (by `unit`).
+- `timeSolver.afterToday(d)` / `timeSolver.beforeToday(d)` — Compare relative to today.
+- `timeSolver.getString(date, format)` — Format `date` as a string using `format`.
+- `timeSolver.isValid(dateString, format?)` — Validate a date string; if `format` is provided, validate against that format.
+- `timeSolver.getAbbrWeek(date)` / `timeSolver.getFullWeek(date)` — Get weekday (abbr or full name).
+- `timeSolver.getAbbrMonth(date)` / `timeSolver.getFullMonth(date)` — Get month (abbr or full name).
+- `timeSolver.getQuarterByMonth(m)` / `timeSolver.getFirstMonthByQuarter(q)` — Quarter utilities.
 
-### 範例
+### Examples
 
 ```js
 const d = new Date('2020-01-01T00:00:00Z');
@@ -51,57 +51,57 @@ timeSolver.between('2020-01-01','2020-01-02','H'); // 24
 timeSolver.getString(d, 'YYYY-MM-DD HH:MM:SS.SSS'); // e.g. '2020-01-01 00:00:00.000'
 ```
 
-## 支援的時間單位 (unit)
+## Supported Time Units (`unit`)
 
-函式內部接受字串或縮寫，會轉成對應的單位編號。可使用的值包含：
+The library accepts various strings or abbreviations for units and converts them to internal unit indices. Supported values include:
 
-- `MILLISECOND` 或 `mill` 或 不給（預設）
-- `SECOND` 或 `S` 或 `s`
-- `MINUTE` 或 `MIN`
-- `HOUR` 或 `H`
-- `DAY` 或 `D`
-- `MONTH` 或 `M`
-- `YEAR` 或 `Y`
+- `MILLISECOND` or `mill` or omitted (default)
+- `SECOND` or `S` or `s`
+- `MINUTE` or `MIN`
+- `HOUR` or `H`
+- `DAY` or `D`
+- `MONTH` or `M`
+- `YEAR` or `Y`
 
-例如： `timeSolver.add(date, 5, 'H')` 表示加 5 小時。
+Example: `timeSolver.add(date, 5, 'H')` adds 5 hours.
 
-## getString 支援的格式
+## `getString` Supported Formats
 
-`timeSolver.getString(date, format)` 支援下列格式字串（大小寫會被標準化）：
+`timeSolver.getString(date, format)` supports the following format patterns (case-insensitive):
 
-- `YYYY` — 年份，例如 `2020`
+- `YYYY` — year, e.g. `2020`
 - `YYYYMM` — `202001`
 - `YYYYMMDD` — `20200101`
-- `YYYY/MM/DD`, `YYYY-MM-DD`, `YYYY.MM.DD` — 常見日期分隔格式
-- `MMDDYYYY`, `DDMMYYYY` — 月日年或日月年順序
-- 帶時間的格式：
+- `YYYY/MM/DD`, `YYYY-MM-DD`, `YYYY.MM.DD` — common separators
+- `MMDDYYYY`, `DDMMYYYY` — month-day-year or day-month-year orders
+- Date & time formats:
   - `YYYY/MM/DD HH:MM:SS`
-  - `YYYY/MM/DD HH:MM:SS.SSS`（含毫秒）
+  - `YYYY/MM/DD HH:MM:SS.SSS` (milliseconds)
   - `YYYY-MM-DD HH:MM:SS` / `YYYY-MM-DD HH:MM:SS.SSS`
   - `YYYY.MM.DD HH:MM:SS` / `YYYY.MM.DD HH:MM:SS.SSS`
   - `YYYYMMDD HH:MM:SS` / `YYYYMMDD HH:MM:SS.SSS`
   - `MM/DD/YYYY HH:MM:SS` / `MM/DD/YYYY HH:MM:SS.SSS`
   - `MM-DD-YYYY HH:MM:SS` / `MM-DD-YYYY HH:MM:SS.SSS`
   - `MM.DD.YYYY HH:MM:SS` / `MM.DD.YYYY HH:MM:SS.SSS`
-- 時間-only： `HH:MM:SS` / `HH:MM:SS.SSS`
+- Time-only: `HH:MM:SS` / `HH:MM:SS.SSS`
 
-範例：
+Example:
 
 ```js
 timeSolver.getString(new Date('2020-06-15T13:45:30.123Z'), 'YYYY-MM-DD HH:MM:SS.SSS')
 // => "2020-06-15 13:45:30.123"
 ```
 
-## isValid 使用說明
+## `isValid` Usage
 
-- `timeSolver.isValid('2020/01/01')` → `true`（若 format 未給則使用 Date 解析）
-- `timeSolver.isValid('2020/02/30', 'YYYY/MM/DD')` → `false`（不合法日期）
+- `timeSolver.isValid('2020/01/01')` → `true` (when `format` is omitted, `Date` parsing is used)
+- `timeSolver.isValid('2020/02/30', 'YYYY/MM/DD')` → `false` (invalid date)
 
-當 `format` 被提供時，會根據內建的正規表達式驗證日期與（若含時間）時間格式，並在必要時檢查時間部分是否存在。
+When `format` is provided, the library validates the date (and time portion, if present) using built-in patterns and performs additional checks when necessary.
 
-## timeLook（簡易效能量測）
+## `timeLook` (lightweight timing profiler)
 
-用來標記程式執行區段並列印報表：
+Use `timeLook` to mark code sections and print a report:
 
 ```js
 timeSolver.timeLookStart();
@@ -112,11 +112,11 @@ timeSolver.timeLook('step2');
 timeSolver.timeLookReport();
 ```
 
-報表會在 console 顯示每段的花費時間與相對百分比，並標記最耗時的段落。
+The report prints each segment's elapsed time and relative percentage, highlighting the most time-consuming section.
 
-## 其他資訊
+## Additional Notes
 
-- 函式大多接受 `Date` 物件或可被 `new Date(...)` 解析的字串作為日期參數。
-- 若輸入無效日期，會在內部 `console.error` 並回傳 `null`（例如 `_v` 檢查）。
+- Most functions accept a `Date` object or a string parseable by `new Date(...)`.
+- For invalid input dates the library logs an internal `console.error` and returns `null`.
 
-若你需要，我可以把這份文件翻譯成英文、或把每個方法拆成單獨的示例檔案放在 `docs/examples/`。
+If you want, I can also split this document into separate examples under `docs/examples/`.
