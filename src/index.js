@@ -13,8 +13,8 @@ const _timeSolver = (function () {
     //public 
     var timeSolver = {                              
         add: function(d, c, t) {
-            t = _t(t);
-            d = _v(d);
+            t = unitToIndex(t);
+            d = parseDate(d);
             c = (c === undefined) ? 0 : c;
             var result = null;
             switch(t) {
@@ -46,8 +46,8 @@ const _timeSolver = (function () {
             return result;
         },
         subtract: function(d, c, t) {
-            t = _t(t);
-            d = _v(d);
+            t = unitToIndex(t);
+            d = parseDate(d);
             c = (c === undefined) ? 0 : c;
             var result = null;
             switch(t) {
@@ -79,14 +79,14 @@ const _timeSolver = (function () {
             return result;      
         },
         equal: function(d1, d2) { //return true or false
-            d1 = _v(d1);
-            d2 = _v(d2);
+            d1 = parseDate(d1);
+            d2 = parseDate(d2);
             return d1.toString() === d2.toString();
         },
         between: function(d1, d2, t) {
-            t = _t(t);
-            d1 = _v(d1);
-            d2 = _v(d2);
+            t = unitToIndex(t);
+            d1 = parseDate(d1);
+            d2 = parseDate(d2);
             var result = d2.getTime() - d1.getTime();
             var base = 1;
             switch(t) {
@@ -121,25 +121,25 @@ const _timeSolver = (function () {
             return (this.between(d1, d2, t) > 0) ? false : true;
         },
         afterToday: function(d1) { //if d1 after today or not
-            return this.after(d1, new Date(), 'd');
+            return this.after(d1, new Date(), 'D');
         },
         before: function(d1, d2, t) { //if d1 before d2 or not
             return (this.between(d1, d2, t) > 0) ? true : false;
         },
         beforeToday: function(d1) { //if d1 before today or not
-            return this.before(d1, new Date(), 'd');
+            return this.before(d1, new Date(), 'D');
         },
         getString: function(d, f) { //get date string in given format
             f = (f === undefined)? 'YYYYMMDD' : f.toUpperCase();
-            d = _v(d);
+            d = parseDate(d);
             var result = null;
             var year = d.getFullYear();
-            var month = _appendZero(d.getMonth() + 1);
-            var date = _appendZero(d.getDate());
-            var hour = _appendZero(d.getHours());
-            var min = _appendZero(d.getMinutes());
-            var sec = _appendZero(d.getSeconds());
-            var millsec = _appendZero(d.getMilliseconds(), 3);
+            var month = padZero(d.getMonth() + 1);
+            var date = padZero(d.getDate());
+            var hour = padZero(d.getHours());
+            var min = padZero(d.getMinutes());
+            var sec = padZero(d.getSeconds());
+            var millsec = padZero(d.getMilliseconds(), 3);
             var YYYY = year.toString();
             var MM = month.toString();
             var DD = date.toString();
@@ -178,16 +178,16 @@ const _timeSolver = (function () {
             return dateString[_f[f]] ? dateString[_f[f]] : _errorMsg[0];
         },
         getAbbrWeek: function(d) { //return abbr. weekday name
-            return _v(d) !== null ? _v(d).toString().substring(0, 3) : new Error(_errorMsg[1]);    
+            return parseDate(d) !== null ? parseDate(d).toString().substring(0, 3) : new Error(_errorMsg[1]);    
         },
         getFullWeek: function(d) { //return full weekday name
-            return _w[_v(d).getDay()];
+            return _w[parseDate(d).getDay()];
         },
         getAbbrMonth: function(d) { //return abbr. month name
-            return _v(d) !== null ? _v(d).toString().substring(3, 7) : new Error(_errorMsg[1]);   
+            return parseDate(d) !== null ? parseDate(d).toString().substring(3, 7) : new Error(_errorMsg[1]);   
         },
         getFullMonth: function(d) { //return full month name
-            return _m[_v(d).getMonth()];
+            return _m[parseDate(d).getMonth()];
         },
         isValid: function(st, f) { //input date string and return true/ false
             var result = true;
@@ -340,30 +340,43 @@ const _timeSolver = (function () {
         0: '[timeSolver] Input Type Error',
         1: '[timeSolver] Invalid Date'
     }
-    var _v = function(d) {
-        var returnDate = (d instanceof Date) ? d : new Date(d);
-        if (isNaN(returnDate.getTime())) {
+    // Semantic helper names for maintainability
+    var parseDate = function(input) {
+        var date = (input instanceof Date) ? input : new Date(input);
+        if (isNaN(date.getTime())) {
             console.error(_errorMsg[1]);
             return null;
         }
-        return returnDate;
+        return date;
     };
-    var _t = function(t) {
-        t = (t === undefined)? 'MILLISECOND' : t.toUpperCase();
-        if(t == 'MILLISECOND' || t == 'MILL') t = 0;
-        else if(t == 'SECOND' || t == 'S') t = 1;
-        else if(t == 'MINUTE' || t == 'MIN') t = 2;
-        else if(t == 'HOUR' || t == 'H') t = 3;
-        else if(t == 'DAY' || t == 'D') t = 4;
-        else if(t == 'MONTH' || t == 'M') t = 5;
-        else if(t == 'YEAR' || t == 'Y') t = 6;
-        return t;
+
+    var UNITS = {
+        MILLISECOND: 0,
+        SECOND: 1,
+        MINUTE: 2,
+        HOUR: 3,
+        DAY: 4,
+        MONTH: 5,
+        YEAR: 6
     };
-    var _appendZero = function(s, width) {
+
+    var unitToIndex = function(unit) {
+        unit = (unit === undefined) ? 'MILLISECOND' : String(unit).toUpperCase();
+        if (unit === 'MILLISECOND' || unit === 'MILL') return UNITS.MILLISECOND;
+        if (unit === 'SECOND' || unit === 'S') return UNITS.SECOND;
+        if (unit === 'MINUTE' || unit === 'MIN') return UNITS.MINUTE;
+        if (unit === 'HOUR' || unit === 'H') return UNITS.HOUR;
+        if (unit === 'DAY' || unit === 'D') return UNITS.DAY;
+        if (unit === 'MONTH' || unit === 'M') return UNITS.MONTH;
+        if (unit === 'YEAR' || unit === 'Y') return UNITS.YEAR;
+        return unit;
+    };
+
+    var padZero = function(value, width) {
         width = width || 2;
-        var str = String(s);
-        while (str.length < width) str = '0' + str;
-        return str;
+        var s = String(value);
+        while (s.length < width) s = '0' + s;
+        return s;
     };
 
     return timeSolver;
