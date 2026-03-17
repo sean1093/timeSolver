@@ -153,10 +153,10 @@ const _timeSolver = (function () {
                 3: YYYY + '/' + MM + '/' + DD,
                 4: YYYY + '-' + MM + '-' + DD,
                 5: YYYY + '.' + MM + '.' + DD,
-                6: MM + DD + YYYY,               
-                7: DD + MM + YYYY,               
-                8: MM + '/' + DD + '/' + YYYY,                 
-                9: MM + '-' + DD + '-' + YYYY,                
+                6: MM + DD + YYYY,
+                7: DD + MM + YYYY,
+                8: MM + '/' + DD + '/' + YYYY,
+                9: MM + '-' + DD + '-' + YYYY,
                 10: MM + '.' + DD + '.' + YYYY,
                 11: YYYY + '/' + MM + '/' + DD + ' ' + HHMMSS,
                 12: YYYY + '/' + MM + '/' + DD + ' ' + HHMMSSS,
@@ -173,7 +173,16 @@ const _timeSolver = (function () {
                 23: MM + '.' + DD + '.' + YYYY + ' ' + HHMMSS,
                 24: MM + '.' + DD + '.' + YYYY + ' ' + HHMMSSS,
                 25: HHMMSS,
-                26: HHMMSSS
+                26: HHMMSSS,
+                27: DD + '/' + MM + '/' + YYYY,
+                28: DD + '-' + MM + '-' + YYYY,
+                29: DD + '.' + MM + '.' + YYYY,
+                30: DD + '/' + MM + '/' + YYYY + ' ' + HHMMSS,
+                31: DD + '/' + MM + '/' + YYYY + ' ' + HHMMSSS,
+                32: DD + '-' + MM + '-' + YYYY + ' ' + HHMMSS,
+                33: DD + '-' + MM + '-' + YYYY + ' ' + HHMMSSS,
+                34: DD + '.' + MM + '.' + YYYY + ' ' + HHMMSS,
+                35: DD + '.' + MM + '.' + YYYY + ' ' + HHMMSSS
             }
             return dateString[_f[f]] ? dateString[_f[f]] : _errorMsg[0];
         },
@@ -234,6 +243,39 @@ const _timeSolver = (function () {
                     case 25:
                         var str = st.split(' ');
                         if (str.length < 2 || !_r.t.test(str[1])) {
+                            result = false;
+                        }
+                        break;
+                    case 27:
+                        if (!_r.d.test(st)) {
+                            result = false;
+                        }
+                        break;
+                    case 28:
+                        if (!_r.e.test(st)) {
+                            result = false;
+                        }
+                        break;
+                    case 29:
+                        if (!_r.f.test(st)) {
+                            result = false;
+                        }
+                        break;
+                    case 30:
+                        var str = st.split(' ');
+                        if (str.length < 2 || !_r.d.test(str[0]) || !_r.t.test(str[1])) {
+                            result = false;
+                        }
+                        break;
+                    case 32:
+                        var str = st.split(' ');
+                        if (str.length < 2 || !_r.e.test(str[0]) || !_r.t.test(str[1])) {
+                            result = false;
+                        }
+                        break;
+                    case 34:
+                        var str = st.split(' ');
+                        if (str.length < 2 || !_r.f.test(str[0]) || !_r.t.test(str[1])) {
                             result = false;
                         }
                         break;
@@ -302,9 +344,12 @@ const _timeSolver = (function () {
     var _m = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     var _w = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     var _r = {
-        a: /^(\d{4})([/])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,  
+        a: /^(\d{4})([/])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
         b: /^(\d{4})([-])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
         c: /^(\d{4})([.])((1|3|5|7|8|0[13578]|1[02])\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])|(4|6|9|0[469]|11)\2([1-9]|0[1-9]|1[0-9]|2[0-9]|3[0])|(02|2)\2([1-9]|0[1-9]|1[0-9]|2[0-8]))$/,
+        d: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([/])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
+        e: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([-])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
+        f: /^([1-9]|0[1-9]|1[0-9]|2[0-9]|3[01])([.])((1|3|5|7|8|0[13578]|1[02])\2(\d{4})|(4|6|9|0[469]|11)\2(\d{4})|(02|2)\2(\d{4}))$/,
         t: /^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/
     };
     var _f = {
@@ -314,10 +359,10 @@ const _timeSolver = (function () {
         'YYYY/MM/DD': 3,
         'YYYY-MM-DD': 4,
         'YYYY.MM.DD': 5,
-        'MMDDYYYY': 6,               
-        'DDMMYYYY': 7,               
-        'MM/DD/YYYY': 8,                 
-        'MM-DD-YYYY': 9,                
+        'MMDDYYYY': 6,
+        'DDMMYYYY': 7,
+        'MM/DD/YYYY': 8,
+        'MM-DD-YYYY': 9,
         'MM.DD.YYYY': 10,
         'YYYY/MM/DD HH:MM:SS': 11,
         'YYYY/MM/DD HH:MM:SS.SSS': 12,
@@ -334,7 +379,16 @@ const _timeSolver = (function () {
         'MM.DD.YYYY HH:MM:SS': 23,
         'MM.DD.YYYY HH:MM:SS.SSS': 24,
         'HH:MM:SS': 25,
-        'HH:MM:SS.SSS': 26
+        'HH:MM:SS.SSS': 26,
+        'DD/MM/YYYY': 27,
+        'DD-MM-YYYY': 28,
+        'DD.MM.YYYY': 29,
+        'DD/MM/YYYY HH:MM:SS': 30,
+        'DD/MM/YYYY HH:MM:SS.SSS': 31,
+        'DD-MM-YYYY HH:MM:SS': 32,
+        'DD-MM-YYYY HH:MM:SS.SSS': 33,
+        'DD.MM.YYYY HH:MM:SS': 34,
+        'DD.MM.YYYY HH:MM:SS.SSS': 35
     }
     var _errorMsg = {
         0: '[timeSolver] Input Type Error',
