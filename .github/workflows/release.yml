@@ -51,8 +51,11 @@ jobs:
       # Provenance is requested by `publishConfig.provenance` in package.json,
       # honoured by changesets, and is only accepted for a public repository
       # publishing a public package from a supported CI provider.
+      #
+      # Pinned to a commit, not a tag: this step holds a publish token, and a
+      # mutable major tag lets upstream change what runs with it.
       - name: Create version pull request or publish to npm
-        uses: changesets/action@v1
+        uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
         with:
           publish: npm run release
           title: 'chore: version packages'
