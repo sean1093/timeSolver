@@ -36,6 +36,7 @@ import { DEFAULT_FORMAT, getString } from './format.js';
 import { add, endOf, startOf, subtract } from './manipulate.js';
 import { isValid, parse } from './parse.js';
 import { createProfiler, timeLook, timeLookReport, timeLookStart } from './profiler.js';
+import { getISOWeek, getISOWeekYear, getWeekOfYear } from './weeknumber.js';
 
 export type { DateInput } from './coerce.js';
 export type { TimeSolverErrorCode } from './errors.js';
@@ -61,9 +62,12 @@ export {
   getFirstMonthByQuarter,
   getFullMonth,
   getFullWeek,
+  getISOWeek,
+  getISOWeekYear,
   getQuarter,
   getQuarterByMonth,
   getString,
+  getWeekOfYear,
   isLeapYear,
   isValid,
   monthAbbreviation,
@@ -102,9 +106,12 @@ const timeSolver = {
   getFirstMonthByQuarter,
   getFullMonth,
   getFullWeek,
+  getISOWeek,
+  getISOWeekYear,
   getQuarter,
   getQuarterByMonth,
   getString,
+  getWeekOfYear,
   isLeapYear,
   isValid,
   monthAbbreviation,
