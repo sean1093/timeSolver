@@ -6,6 +6,7 @@ is written to the console, and nothing mutates the `Date` you pass in.
 - [Conventions](#conventions)
 - [Arithmetic](#arithmetic)
 - [Comparison](#comparison)
+- [Ranges](#ranges)
 - [Formatting, parsing and validation](#formatting-parsing-and-validation)
 - [Calendar helpers](#calendar-helpers)
 - [Profiling](#profiling)
@@ -86,10 +87,9 @@ rather than rounded.
 subtract('2024-03-31T00:00', 1, 'month'); // 2024-02-29
 ```
 
-### `startOf(date, unit): Date`
+### `startOf(date, unit, options?): Date`
 
-Beginning of the local calendar unit containing `date`. Weeks start on Sunday,
-matching `Date#getDay`.
+Beginning of the local calendar unit containing `date`.
 
 ```ts
 startOf('2024-05-15T14:30:45.123', 'day');     // 2024-05-15 00:00:00.000
@@ -99,14 +99,31 @@ startOf('2024-05-15T14:30:45.123', 'quarter'); // 2024-04-01 00:00:00.000
 
 `unit` is required here. `startOf(date, 'millisecond')` is a plain copy.
 
-### `endOf(date, unit): Date`
-
-Last representable millisecond of the unit.
+`options.weekStartsOn` moves the week boundary. It is `0` (Sunday) by default,
+matching `Date#getDay`, and every unit other than `'week'` ignores it:
 
 ```ts
-endOf('2024-02-10T00:00', 'month'); // 2024-02-29 23:59:59.999
-endOf('2024-05-15T00:00', 'week');  // 2024-05-18 23:59:59.999
+startOf('2024-03-13', 'week');                      // Sunday 2024-03-10
+startOf('2024-03-13', 'week', { weekStartsOn: 1 }); // Monday 2024-03-11 (ISO-8601)
+startOf('2024-03-13', 'week', { weekStartsOn: 6 }); // Saturday 2024-03-09
 ```
+
+A value outside 0–6, or a non-integer, throws `INVALID_ARGUMENT`.
+
+### `endOf(date, unit, options?): Date`
+
+Last representable millisecond of the unit. Takes the same `options` as
+`startOf`.
+
+```ts
+endOf('2024-02-10T00:00', 'month');                 // 2024-02-29 23:59:59.999
+endOf('2024-05-15T00:00', 'week');                  // Saturday 2024-05-18 23:59:59.999
+endOf('2024-05-15T00:00', 'week', { weekStartsOn: 1 }); // Sunday 2024-05-19 23:59:59.999
+```
+
+A week is not always 604 800 000 ms long: one containing a daylight-saving
+change is an hour shorter or longer. `endOf` is defined by the calendar, not by
+that arithmetic, so it always lands on the last millisecond of the seventh day.
 
 ## Comparison
 
@@ -134,7 +151,7 @@ Two guarantees worth relying on:
 - `between(a, b, unit) === -between(b, a, unit)` for every unit.
 - Whole calendar spans return integers, with no floating-point drift from average month lengths.
 
-### `equal(first, second, unit?): boolean`
+### `equal(first, second, unit?, options?): boolean`
 
 Whether two dates are the same instant. With `unit`, compares `startOf(unit)`
 instead.
@@ -145,7 +162,17 @@ equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999', 'second'); // true
 equal('2020-01-05T01:00', '2020-01-05T23:00', 'day');                  // true
 ```
 
-### `after(first, second, unit?): boolean`
+All three comparisons accept the same `options` as `startOf`, which matters when
+the unit is `'week'`:
+
+```ts
+// 2024-03-10 is a Sunday, 2024-03-16 the Saturday after it. A time is included
+// because a date-only string is parsed as UTC, which can shift the local date.
+equal('2024-03-10T12:00', '2024-03-16T12:00', 'week');                      // true
+equal('2024-03-10T12:00', '2024-03-16T12:00', 'week', { weekStartsOn: 1 }); // false
+```
+
+### `after(first, second, unit?, options?): boolean`
 
 Whether `first` is strictly after `second`, compared at `unit` granularity.
 
@@ -154,7 +181,7 @@ after('2020-01-01T23:00', '2020-01-01T01:00');        // true
 after('2020-01-01T23:00', '2020-01-01T01:00', 'day'); // false, same day
 ```
 
-### `before(first, second, unit?): boolean`
+### `before(first, second, unit?, options?): boolean`
 
 The mirror of `after`. Equal instants are neither after nor before.
 
@@ -162,6 +189,62 @@ The mirror of `after`. Equal instants are neither after nor before.
 
 Whether `date` falls on a later, or earlier, calendar day than today. Any time
 today is neither.
+
+## Ranges
+
+### `isBetween(date, start, end, unit?, bounds?, options?): boolean`
+
+Whether `date` falls between `start` and `end`.
+
+`bounds` is interval notation: `[` and `]` include an endpoint, `(` and `)`
+exclude it. It defaults to `'[]'`, both inclusive.
+
+```ts
+isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
+isBetween('2024-03-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true, inclusive
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+```
+
+`'[)'` is usually what a date range wants: a month runs from 1 January up to but
+not including 1 February, so consecutive ranges neither overlap nor leave a gap.
+
+`unit` compares at a granularity, as `equal` does, and `options` carries
+`weekStartsOn`:
+
+```ts
+// 2024-03-31 is inside March, so a month-granularity test includes it
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00');          // false
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00', 'month'); // true
+```
+
+A reversed range returns `false` rather than being silently reordered, because a
+range given backwards is usually a bug and hiding it does the caller no favours.
+Unrecognised `bounds` throw `INVALID_ARGUMENT`.
+
+### `min(first, ...rest): Date` / `max(first, ...rest): Date`
+
+Earliest and latest of the dates given. At least one argument is required, which
+the types enforce, so there is no empty case to define. Both return a new `Date`,
+and of equal dates the first wins.
+
+```ts
+min('2024-03-17T00:00', '2024-01-01T00:00', '2024-12-31T00:00'); // 2024-01-01
+max(new Date(0), '2024-01-01T00:00', 1_700_000_000_000);         // 2024-01-01
+```
+
+### `clamp(date, lower, upper): Date`
+
+Constrains `date` to a range, returning the nearest endpoint when it falls
+outside.
+
+```ts
+clamp('2024-02-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00'); // 2024-02-01
+clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00'); // 2024-03-01
+```
+
+Throws `INVALID_ARGUMENT` when `lower` is later than `upper`. There is no
+sensible answer for an inverted range, and swapping the arguments would hide the
+caller's mistake.
 
 ## Formatting, parsing and validation
 
@@ -291,6 +374,54 @@ depends on the engine and its locale.
 `getQuarterByMonth` and `getFirstMonthByQuarter` return `null` rather than
 throwing, preserving 1.x behaviour.
 
+### Week numbers
+
+Two conventions exist and they disagree at the turn of the year, so both are
+available under names that say which is which.
+
+`getISOWeek(date)` and `getISOWeekYear(date)` implement ISO-8601: weeks start on
+Monday and week 1 is the week containing 4 January. The week number runs 1–53,
+and the **week-numbering year is not always the calendar year**:
+
+```ts
+getISOWeek('2024-01-01T12:00');     // 1
+getISOWeekYear('2024-01-01T12:00'); // 2024
+
+getISOWeek('2024-12-30T12:00');     // 1   -- a Monday, so week 1 has started
+getISOWeekYear('2024-12-30T12:00'); // 2025
+
+getISOWeek('2023-01-01T12:00');     // 52  -- a Sunday, so it belongs to 2022
+getISOWeekYear('2023-01-01T12:00'); // 2022
+```
+
+Always render the pair together. Combining `getISOWeek` with `YYYY` produces a
+wrong label for a few days either side of January:
+
+```ts
+// Right
+`${getISOWeekYear(date)}-W${String(getISOWeek(date)).padStart(2, '0')}`; // '2025-W01'
+
+// Wrong for 2024-12-30: says 2024-W01, a week that ended in January
+`${getString(date, 'YYYY')}-W${String(getISOWeek(date)).padStart(2, '0')}`;
+```
+
+`getWeekOfYear(date, options?)` is the plainer reading: week 1 is the week
+containing 1 January, counted in the calendar year, with the same
+`weekStartsOn` option as `startOf`. The first and last weeks may be partial, so
+the result runs 1 to as high as 54.
+
+```ts
+getWeekOfYear('2024-01-01T12:00');                      // 1
+getWeekOfYear('2024-01-07T12:00');                      // 2
+getWeekOfYear('2024-01-07T12:00', { weekStartsOn: 1 }); // 1
+getWeekOfYear('2024-12-31T12:00');                      // 53
+```
+
+There are deliberately no `W` format tokens. A week number cannot be parsed back
+into a date on its own, and a token pair that renders `YYYY` next to a week
+number would be wrong at the year boundary — the composition above is explicit
+about which year it means.
+
 ## Profiling
 
 Available from the root export and from `timesolver/profiler`.
@@ -360,6 +491,7 @@ Messages are prefixed `[timeSolver]`, as in 1.x.
 
 ```ts
 import type {
+  Bounds,             // '[]' | '[)' | '(]' | '()'
   DateInput,          // Date | string | number
   ExactUnit,          // units with a fixed millisecond length
   ProfileMark,
@@ -369,6 +501,8 @@ import type {
   Unit,               // canonical unit names
   UnitAlias,          // every accepted lowercase alias
   UnitInput,          // what a unit parameter accepts
+  WeekDay,            // 0 (Sunday) through 6 (Saturday)
+  WeekOptions,        // { weekStartsOn?: WeekDay }
 } from 'timesolver';
 ```
 

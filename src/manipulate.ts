@@ -9,8 +9,13 @@ import {
   type Unit,
   type UnitInput,
 } from './units.js';
-
-const DAYS_PER_WEEK = 7;
+import {
+  DAYS_PER_WEEK,
+  daysSinceWeekStart,
+  resolveWeekStart,
+  type WeekDay,
+  type WeekOptions,
+} from './week.js';
 
 /**
  * Shift a date by whole calendar months, clamping to the end of the target
@@ -122,7 +127,7 @@ export function subtract(date: DateInput, amount = 0, unit?: UnitInput): Date {
 }
 
 /** Truncations, one per unit, applied to a copy of the input date. */
-const TRUNCATE: Record<Unit, (date: Date) => void> = {
+const TRUNCATE: Record<Unit, (date: Date, weekStartsOn: WeekDay) => void> = {
   millisecond: () => {
     // Already the finest granularity a `Date` can express.
   },
@@ -130,8 +135,8 @@ const TRUNCATE: Record<Unit, (date: Date) => void> = {
   minute: (date) => date.setSeconds(0, 0),
   hour: (date) => date.setMinutes(0, 0, 0),
   day: (date) => date.setHours(0, 0, 0, 0),
-  week: (date) => {
-    date.setDate(date.getDate() - date.getDay());
+  week: (date, weekStartsOn) => {
+    date.setDate(date.getDate() - daysSinceWeekStart(date, weekStartsOn));
     date.setHours(0, 0, 0, 0);
   },
   month: (date) => {
@@ -154,15 +159,18 @@ const TRUNCATE: Record<Unit, (date: Date) => void> = {
 /**
  * Start of the local calendar unit containing a date.
  *
- * Weeks start on Sunday, matching `Date#getDay`.
+ * @param options - `weekStartsOn` moves the week boundary; it defaults to `0`
+ *   (Sunday), matching `Date#getDay`, and is ignored by every other unit.
  *
  * @example
- * startOf('2024-03-17T14:30:45.123', 'day'); // 2024-03-17T00:00:00.000
+ * startOf('2024-03-17T14:30:45.123', 'day');                    // 2024-03-17T00:00:00.000
+ * startOf('2024-03-13', 'week');                                // Sunday 2024-03-10
+ * startOf('2024-03-13', 'week', { weekStartsOn: 1 });           // Monday 2024-03-11
  */
-export function startOf(date: DateInput, unit: UnitInput): Date {
+export function startOf(date: DateInput, unit: UnitInput, options?: WeekOptions): Date {
   const target = toDate(date);
 
-  TRUNCATE[normalizeUnit(unit)](target);
+  TRUNCATE[normalizeUnit(unit)](target, resolveWeekStart(options));
 
   return target;
 }
@@ -170,15 +178,18 @@ export function startOf(date: DateInput, unit: UnitInput): Date {
 /**
  * Last representable millisecond of the local calendar unit containing a date.
  *
+ * @param options - See {@link startOf}.
+ *
  * @example
- * endOf('2024-02-10', 'month'); // 2024-02-29T23:59:59.999
+ * endOf('2024-02-10', 'month');                       // 2024-02-29T23:59:59.999
+ * endOf('2024-03-13', 'week', { weekStartsOn: 1 });   // Sunday 2024-03-17T23:59:59.999
  */
-export function endOf(date: DateInput, unit: UnitInput): Date {
+export function endOf(date: DateInput, unit: UnitInput, options?: WeekOptions): Date {
   const resolved = normalizeUnit(unit);
   // Truncate again after the shift. In a zone whose clocks jump at midnight,
   // startOf('day') is 01:00, so start plus one day is 01:00 the next day and
   // subtracting a millisecond would land on the wrong calendar date.
-  const nextStart = startOf(add(startOf(date, resolved), 1, resolved), resolved);
+  const nextStart = startOf(add(startOf(date, resolved, options), 1, resolved), resolved, options);
 
   return new Date(nextStart.getTime() - 1);
 }

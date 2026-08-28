@@ -36,13 +36,17 @@ import { DEFAULT_FORMAT, getString } from './format.js';
 import { add, endOf, startOf, subtract } from './manipulate.js';
 import { isValid, parse } from './parse.js';
 import { createProfiler, timeLook, timeLookReport, timeLookStart } from './profiler.js';
+import { clamp, isBetween, max, min } from './range.js';
+import { getISOWeek, getISOWeekYear, getWeekOfYear } from './weeknumber.js';
 
 export type { DateInput } from './coerce.js';
 export type { TimeSolverErrorCode } from './errors.js';
 export { TimeSolverError } from './errors.js';
 export type { ProfileMark, ProfileReport, Profiler } from './profiler.js';
+export type { Bounds } from './range.js';
 export type { ExactUnit, Unit, UnitAlias, UnitInput } from './units.js';
 export { UNITS } from './units.js';
+export type { WeekDay, WeekOptions } from './week.js';
 export {
   add,
   after,
@@ -50,6 +54,7 @@ export {
   before,
   beforeToday,
   between,
+  clamp,
   createProfiler,
   DEFAULT_FORMAT,
   daysInMonth,
@@ -60,11 +65,17 @@ export {
   getFirstMonthByQuarter,
   getFullMonth,
   getFullWeek,
+  getISOWeek,
+  getISOWeekYear,
   getQuarter,
   getQuarterByMonth,
   getString,
+  getWeekOfYear,
+  isBetween,
   isLeapYear,
   isValid,
+  max,
+  min,
   monthAbbreviation,
   monthName,
   parse,
@@ -92,6 +103,7 @@ const timeSolver = {
   before,
   beforeToday,
   between,
+  clamp,
   createProfiler,
   daysInMonth,
   endOf,
@@ -101,11 +113,17 @@ const timeSolver = {
   getFirstMonthByQuarter,
   getFullMonth,
   getFullWeek,
+  getISOWeek,
+  getISOWeekYear,
   getQuarter,
   getQuarterByMonth,
   getString,
+  getWeekOfYear,
+  isBetween,
   isLeapYear,
   isValid,
+  max,
+  min,
   monthAbbreviation,
   monthName,
   parse,

@@ -80,8 +80,10 @@ Full reference with every signature, error and edge case:
 |---|---|
 | **Arithmetic** | `add` `subtract` `startOf` `endOf` |
 | **Comparison** | `between` `equal` `after` `before` `afterToday` `beforeToday` |
+| **Ranges** | `isBetween` `min` `max` `clamp` |
 | **Strings** | `getString` `parse` `isValid` |
 | **Calendar** | `getFullWeek` `getAbbrWeek` `getFullMonth` `getAbbrMonth` `getQuarter` `getQuarterByMonth` `getFirstMonthByQuarter` `isLeapYear` `daysInMonth` `monthName` `monthAbbreviation` `weekdayName` `weekdayAbbreviation` |
+| **Week numbers** | `getISOWeek` `getISOWeekYear` `getWeekOfYear` |
 | **Profiling** | `createProfiler` (also at `timesolver/profiler`) |
 | **Errors** | `TimeSolverError` with `code`: `INVALID_DATE` `INVALID_UNIT` `INVALID_FORMAT` `INVALID_ARGUMENT` |
 
@@ -133,6 +135,18 @@ rule per unit is deliberate rather than incidental:
 | `month`, `quarter`, `year` | local calendar, with the remainder scaled by the month it falls in | January 1 to February 1 is exactly `1` |
 
 `between(a, b, unit) === -between(b, a, unit)` holds for every unit.
+
+### Where the week starts
+
+Weeks start on Sunday by default, matching `Date#getDay`. `startOf`, `endOf`,
+`equal`, `after` and `before` take `{ weekStartsOn }` — `0` for Sunday through
+`6` for Saturday — so ISO-8601 weeks are one argument away:
+
+```ts
+startOf(date, 'week');                      // Sunday
+startOf(date, 'week', { weekStartsOn: 1 }); // Monday, ISO-8601
+endOf(date, 'week', { weekStartsOn: 6 });   // Friday, for a Saturday-start week
+```
 
 ## Profiling
 
