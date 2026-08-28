@@ -164,6 +164,13 @@ version and writes `CHANGELOG.md`. Merging that PR publishes to npm with
 publishes from a laptop, and `CHANGELOG.md` is generated — please do not edit it
 by hand in a PR.
 
+One-time setup, for whoever owns the npm package: add an npm **automation**
+token as a repository secret named `NPM_TOKEN` under Settings, then Secrets and
+variables, then Actions. Classic tokens and granular tokens with 2FA
+enforcement are rejected by unattended publishes. Until that secret exists the
+release workflow runs, builds, and then stops with a warning instead of
+publishing.
+
 ## What does not belong in this library
 
 These are settled design decisions, not open questions. A PR adding one of them
