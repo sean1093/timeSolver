@@ -43,6 +43,7 @@ loudly if `package.json` and the lockfile disagree, which is what CI does.
 | `npm run check:exports` | `attw --pack . && publint` | Packs the tarball and verifies the `exports` map really resolves for ESM, CJS, and TypeScript consumers. |
 | `npm run size` | `size-limit` | Fails if the bundle grows past its budget, so the size claim in the README stays true. |
 | `npm run smoke` | `node scripts/smoke.mjs` | Imports the built ESM bundle, `require`s the built CJS bundle, and evaluates the IIFE bundle to assert the global. Requires `npm run build` first. |
+| `npm run check:api` | `node scripts/api-surface.mjs` | Compares the public API surface of the built declarations against the committed `api-surface.txt`. Requires `npm run build` first. Run it with `-- --update` to approve an intentional API change. |
 
 ## Project layout
 
@@ -138,8 +139,11 @@ The **quality** job runs once, on Node 22, in this order:
 4. `build` — `tsup` produces all four outputs.
 5. `check:exports` — `attw` and `publint` agree the packed tarball resolves for
    ESM, CJS, and TypeScript.
-6. `size` — the bundle is within budget.
-7. `smoke` — the built ESM, CJS, and IIFE bundles load, resolve by package
+6. `check:api` — the built declarations describe the same public API surface as
+   the committed `api-surface.txt`. A deliberate change is approved by running
+   `npm run check:api -- --update` and committing the snapshot with it.
+7. `size` — the bundle is within budget.
+8. `smoke` — the built ESM, CJS, and IIFE bundles load, resolve by package
    name through the `exports` map, and compute correctly.
 
 The **test** job runs `test`, `build`, and `smoke` on Node 20, 22, and 24, which

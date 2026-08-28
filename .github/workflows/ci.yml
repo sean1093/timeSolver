@@ -47,6 +47,12 @@ jobs:
       - name: Validate published entry points
         run: npm run check:exports
 
+      # attw and publint prove the published types resolve. This proves the
+      # published shape has not moved: a widened parameter, a dropped overload
+      # or a renamed exported type is invisible to every other gate here.
+      - name: Check the public API surface
+        run: npm run check:api
+
       - name: Enforce bundle size budget
         run: npm run size
 
