@@ -86,10 +86,9 @@ rather than rounded.
 subtract('2024-03-31T00:00', 1, 'month'); // 2024-02-29
 ```
 
-### `startOf(date, unit): Date`
+### `startOf(date, unit, options?): Date`
 
-Beginning of the local calendar unit containing `date`. Weeks start on Sunday,
-matching `Date#getDay`.
+Beginning of the local calendar unit containing `date`.
 
 ```ts
 startOf('2024-05-15T14:30:45.123', 'day');     // 2024-05-15 00:00:00.000
@@ -99,14 +98,31 @@ startOf('2024-05-15T14:30:45.123', 'quarter'); // 2024-04-01 00:00:00.000
 
 `unit` is required here. `startOf(date, 'millisecond')` is a plain copy.
 
-### `endOf(date, unit): Date`
-
-Last representable millisecond of the unit.
+`options.weekStartsOn` moves the week boundary. It is `0` (Sunday) by default,
+matching `Date#getDay`, and every unit other than `'week'` ignores it:
 
 ```ts
-endOf('2024-02-10T00:00', 'month'); // 2024-02-29 23:59:59.999
-endOf('2024-05-15T00:00', 'week');  // 2024-05-18 23:59:59.999
+startOf('2024-03-13', 'week');                      // Sunday 2024-03-10
+startOf('2024-03-13', 'week', { weekStartsOn: 1 }); // Monday 2024-03-11 (ISO-8601)
+startOf('2024-03-13', 'week', { weekStartsOn: 6 }); // Saturday 2024-03-09
 ```
+
+A value outside 0–6, or a non-integer, throws `INVALID_ARGUMENT`.
+
+### `endOf(date, unit, options?): Date`
+
+Last representable millisecond of the unit. Takes the same `options` as
+`startOf`.
+
+```ts
+endOf('2024-02-10T00:00', 'month');                 // 2024-02-29 23:59:59.999
+endOf('2024-05-15T00:00', 'week');                  // Saturday 2024-05-18 23:59:59.999
+endOf('2024-05-15T00:00', 'week', { weekStartsOn: 1 }); // Sunday 2024-05-19 23:59:59.999
+```
+
+A week is not always 604 800 000 ms long: one containing a daylight-saving
+change is an hour shorter or longer. `endOf` is defined by the calendar, not by
+that arithmetic, so it always lands on the last millisecond of the seventh day.
 
 ## Comparison
 
@@ -134,7 +150,7 @@ Two guarantees worth relying on:
 - `between(a, b, unit) === -between(b, a, unit)` for every unit.
 - Whole calendar spans return integers, with no floating-point drift from average month lengths.
 
-### `equal(first, second, unit?): boolean`
+### `equal(first, second, unit?, options?): boolean`
 
 Whether two dates are the same instant. With `unit`, compares `startOf(unit)`
 instead.
@@ -145,7 +161,17 @@ equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999', 'second'); // true
 equal('2020-01-05T01:00', '2020-01-05T23:00', 'day');                  // true
 ```
 
-### `after(first, second, unit?): boolean`
+All three comparisons accept the same `options` as `startOf`, which matters when
+the unit is `'week'`:
+
+```ts
+// 2024-03-10 is a Sunday, 2024-03-16 the Saturday after it. A time is included
+// because a date-only string is parsed as UTC, which can shift the local date.
+equal('2024-03-10T12:00', '2024-03-16T12:00', 'week');                      // true
+equal('2024-03-10T12:00', '2024-03-16T12:00', 'week', { weekStartsOn: 1 }); // false
+```
+
+### `after(first, second, unit?, options?): boolean`
 
 Whether `first` is strictly after `second`, compared at `unit` granularity.
 
@@ -154,7 +180,7 @@ after('2020-01-01T23:00', '2020-01-01T01:00');        // true
 after('2020-01-01T23:00', '2020-01-01T01:00', 'day'); // false, same day
 ```
 
-### `before(first, second, unit?): boolean`
+### `before(first, second, unit?, options?): boolean`
 
 The mirror of `after`. Equal instants are neither after nor before.
 
@@ -369,6 +395,8 @@ import type {
   Unit,               // canonical unit names
   UnitAlias,          // every accepted lowercase alias
   UnitInput,          // what a unit parameter accepts
+  WeekDay,            // 0 (Sunday) through 6 (Saturday)
+  WeekOptions,        // { weekStartsOn?: WeekDay }
 } from 'timesolver';
 ```
 
