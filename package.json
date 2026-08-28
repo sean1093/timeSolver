@@ -1,6 +1,6 @@
 {
   "name": "timesolver",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Tiny immutable date utilities for JavaScript and TypeScript: format, parse, validate and compare native Date objects with one token grammar. Zero dependencies.",
   "type": "module",
   "license": "MIT",
