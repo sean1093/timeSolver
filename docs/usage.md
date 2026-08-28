@@ -1,122 +1,270 @@
-# timeSolver Usage
+# Usage guide
 
-This document describes the main functions, parameters, and common format examples for the `timeSolver` library to help developers get started quickly.
+A task-oriented tour of timeSolver 2.x. For exhaustive signatures see the
+[API reference](api.md); for upgrading from 1.x see the
+[migration guide](migration-v1-v2.md).
 
-## Installation and Import
+Also available in [繁體中文](usage.zh.md) and [日本語](usage.ja.md).
 
-CommonJS:
+## Install and import
 
-```js
-const timeSolver = require('timesolver');
+```sh
+npm install timesolver
 ```
 
-ES Module:
-
-```js
-import timeSolver from 'timesolver';
+```ts
+// Import only what you use; the rest is tree-shaken away. Later snippets
+// assume the matching import for whatever they call.
+import {
+  add,
+  after,
+  before,
+  between,
+  endOf,
+  equal,
+  getString,
+  isValid,
+  parse,
+  startOf,
+  subtract,
+} from 'timesolver';
 ```
 
-Browser (UMD bundle):
+```js
+// CommonJS
+const { add, getString } = require('timesolver');
+```
 
 ```html
-<script src="dist/timeSolver.umd.min.js"></script>
+<!-- Browser, no bundler -->
+<script src="https://unpkg.com/timesolver/dist/timesolver.global.js"></script>
 <script>
-  // global `timeSolver` is available
-  console.log(timeSolver.getString(new Date(), 'YYYYMMDD'));
+  timeSolver.getString(new Date(), 'YYYY-MM-DD');
 </script>
 ```
 
-## Common API Overview
+Every function accepts a `Date`, epoch milliseconds, or a string the language's
+`Date` can parse, and works in the host time zone.
 
-- `timeSolver.add(date, count, unit)` — Add `count` units to `date`.
-- `timeSolver.subtract(date, count, unit)` — Subtract `count` units from `date`.
-- `timeSolver.between(d1, d2, unit)` — Return the difference `d2 - d1` in `unit`.
-- `timeSolver.equal(d1, d2)` — Check whether two dates are equal (string comparison).
-- `timeSolver.after(d1, d2, unit)` — Check whether `d1` is after `d2` (by `unit`).
-- `timeSolver.before(d1, d2, unit)` — Check whether `d1` is before `d2` (by `unit`).
-- `timeSolver.afterToday(d)` / `timeSolver.beforeToday(d)` — Compare relative to today.
-- `timeSolver.getString(date, format)` — Format `date` as a string using `format`.
-- `timeSolver.isValid(dateString, format?)` — Validate a date string; if `format` is provided, validate against that format.
-- `timeSolver.getAbbrWeek(date)` / `timeSolver.getFullWeek(date)` — Get weekday (abbr or full name).
-- `timeSolver.getAbbrMonth(date)` / `timeSolver.getFullMonth(date)` — Get month (abbr or full name).
-- `timeSolver.getQuarterByMonth(m)` / `timeSolver.getFirstMonthByQuarter(q)` — Quarter utilities.
+## Formatting a date
 
-### Examples
+```ts
+const stamp = new Date(2024, 2, 17, 14, 30, 45, 123); // Sun 17 Mar 2024
 
-```js
-const d = new Date('2020-01-01T00:00:00Z');
-timeSolver.add(d, 1, 'D'); // 2020-01-02
-timeSolver.subtract(d, 2, 'H'); // 2019-12-31 22:00
-timeSolver.between('2020-01-01','2020-01-02','H'); // 24
-timeSolver.getString(d, 'YYYY-MM-DD HH:MM:SS.SSS'); // e.g. '2020-01-01 00:00:00.000'
+getString(stamp);                            // '20240317'  (default format)
+getString(stamp, 'YYYY-MM-DD');              // '2024-03-17'
+getString(stamp, 'YYYY-MM-DD HH:mm:ss.SSS'); // '2024-03-17 14:30:45.123'
+getString(stamp, 'ddd, D MMM YYYY');         // 'Sun, 17 Mar 2024'
+getString(stamp, 'h:mm a');                  // '2:30 pm'
+getString(stamp, '[Quarter] Q [of] YYYY');   // 'Quarter 1 of 2024'
 ```
 
-## Supported Time Units (`unit`)
+Uppercase tokens are the larger unit, lowercase the smaller: `MM` is the month,
+`mm` the minute; `DD` the day, `dddd` the weekday name. Wrap literal words in
+square brackets so their letters are not read as tokens.
 
-The library accepts various strings or abbreviations for units and converts them to internal unit indices. Supported values include:
+The full token table is in the [API reference](api.md#tokens). Two formats are
+refused, both as `INVALID_FORMAT`:
 
-- `MILLISECOND` or `mill` or omitted (default)
-- `SECOND` or `S` or `s`
-- `MINUTE` or `MIN`
-- `HOUR` or `H`
-- `DAY` or `D`
-- `MONTH` or `M`
-- `YEAR` or `Y`
-
-Example: `timeSolver.add(date, 5, 'H')` adds 5 hours.
-
-## `getString` Supported Formats
-
-`timeSolver.getString(date, format)` supports the following format patterns (case-insensitive):
-
-- `YYYY` — year, e.g. `2020`
-- `YYYYMM` — `202001`
-- `YYYYMMDD` — `20200101`
-- `YYYY/MM/DD`, `YYYY-MM-DD`, `YYYY.MM.DD` — common separators
-- `MMDDYYYY`, `DDMMYYYY` — month-day-year or day-month-year orders
-- Date & time formats:
-  - `YYYY/MM/DD HH:MM:SS`
-  - `YYYY/MM/DD HH:MM:SS.SSS` (milliseconds)
-  - `YYYY-MM-DD HH:MM:SS` / `YYYY-MM-DD HH:MM:SS.SSS`
-  - `YYYY.MM.DD HH:MM:SS` / `YYYY.MM.DD HH:MM:SS.SSS`
-  - `YYYYMMDD HH:MM:SS` / `YYYYMMDD HH:MM:SS.SSS`
-  - `MM/DD/YYYY HH:MM:SS` / `MM/DD/YYYY HH:MM:SS.SSS`
-  - `MM-DD-YYYY HH:MM:SS` / `MM-DD-YYYY HH:MM:SS.SSS`
-  - `MM.DD.YYYY HH:MM:SS` / `MM.DD.YYYY HH:MM:SS.SSS`
-- Time-only: `HH:MM:SS` / `HH:MM:SS.SSS`
-
-Example:
-
-```js
-timeSolver.getString(new Date('2020-06-15T13:45:30.123Z'), 'YYYY-MM-DD HH:MM:SS.SSS')
-// => "2020-06-15 13:45:30.123"
+```ts
+getString(stamp, 'YYYYMD'); // throws: 'M' runs into 'D', so '2024112' is ambiguous
+getString(stamp, 'nope');   // throws: no tokens at all; use '[nope]'
 ```
 
-## `isValid` Usage
+Note that single letters are tokens too: `'oops'` renders `'oop45'`, because `s`
+is the seconds token. Escape any literal text you did not mean as a token.
 
-- `timeSolver.isValid('2020/01/01')` → `true` (when `format` is omitted, `Date` parsing is used)
-- `timeSolver.isValid('2020/02/30', 'YYYY/MM/DD')` → `false` (invalid date)
+Every format name 1.x accepted still works, in any case, so
+`getString(stamp, 'YYYY-MM-DD HH:MM:SS')` keeps rendering
+`'2024-03-17 14:30:45'`.
 
-When `format` is provided, the library validates the date (and time portion, if present) using built-in patterns and performs additional checks when necessary.
+## Reading a date from a string
 
-## `timeLook` (lightweight timing profiler)
+`parse` is strict: the input must match the format exactly, and the resulting
+date must render back to the same string.
 
-Use `timeLook` to mark code sections and print a report:
+```ts
+parse('17/03/2024', 'DD/MM/YYYY');                  // 2024-03-17 00:00 local
+parse('2024-03-17 14:30', 'YYYY-MM-DD HH:mm');      // with a time
+parse('03/17/2024 02:30 PM', 'MM/DD/YYYY hh:mm A'); // 12-hour clock
 
-```js
-timeSolver.timeLookStart();
-// ... some operation ...
-timeSolver.timeLook('step1');
-// ... another operation ...
-timeSolver.timeLook('step2');
-timeSolver.timeLookReport();
+parse('31/02/2024', 'DD/MM/YYYY'); // throws: February has no 31st
+parse('2024-3-7', 'YYYY-MM-DD');   // throws: padding does not match
 ```
 
-The report prints each segment's elapsed time and relative percentage, highlighting the most time-consuming section.
+Components the format omits default to 1970-01-01, so `parse('12:30:00',
+'HH:mm:ss')` is a time on the epoch date — useful for comparing times of day.
 
-## Additional Notes
+## Validating input
 
-- Most functions accept a `Date` object or a string parseable by `new Date(...)`.
-- For invalid input dates the library logs an internal `console.error` and returns `null`.
+```ts
+isValid('2020-01-01');               // true  — anything Date can read
+isValid('nope');                     // false
+isValid('2020-02-29', 'YYYY-MM-DD'); // true  — 2020 is a leap year
+isValid('2021-02-29', 'YYYY-MM-DD'); // false
+isValid('31-02-2020', 'DD-MM-YYYY'); // false — impossible date
+isValid('12:30:00', 'HH:mm:ss');     // true
+```
 
-If you want, I can also split this document into separate examples under `docs/examples/`.
+`isValid` never throws for bad data, which makes it the right guard before
+calling anything that does:
+
+```ts
+function shiftDeadline(input: unknown, days: number): Date | undefined {
+  if (typeof input !== 'string' || !isValid(input, 'YYYY-MM-DD')) {
+    return undefined;
+  }
+  return add(parse(input, 'YYYY-MM-DD'), days, 'day');
+}
+```
+
+## Adding and subtracting
+
+Inputs are never modified; every call returns a new `Date`.
+
+```ts
+add(stamp, 90, 'minute');    // exact elapsed time
+add(stamp, 1, 'day');        // same wall-clock time tomorrow, DST or not
+add(stamp, 1, 'week');
+add(stamp, 1, 'month');      // clamped: Jan 31 + 1 month = Feb 29
+add(stamp, -1, 'year');
+subtract(stamp, 2, 'hour');
+```
+
+Unit names are case-insensitive and accept the 1.x abbreviations: `'D'`, `'H'`,
+`'MIN'`, `'M'` for month, `'Y'` for year.
+
+Fractions are allowed for milliseconds through hours, and refused for day and
+coarser units, where a fraction has no fixed length:
+
+```ts
+add(stamp, 1.5, 'hour');  // fine
+add(stamp, 1.5, 'month'); // throws INVALID_ARGUMENT
+```
+
+## Calendar ranges
+
+```ts
+startOf(stamp, 'day');     // 2024-03-17 00:00:00.000
+endOf(stamp, 'day');       // 2024-03-17 23:59:59.999
+startOf(stamp, 'week');    // 2024-03-17 00:00 (weeks start on Sunday)
+startOf(stamp, 'month');   // 2024-03-01 00:00
+endOf(stamp, 'month');     // 2024-03-31 23:59:59.999
+startOf(stamp, 'quarter'); // 2024-01-01 00:00
+```
+
+A month-to-date query, for example:
+
+```ts
+const rows = all.filter(
+  (row) => !before(row.createdAt, startOf(new Date(), 'month')),
+);
+```
+
+## Comparing and measuring
+
+```ts
+between('2020-01-01T00:00', '2020-01-02T00:00', 'hour');  // 24
+between('2020-01-01T00:00', '2020-02-01T00:00', 'month'); // 1
+between('2020-01-01T00:00', '2020-01-16T00:00', 'month'); // 0.4838…
+```
+
+The basis is chosen per unit so that each answer is the one the unit implies:
+
+- milliseconds through hours measure **exact elapsed time**, so the 23-hour day of a spring transition is `23` hours;
+- days and weeks measure the **local calendar**, so that same day is `1`, and noon-to-noon across it is `1` too;
+- months, quarters and years measure the **calendar**, with the remainder scaled by the month it falls in.
+
+`between(a, b, unit)` is always the negation of `between(b, a, unit)`.
+
+Comparisons take an optional unit, which sets the granularity:
+
+```ts
+equal('2024-03-17T01:00', '2024-03-17T23:00', 'day'); // true, same day
+after('2024-03-17T23:00', '2024-03-17T01:00');        // true, later instant
+after('2024-03-17T23:00', '2024-03-17T01:00', 'day'); // false, same day
+afterToday(add(new Date(), 1, 'day'));                // true
+beforeToday(new Date());                              // false
+```
+
+## Calendar helpers
+
+```ts
+getFullWeek(stamp);              // 'Sunday'
+getAbbrWeek(stamp);              // 'Sun'
+getFullMonth(stamp);             // 'March'
+getAbbrMonth(stamp);             // 'Mar'
+getQuarter(stamp);               // 1
+getQuarterByMonth(5);            // 2
+getFirstMonthByQuarter(3);       // 7
+isLeapYear(2024);                // true
+daysInMonth(2024, 2);            // 29
+```
+
+Names are English and come from a fixed table, so they do not vary by engine or
+locale. For localised output, format the parts you need with
+`Intl.DateTimeFormat`.
+
+## Handling failures
+
+Bad input throws `TimeSolverError`, which carries a `code` you can branch on:
+
+```ts
+import { TimeSolverError, getString } from 'timesolver';
+
+try {
+  getString(userInput, userFormat);
+} catch (error) {
+  if (error instanceof TimeSolverError) {
+    switch (error.code) {
+      case 'INVALID_DATE':
+        return 'That is not a date I can read.';
+      case 'INVALID_FORMAT':
+        return 'That format string is not valid.';
+      default:
+        throw error;
+    }
+  }
+  throw error;
+}
+```
+
+Nothing is written to the console, and no function returns `null` as a sentinel.
+
+## Profiling a slow path
+
+```ts
+import { createProfiler } from 'timesolver/profiler';
+
+const profiler = createProfiler();
+
+profiler.start();
+const rows = await loadRows();
+profiler.mark('load');
+const view = render(rows);
+profiler.mark('render');
+
+profiler.print();
+// [timeSolver] 2 mark(s) in 128.412 ms
+//   1. load    96.210 ms  74.9%  <- slowest
+//   2. render  32.202 ms  25.1%
+```
+
+Each profiler owns its timeline, so nested measurements do not interfere, and
+`report()` hands back `{ total, slowest, marks }` for assertions or metrics
+instead of console output. The 1.x names `timeLookStart`, `timeLook` and
+`timeLookReport` are still exported, so 1.x code and 1.x script tags keep
+working.
+
+## Things to know
+
+**String parsing follows the language.** `new Date('2024-03-10')` is UTC
+midnight; `new Date('2024-03-10T00:00')` is local. This library hands strings to
+`Date`, so the same rule applies. Pass a `Date`, include a time, or use `parse`
+with an explicit format when it matters.
+
+**There are no time zones.** Everything is host-local. `Z` and `ZZ` render the
+current offset but cannot be parsed. For zone-aware work use `Temporal` or
+`Intl.DateTimeFormat`.
+
+**Weeks start on Sunday**, matching `Date#getDay`.

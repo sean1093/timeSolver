@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>timeSolver in the browser</title>
+    <style>
+      body {
+        font: 16px/1.6 system-ui, sans-serif;
+        margin: 2rem auto;
+        max-width: 46rem;
+        padding: 0 1rem;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      td {
+        border-bottom: 1px solid #ddd;
+        padding: 0.4rem 0.5rem;
+        vertical-align: top;
+      }
+      td:first-child {
+        color: #555;
+        font-family: ui-monospace, monospace;
+        font-size: 0.85em;
+        white-space: nowrap;
+      }
+      td:last-child {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>timeSolver in the browser</h1>
+    <p>
+      No bundler and no build step: one <code>&lt;script&gt;</code> tag defines the global
+      <code>timeSolver</code>. Run <code>npm run build</code> first, then open this file
+      directly. Results are in your host time zone, shown below.
+    </p>
+
+    <!-- Built locally by `npm run build`. From a CDN instead:
+         <script src="https://unpkg.com/timesolver/dist/timesolver.global.js"></script> -->
+    <script src="../dist/timesolver.global.js"></script>
+
+    <table id="results"></table>
+
+    <script>
+      var stamp = new Date(2024, 2, 17, 14, 30, 45, 123); // Sunday 17 March 2024
+
+      var rows = [
+        ['time zone', Intl.DateTimeFormat().resolvedOptions().timeZone],
+        ["getString(stamp, 'YYYY-MM-DD HH:mm:ss')", timeSolver.getString(stamp, 'YYYY-MM-DD HH:mm:ss')],
+        ["getString(stamp, 'dddd, D MMMM YYYY')", timeSolver.getString(stamp, 'dddd, D MMMM YYYY')],
+        ["getString(stamp, 'h:mm a')", timeSolver.getString(stamp, 'h:mm a')],
+        ["getString(new Date(), 'YYYYMMDD')", timeSolver.getString(new Date(), 'YYYYMMDD')],
+        ["add(stamp, 1, 'month')", timeSolver.getString(timeSolver.add(stamp, 1, 'month'), 'YYYY-MM-DD')],
+        ["endOf(stamp, 'month')", timeSolver.getString(timeSolver.endOf(stamp, 'month'), 'YYYY-MM-DD HH:mm:ss.SSS')],
+        ["between('2020-01-01', '2020-02-01', 'month')", timeSolver.between('2020-01-01', '2020-02-01', 'month')],
+        ["isValid('31-02-2020', 'DD-MM-YYYY')", timeSolver.isValid('31-02-2020', 'DD-MM-YYYY')],
+        ['getFullWeek(stamp)', timeSolver.getFullWeek(stamp)],
+      ];
+
+      // Bad input throws TimeSolverError with a `code`, rather than returning a sentinel.
+      try {
+        timeSolver.parse('31/02/2024', 'DD/MM/YYYY');
+      } catch (error) {
+        rows.push(["parse('31/02/2024', 'DD/MM/YYYY')", 'throws ' + error.code]);
+      }
+
+      var table = document.getElementById('results');
+      rows.forEach(function (row) {
+        var tr = table.insertRow();
+        tr.insertCell().textContent = row[0];
+        tr.insertCell().textContent = String(row[1]);
+      });
+    </script>
+  </body>
+</html>

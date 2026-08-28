@@ -1,0 +1,376 @@
+# API reference
+
+Every function is pure: it reads its arguments and returns a new value. Nothing
+is written to the console, and nothing mutates the `Date` you pass in.
+
+- [Conventions](#conventions)
+- [Arithmetic](#arithmetic)
+- [Comparison](#comparison)
+- [Formatting, parsing and validation](#formatting-parsing-and-validation)
+- [Calendar helpers](#calendar-helpers)
+- [Profiling](#profiling)
+- [Errors](#errors)
+- [Types](#types)
+
+## Conventions
+
+**Date inputs.** Anywhere a date is expected you may pass a `Date`, an epoch
+millisecond number, or a string the language's `Date` constructor understands.
+A `Date` from another realm — an iframe, a worker, a `node:vm` context — is
+accepted too.
+
+```ts
+getString(new Date(2024, 2, 17), 'YYYY-MM-DD'); // from a Date
+getString(1710648000000, 'YYYY-MM-DD');         // from epoch milliseconds
+getString('2024-03-17T12:00:00', 'YYYY-MM-DD'); // from a string
+```
+
+Anything else — `null`, `undefined`, an object, an Invalid Date, a number
+outside the `Date` range — throws `TimeSolverError` with code `INVALID_DATE`.
+
+**Time zone.** All functions work in the host time zone. There is no zone
+parameter; see [Scope](../README.md#scope).
+
+**Units.** Every `unit` parameter accepts any alias, in any case:
+
+| Canonical | Aliases |
+|---|---|
+| `millisecond` | `milliseconds` `mill` `ms` `msec` |
+| `second` | `seconds` `sec` `s` |
+| `minute` | `minutes` `min` |
+| `hour` | `hours` `hr` `h` |
+| `day` | `days` `d` |
+| `week` | `weeks` `w` |
+| `month` | `months` `mon` `m` |
+| `quarter` | `quarters` `q` |
+| `year` | `years` `yr` `y` |
+
+An unknown alias throws `INVALID_UNIT`. Where `unit` is optional it defaults to
+`millisecond`, matching 1.x.
+
+## Arithmetic
+
+### `add(date, amount?, unit?): Date`
+
+Returns a new `Date` shifted by `amount` units. `amount` defaults to `0`,
+`unit` to `millisecond`. Negative amounts subtract.
+
+```ts
+add(new Date(2024, 0, 15), 90, 'minute'); // 2024-01-15 01:30 local
+add('2024-01-31T12:00', 1, 'month');      // 2024-02-29 12:00
+add('2024-01-31T12:00', 1, 'M');          // same, 1.x alias
+add('2024-03-09T12:00', 1, 'day');        // 2024-03-10 12:00, DST or not
+```
+
+Behaviour per unit:
+
+| Units | Basis |
+|---|---|
+| `millisecond` … `hour` | exact multiples of the unit length; fractional amounts allowed |
+| `day`, `week` | local calendar, so the wall-clock time survives a daylight-saving change; whole amounts only |
+| `month`, `quarter`, `year` | local calendar, clamped to the last valid day of the target month; whole amounts only |
+
+Clamping is what makes `add(Jan 31, 1, 'month')` land on February 29 rather
+than overflowing into March, which is what the native `setMonth` does and what
+1.x returned.
+
+Throws `INVALID_ARGUMENT` for a non-finite `amount`, or a fractional amount of
+a calendar unit — a third of a month has no defined length, so it is refused
+rather than rounded.
+
+### `subtract(date, amount?, unit?): Date`
+
+`add` with the amount negated. Same rules, same errors.
+
+```ts
+subtract('2024-03-31T00:00', 1, 'month'); // 2024-02-29
+```
+
+### `startOf(date, unit): Date`
+
+Beginning of the local calendar unit containing `date`. Weeks start on Sunday,
+matching `Date#getDay`.
+
+```ts
+startOf('2024-05-15T14:30:45.123', 'day');     // 2024-05-15 00:00:00.000
+startOf('2024-05-15T14:30:45.123', 'week');    // 2024-05-12 00:00:00.000
+startOf('2024-05-15T14:30:45.123', 'quarter'); // 2024-04-01 00:00:00.000
+```
+
+`unit` is required here. `startOf(date, 'millisecond')` is a plain copy.
+
+### `endOf(date, unit): Date`
+
+Last representable millisecond of the unit.
+
+```ts
+endOf('2024-02-10T00:00', 'month'); // 2024-02-29 23:59:59.999
+endOf('2024-05-15T00:00', 'week');  // 2024-05-18 23:59:59.999
+```
+
+## Comparison
+
+### `between(from, to, unit?): number`
+
+Signed difference `to − from` expressed in `unit`.
+
+```ts
+between('2020-01-01T00:00', '2020-01-02T00:00', 'hour');  // 24
+between('2020-01-01T00:00', '2020-02-01T00:00', 'month'); // 1
+between('2020-01-01T00:00', '2021-01-01T00:00', 'year');  // 1
+between('2020-01-01T00:00', '2020-01-16T00:00', 'month'); // 0.4838709677419355
+```
+
+Basis per unit:
+
+| Units | Basis | Example |
+|---|---|---|
+| `millisecond` … `hour` | exact elapsed time | the 23-hour day of a spring transition is `23` hours |
+| `day`, `week` | whole local calendar days plus the wall-clock time-of-day remainder | that same day is `1`; noon to noon across it is also `1` |
+| `month`, `quarter`, `year` | whole calendar months plus a remainder scaled by the length of the month it falls in | January 1 to February 1 is exactly `1` |
+
+Two guarantees worth relying on:
+
+- `between(a, b, unit) === -between(b, a, unit)` for every unit.
+- Whole calendar spans return integers, with no floating-point drift from average month lengths.
+
+### `equal(first, second, unit?): boolean`
+
+Whether two dates are the same instant. With `unit`, compares `startOf(unit)`
+instead.
+
+```ts
+equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999');           // false
+equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999', 'second'); // true
+equal('2020-01-05T01:00', '2020-01-05T23:00', 'day');                  // true
+```
+
+### `after(first, second, unit?): boolean`
+
+Whether `first` is strictly after `second`, compared at `unit` granularity.
+
+```ts
+after('2020-01-01T23:00', '2020-01-01T01:00');        // true
+after('2020-01-01T23:00', '2020-01-01T01:00', 'day'); // false, same day
+```
+
+### `before(first, second, unit?): boolean`
+
+The mirror of `after`. Equal instants are neither after nor before.
+
+### `afterToday(date): boolean` / `beforeToday(date): boolean`
+
+Whether `date` falls on a later, or earlier, calendar day than today. Any time
+today is neither.
+
+## Formatting, parsing and validation
+
+These three share one token table, so a format that renders also parses and
+validates.
+
+### Tokens
+
+| Token | Meaning | Example |
+|---|---|---|
+| `YYYY` | year, 4 digits | `2026` |
+| `YY` | year, 2 digits | `26` |
+| `MMMM` | month name | `January` |
+| `MMM` | month name, short | `Jan` |
+| `MM` | month, 2 digits | `01` |
+| `M` | month | `1` |
+| `DD` | day of month, 2 digits | `05` |
+| `D` | day of month | `5` |
+| `dddd` | weekday name | `Monday` |
+| `ddd` | weekday name, short | `Mon` |
+| `HH` | hour, 24-hour, 2 digits | `13` |
+| `H` | hour, 24-hour | `13` |
+| `hh` | hour, 12-hour, 2 digits | `01` |
+| `h` | hour, 12-hour | `1` |
+| `mm` | minute, 2 digits | `07` |
+| `m` | minute | `7` |
+| `ss` | second, 2 digits | `09` |
+| `s` | second | `9` |
+| `SSS` | millisecond, 3 digits | `042` |
+| `A` | meridiem, upper case | `PM` |
+| `a` | meridiem, lower case | `pm` |
+| `Q` | quarter | `1` |
+| `Z` | UTC offset with a colon | `+08:00` |
+| `ZZ` | UTC offset | `+0800` |
+| `[…]` | literal text | `[at]` renders `at` |
+
+Two rules the tokenizer enforces, both as `INVALID_FORMAT`:
+
+- **A variable-width token may not run straight into another numeric token.**
+  `'YYYYMD'` would render 12 January 2024 as `'2024112'`, which reads equally
+  well as month 11, day 2. Use `'YYYYMMDD'`, or separate the tokens:
+  `'YYYY-M-D'`.
+- **A format must contain at least one token**, or explicitly escaped text.
+  `'!!!'` is refused; `'[!!!]'` is fine.
+
+`Z` and `ZZ` render but cannot be parsed: reading an offset would mean
+representing an instant in a zone this library does not model.
+
+### `getString(date, format?): string`
+
+Renders `date`. `format` defaults to `'YYYYMMDD'`, as in 1.x.
+
+```ts
+getString(new Date(2024, 2, 17, 14, 30, 45, 123));                          // '20240317'
+getString(new Date(2024, 2, 17, 14, 30, 45, 123), 'YYYY-MM-DD HH:mm:ss.SSS'); // '2024-03-17 14:30:45.123'
+getString(new Date(2024, 2, 17), 'ddd, D MMM YYYY');                        // 'Sun, 17 Mar 2024'
+getString(new Date(2024, 2, 17), '[Week of] MMMM D');                       // 'Week of March 17'
+```
+
+Throws `INVALID_FORMAT` for a malformed format. 1.x returned the string
+`'[timeSolver] Input Type Error'`, which flowed into output unnoticed.
+
+### `parse(input, format): Date`
+
+Strict in both directions: `input` must match `format` exactly, with nothing
+left over, and the resulting date must render back to the same string. That
+round trip is what rejects impossible dates.
+
+```ts
+parse('17/03/2024', 'DD/MM/YYYY');            // 2024-03-17 00:00 local
+parse('2020-02-29', 'YYYY-MM-DD');            // fine, 2020 is a leap year
+parse('2021-02-29', 'YYYY-MM-DD');            // throws INVALID_DATE
+parse('03/17/2024 02:30 PM', 'MM/DD/YYYY hh:mm A'); // 14:30
+parse('2024-03-17 Monday', 'YYYY-MM-DD dddd'); // throws: it is a Sunday
+```
+
+Components the format omits default to 1970-01-01T00:00:00.000 local time, so
+`parse('12:30:00', 'HH:mm:ss')` is a time on the epoch date.
+
+Details worth knowing:
+
+- Padding is checked. `'2024-03-07'` does not match `'YYYY-M-D'`, and `'2024-3-7'` does not match `'YYYY-MM-DD'`.
+- `YY` maps 00–68 to the 2000s and 69–99 to the 1900s, as POSIX does.
+- Month and weekday names are matched case-sensitively against the English table.
+- `hh`/`h` without `A`/`a` are read as morning hours, so `parse('12:30', 'hh:mm')` is 00:30, not noon.
+- Throws `INVALID_ARGUMENT` if `input` is not a string.
+
+### `isValid(input, format?): boolean`
+
+Without `format`, whether `input` can be read as a date at all. With `format`,
+whether it matches that format exactly.
+
+```ts
+isValid('2020-01-01');                 // true
+isValid('nope');                       // false
+isValid(new Date('nope'));             // false
+isValid('2020-02-29', 'YYYY-MM-DD');   // true
+isValid('31-02-2020', 'DD-MM-YYYY');   // false
+isValid('12:30:00', 'HH:MM:SS');       // true, a 1.x format name
+```
+
+`isValid` never throws for bad *data* — that is the question it answers. It does
+throw `INVALID_FORMAT` when the *format* is malformed, because that is a bug in
+the calling code rather than a property of the data.
+
+## Calendar helpers
+
+| Function | Returns |
+|---|---|
+| `getFullWeek(date)` | `'Monday'` |
+| `getAbbrWeek(date)` | `'Mon'` |
+| `getFullMonth(date)` | `'March'` |
+| `getAbbrMonth(date)` | `'Mar'` |
+| `getQuarter(date)` | `1`–`4` |
+| `weekdayName(index)` | `'Sunday'` for `0`; throws `INVALID_ARGUMENT` outside 0–6 |
+| `weekdayAbbreviation(index)` | `'Sun'` for `0` |
+| `monthName(month)` | `'January'` for `1`; throws `INVALID_ARGUMENT` outside 1–12 |
+| `monthAbbreviation(month)` | `'Jan'` for `1` |
+| `getQuarterByMonth(month)` | quarter for a month number, or `null` when out of range |
+| `getFirstMonthByQuarter(quarter)` | first month of a quarter, or `null` when out of range |
+| `isLeapYear(year)` | proleptic Gregorian leap year test; throws `INVALID_ARGUMENT` for a non-integer |
+| `daysInMonth(year, month)` | 28–31; throws `INVALID_ARGUMENT` for a non-integer year or an out-of-range month |
+
+Names come from a fixed English table. 1.x sliced `Date#toString()`, whose text
+depends on the engine and its locale.
+
+`getQuarterByMonth` and `getFirstMonthByQuarter` return `null` rather than
+throwing, preserving 1.x behaviour.
+
+## Profiling
+
+Available from the root export and from `timesolver/profiler`.
+
+### `createProfiler(): Profiler`
+
+An isolated timeline on `performance.now()`.
+
+```ts
+import { createProfiler } from 'timesolver/profiler';
+
+const profiler = createProfiler();
+
+profiler.start();          // begin, discarding earlier marks
+work();
+profiler.mark('work');     // close and label a segment
+const report = profiler.report();
+profiler.print();          // print the report, and return it
+```
+
+`report()` returns:
+
+```ts
+{
+  total: number,                 // ms from start() to the last mark
+  slowest: ProfileMark | undefined,
+  marks: Array<{ label: string, ms: number, share: number }>,
+}
+```
+
+`share` is the fraction of the run a segment took, 0 to 1. `print()` writes
+CSS-styled lines when a `window` exists and plain text otherwise.
+
+`mark` and `report` throw `INVALID_ARGUMENT` if called before `start()`, and
+`mark` requires a non-empty string label.
+
+Each profiler owns its state, so nested and concurrent measurements do not
+interfere. The 1.x names `timeLookStart()`, `timeLook(label)` and
+`timeLookReport()` drive one shared instance. They are exported by name as well
+as on the default object, so the browser global carries them for 1.x script
+tags.
+
+## Errors
+
+```ts
+import { TimeSolverError } from 'timesolver';
+
+try {
+  getString('not a date', 'YYYY');
+} catch (error) {
+  if (error instanceof TimeSolverError) {
+    error.code; // 'INVALID_DATE'
+  }
+}
+```
+
+| Code | Meaning |
+|---|---|
+| `INVALID_DATE` | the input could not be read as a date, or does not match the given format |
+| `INVALID_UNIT` | the unit is not a recognised alias |
+| `INVALID_FORMAT` | the format string is malformed: empty, tokenless, unbalanced brackets, ambiguous adjacent tokens, or a format-only token where parsing was requested |
+| `INVALID_ARGUMENT` | an argument is outside its documented domain |
+
+Messages are prefixed `[timeSolver]`, as in 1.x.
+
+## Types
+
+```ts
+import type {
+  DateInput,          // Date | string | number
+  ExactUnit,          // units with a fixed millisecond length
+  ProfileMark,
+  ProfileReport,
+  Profiler,
+  TimeSolverErrorCode,
+  Unit,               // canonical unit names
+  UnitAlias,          // every accepted lowercase alias
+  UnitInput,          // what a unit parameter accepts
+} from 'timesolver';
+```
+
+`UNITS` is exported as a runtime array of the nine canonical unit names, and
+`DEFAULT_FORMAT` as `'YYYYMMDD'`.

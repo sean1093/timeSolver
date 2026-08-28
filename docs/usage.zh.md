@@ -1,122 +1,268 @@
-# timeSolver 使用說明
+# 使用指南
 
-這份文件說明 `timeSolver` 函式庫的主要方法、參數與常用格式範例，方便開發者快速上手。
+timeSolver 2.x 的任務導向導覽。完整的函式簽章請見 [API 參考文件](api.md)；
+從 1.x 升級請見[遷移指南](migration-v1-v2.md)。
 
-## 安裝與引入
+也有 [English](usage.md) 與 [日本語](usage.ja.md) 版本。
 
-CommonJS:
+## 安裝與匯入
 
-```js
-const timeSolver = require('timesolver');
+```sh
+npm install timesolver
 ```
 
-ES Module:
-
-```js
-import timeSolver from 'timesolver';
+```ts
+// 只匯入你用得到的部分，其餘會被 tree-shaking 移除。後續範例假設你已匯入
+// 它們所呼叫的函式。
+import {
+  add,
+  after,
+  before,
+  between,
+  endOf,
+  equal,
+  getString,
+  isValid,
+  parse,
+  startOf,
+  subtract,
+} from 'timesolver';
 ```
 
-Browser (UMD bundle):
+```js
+// CommonJS
+const { add, getString } = require('timesolver');
+```
 
 ```html
-<script src="dist/timeSolver.umd.min.js"></script>
+<!-- 瀏覽器環境，不使用打包工具 -->
+<script src="https://unpkg.com/timesolver/dist/timesolver.global.js"></script>
 <script>
-  // 全域物件 timeSolver 可直接使用
-  console.log(timeSolver.getString(new Date(), 'YYYYMMDD'));
+  timeSolver.getString(new Date(), 'YYYY-MM-DD');
 </script>
 ```
 
-## 常用方法總覽
+每個函式都接受 `Date`、epoch 毫秒數，或是語言內建 `Date` 能夠解析的字串，
+並且一律以主機所在的時區運作。
 
-- `timeSolver.add(date, count, unit)` — 在 `date` 上加上 `count` 個 `unit`。
-- `timeSolver.subtract(date, count, unit)` — 在 `date` 上減去 `count` 個 `unit`。
-- `timeSolver.between(d1, d2, unit)` — 回傳 `d2 - d1` 的差距，單位為 `unit`。
-- `timeSolver.equal(d1, d2)` — 判斷兩個日期是否相同（字串比對）。
-- `timeSolver.after(d1, d2, unit)` — 判斷 `d1` 是否在 `d2` 之後（以 `unit` 計算）。
-- `timeSolver.before(d1, d2, unit)` — 判斷 `d1` 是否在 `d2` 之前（以 `unit` 計算）。
-- `timeSolver.afterToday(d)` / `timeSolver.beforeToday(d)` — 相對於今天的判斷。
-- `timeSolver.getString(date, format)` — 將 `date` 轉成指定格式的字串。
-- `timeSolver.isValid(dateString, format?)` — 驗證字串是否為合法日期；若提供 `format`，則以指定格式驗證。
-- `timeSolver.getAbbrWeek(date)` / `timeSolver.getFullWeek(date)` — 取得星期（縮寫或全名）。
-- `timeSolver.getAbbrMonth(date)` / `timeSolver.getFullMonth(date)` — 取得月份（縮寫或全名）。
-- `timeSolver.getQuarterByMonth(m)` / `timeSolver.getFirstMonthByQuarter(q)` — 季度工具。
+## 格式化日期
 
-### 範例
+```ts
+const stamp = new Date(2024, 2, 17, 14, 30, 45, 123); // 2024 年 3 月 17 日，星期日
 
-```js
-const d = new Date('2020-01-01T00:00:00Z');
-timeSolver.add(d, 1, 'D'); // 2020-01-02
-timeSolver.subtract(d, 2, 'H'); // 2019-12-31 22:00
-timeSolver.between('2020-01-01','2020-01-02','H'); // 24
-timeSolver.getString(d, 'YYYY-MM-DD HH:MM:SS.SSS'); // e.g. '2020-01-01 00:00:00.000'
+getString(stamp);                            // '20240317'  （預設格式）
+getString(stamp, 'YYYY-MM-DD');              // '2024-03-17'
+getString(stamp, 'YYYY-MM-DD HH:mm:ss.SSS'); // '2024-03-17 14:30:45.123'
+getString(stamp, 'ddd, D MMM YYYY');         // 'Sun, 17 Mar 2024'
+getString(stamp, 'h:mm a');                  // '2:30 pm'
+getString(stamp, '[Quarter] Q [of] YYYY');   // 'Quarter 1 of 2024'
 ```
 
-## 支援的時間單位 (unit)
+大寫符號代表較大的單位，小寫代表較小的單位：`MM` 是月份，`mm` 是分鐘；
+`DD` 是日，`dddd` 是星期名稱。字面文字請用中括號包起來，
+裡面的字母才不會被當成格式符號解讀。
 
-函式內部接受字串或縮寫，會轉成對應的單位編號。可使用的值包含：
+完整的格式符號（token）表格請見 [API 參考文件](api.md#tokens)。
+有兩種格式會被拒絕，兩者都拋出 `INVALID_FORMAT`：
 
-- `MILLISECOND` 或 `mill` 或 不給（預設）
-- `SECOND` 或 `S` 或 `s`
-- `MINUTE` 或 `MIN`
-- `HOUR` 或 `H`
-- `DAY` 或 `D`
-- `MONTH` 或 `M`
-- `YEAR` 或 `Y`
-
-例如： `timeSolver.add(date, 5, 'H')` 表示加 5 小時。
-
-## getString 支援的格式
-
-`timeSolver.getString(date, format)` 支援下列格式字串（大小寫會被標準化）：
-
-- `YYYY` — 年份，例如 `2020`
-- `YYYYMM` — `202001`
-- `YYYYMMDD` — `20200101`
-- `YYYY/MM/DD`, `YYYY-MM-DD`, `YYYY.MM.DD` — 常見日期分隔格式
-- `MMDDYYYY`, `DDMMYYYY` — 月日年或日月年順序
-- 帶時間的格式：
-  - `YYYY/MM/DD HH:MM:SS`
-  - `YYYY/MM/DD HH:MM:SS.SSS`（含毫秒）
-  - `YYYY-MM-DD HH:MM:SS` / `YYYY-MM-DD HH:MM:SS.SSS`
-  - `YYYY.MM.DD HH:MM:SS` / `YYYY.MM.DD HH:MM:SS.SSS`
-  - `YYYYMMDD HH:MM:SS` / `YYYYMMDD HH:MM:SS.SSS`
-  - `MM/DD/YYYY HH:MM:SS` / `MM/DD/YYYY HH:MM:SS.SSS`
-  - `MM-DD-YYYY HH:MM:SS` / `MM-DD-YYYY HH:MM:SS.SSS`
-  - `MM.DD.YYYY HH:MM:SS` / `MM.DD.YYYY HH:MM:SS.SSS`
-- 時間-only： `HH:MM:SS` / `HH:MM:SS.SSS`
-
-範例：
-
-```js
-timeSolver.getString(new Date('2020-06-15T13:45:30.123Z'), 'YYYY-MM-DD HH:MM:SS.SSS')
-// => "2020-06-15 13:45:30.123"
+```ts
+getString(stamp, 'YYYYMD'); // 拋出例外：'M' 緊接著 'D'，'2024112' 無從判讀
+getString(stamp, 'nope');   // 拋出例外：完全沒有格式符號；請改用 '[nope]'
 ```
 
-## isValid 使用說明
+請注意，單一字母也是格式符號：`'oops'` 會輸出 `'oop45'`，因為 `s` 就是秒數符號。
+凡是不想被當成格式符號的字面文字，都要記得跳脫。
 
-- `timeSolver.isValid('2020/01/01')` → `true`（若 format 未給則使用 Date 解析）
-- `timeSolver.isValid('2020/02/30', 'YYYY/MM/DD')` → `false`（不合法日期）
+1.x 的 36 種格式名稱全部仍然可用，而且不分大小寫，
+所以 `getString(stamp, 'YYYY-MM-DD HH:MM:SS')` 依舊會輸出
+`'2024-03-17 14:30:45'`。
 
-當 `format` 被提供時，會根據內建的正規表達式驗證日期與（若含時間）時間格式，並在必要時檢查時間部分是否存在。
+## 從字串讀取日期
 
-## timeLook（簡易效能量測）
+`parse` 非常嚴格：輸入必須與格式完全相符，
+而且解析出來的日期再格式化回去也必須是同一個字串。
 
-用來標記程式執行區段並列印報表：
+```ts
+parse('17/03/2024', 'DD/MM/YYYY');                  // 2024-03-17 00:00 當地時間
+parse('2024-03-17 14:30', 'YYYY-MM-DD HH:mm');      // 帶時間
+parse('03/17/2024 02:30 PM', 'MM/DD/YYYY hh:mm A'); // 12 小時制
 
-```js
-timeSolver.timeLookStart();
-// ... some operation ...
-timeSolver.timeLook('step1');
-// ... another operation ...
-timeSolver.timeLook('step2');
-timeSolver.timeLookReport();
+parse('31/02/2024', 'DD/MM/YYYY'); // 拋出例外：二月沒有 31 日
+parse('2024-3-7', 'YYYY-MM-DD');   // 拋出例外：補零位數不符
 ```
 
-報表會在 console 顯示每段的花費時間與相對百分比，並標記最耗時的段落。
+格式沒有涵蓋的欄位一律預設為 1970-01-01，
+所以 `parse('12:30:00', 'HH:mm:ss')` 得到的是 epoch 當天的時間，
+很適合用來比較一天當中的時刻。
 
-## 其他資訊
+## 驗證輸入
 
-- 函式大多接受 `Date` 物件或可被 `new Date(...)` 解析的字串作為日期參數。
-- 若輸入無效日期，會在內部 `console.error` 並回傳 `null`（例如 `_v` 檢查）。
+```ts
+isValid('2020-01-01');               // true  — Date 讀得懂的都算
+isValid('nope');                     // false
+isValid('2020-02-29', 'YYYY-MM-DD'); // true  — 2020 是閏年
+isValid('2021-02-29', 'YYYY-MM-DD'); // false
+isValid('31-02-2020', 'DD-MM-YYYY'); // false — 不存在的日期
+isValid('12:30:00', 'HH:mm:ss');     // true
+```
 
-如需我也可以將每個方法拆成示例放到 `docs/examples/`。
+`isValid` 遇到錯誤資料絕不拋出例外，
+因此很適合放在會拋出例外的函式之前當作防護：
+
+```ts
+function shiftDeadline(input: unknown, days: number): Date | undefined {
+  if (typeof input !== 'string' || !isValid(input, 'YYYY-MM-DD')) {
+    return undefined;
+  }
+  return add(parse(input, 'YYYY-MM-DD'), days, 'day');
+}
+```
+
+## 加減運算
+
+所有操作都是不可變的：輸入永遠不會被修改，每次呼叫都回傳新的 `Date`。
+
+```ts
+add(stamp, 90, 'minute');    // 實際經過的時間
+add(stamp, 1, 'day');        // 明天的同一個時鐘時間，有沒有日光節約時間都一樣
+add(stamp, 1, 'week');
+add(stamp, 1, 'month');      // 會截到月底：1 月 31 日加一個月是 2 月 29 日
+add(stamp, -1, 'year');
+subtract(stamp, 2, 'hour');
+```
+
+單位名稱不分大小寫，也接受 1.x 的縮寫：`'D'`、`'H'`、`'MIN'`、
+代表月的 `'M'`、代表年的 `'Y'`。
+
+毫秒到小時可以使用小數；日以及更大的單位則不接受小數，
+因為這些單位的小數沒有固定長度：
+
+```ts
+add(stamp, 1.5, 'hour');  // 可以
+add(stamp, 1.5, 'month'); // 拋出 INVALID_ARGUMENT
+```
+
+## 日曆區間
+
+```ts
+startOf(stamp, 'day');     // 2024-03-17 00:00:00.000
+endOf(stamp, 'day');       // 2024-03-17 23:59:59.999
+startOf(stamp, 'week');    // 2024-03-17 00:00（一週從星期日開始）
+startOf(stamp, 'month');   // 2024-03-01 00:00
+endOf(stamp, 'month');     // 2024-03-31 23:59:59.999
+startOf(stamp, 'quarter'); // 2024-01-01 00:00
+```
+
+例如查詢本月至今的資料：
+
+```ts
+const rows = all.filter(
+  (row) => !before(row.createdAt, startOf(new Date(), 'month')),
+);
+```
+
+## 比較與計算差距
+
+```ts
+between('2020-01-01T00:00', '2020-01-02T00:00', 'hour');  // 24
+between('2020-01-01T00:00', '2020-02-01T00:00', 'month'); // 1
+between('2020-01-01T00:00', '2020-01-16T00:00', 'month'); // 0.4838…
+```
+
+計算基準會依單位而異，讓每個答案都符合該單位應有的語意：
+
+- 毫秒到小時計算**實際經過的時間**，所以春季日光節約時間轉換那天只有 23 小時，結果就是 `23`；
+- 日與週依照**當地日曆**計算，所以那一天算 `1`，跨過那天的中午到中午也是 `1`；
+- 月、季與年依照**日曆**計算，餘數則依所落在的月份長度換算。
+
+`between(a, b, unit)` 永遠等於 `between(b, a, unit)` 取負號。
+
+比較函式可以帶入選用的單位，用來決定比較的精細度：
+
+```ts
+equal('2024-03-17T01:00', '2024-03-17T23:00', 'day'); // true，同一天
+after('2024-03-17T23:00', '2024-03-17T01:00');        // true，時間點較晚
+after('2024-03-17T23:00', '2024-03-17T01:00', 'day'); // false，同一天
+afterToday(add(new Date(), 1, 'day'));                // true
+beforeToday(new Date());                              // false
+```
+
+## 日曆輔助函式
+
+```ts
+getFullWeek(stamp);              // 'Sunday'
+getAbbrWeek(stamp);              // 'Sun'
+getFullMonth(stamp);             // 'March'
+getAbbrMonth(stamp);             // 'Mar'
+getQuarter(stamp);               // 1
+getQuarterByMonth(5);            // 2
+getFirstMonthByQuarter(3);       // 7
+isLeapYear(2024);                // true
+daysInMonth(2024, 2);            // 29
+```
+
+這些名稱一律是英文，而且來自固定的對照表，
+不會因為引擎或語系設定而改變。需要在地化輸出時，
+請自行用 `Intl.DateTimeFormat` 格式化你需要的部分。
+
+## 處理錯誤
+
+錯誤的輸入會拋出 `TimeSolverError`，上面帶有可以用來分支處理的 `code`：
+
+```ts
+import { TimeSolverError, getString } from 'timesolver';
+
+try {
+  getString(userInput, userFormat);
+} catch (error) {
+  if (error instanceof TimeSolverError) {
+    switch (error.code) {
+      case 'INVALID_DATE':
+        return 'That is not a date I can read.';
+      case 'INVALID_FORMAT':
+        return 'That format string is not valid.';
+      default:
+        throw error;
+    }
+  }
+  throw error;
+}
+```
+
+函式庫不會輸出任何東西到 console，也沒有任何函式會用 `null` 當作失敗的代表值。
+
+## 分析效能瓶頸
+
+```ts
+import { createProfiler } from 'timesolver/profiler';
+
+const profiler = createProfiler();
+
+profiler.start();
+const rows = await loadRows();
+profiler.mark('load');
+const view = render(rows);
+profiler.mark('render');
+
+profiler.print();
+// [timeSolver] 2 mark(s) in 128.412 ms
+//   1. load    96.210 ms  74.9%  <- slowest
+//   2. render  32.202 ms  25.1%
+```
+
+每個 profiler 各自擁有一條時間軸，因此巢狀量測不會互相干擾；
+`report()` 會回傳 `{ total, slowest, marks }`，可以直接用來斷言或送進監控指標，
+不必依賴 console 輸出。1.x 的 `timeLookStart`、`timeLook` 與 `timeLookReport`
+這三個名稱仍然存在，因此 1.x 的程式碼與 1.x 的 `<script>` 標籤都能繼續運作。
+
+## 注意事項
+
+**字串解析沿用語言本身的規則。** `new Date('2024-03-10')` 是 UTC 午夜，
+`new Date('2024-03-10T00:00')` 則是當地時間。本套件會把字串直接交給 `Date`，
+所以同一套規則也適用。若這點會影響結果，請改傳 `Date`、把時間一併寫上，
+或改用 `parse` 指定明確的格式。
+
+**沒有時區概念。** 一切都以主機當地時間為準。`Z` 與 `ZZ` 可以輸出目前的時差，
+但無法反過來解析。需要處理時區時，請改用 `Temporal` 或 `Intl.DateTimeFormat`。
+
+**一週從星期日開始**，與 `Date#getDay` 一致。
