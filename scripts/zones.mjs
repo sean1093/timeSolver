@@ -21,7 +21,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ZONES = [
   'UTC',
@@ -66,8 +66,10 @@ if (!existsSync(join(root, 'dist', 'index.js'))) {
 
 // Runs inside each child process, once per zone.
 const CHECKS = /* js */ `
+// The specifier must be a file:// URL: on Windows a bare absolute path starts
+// with a drive letter, which the ESM loader reads as an unsupported protocol.
 import { add, between, endOf, getString, parse, startOf, subtract } from ${JSON.stringify(
-  join(root, 'dist', 'index.js'),
+  pathToFileURL(join(root, 'dist', 'index.js')).href,
 )};
 
 const zone = process.env.TZ;
