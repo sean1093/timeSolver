@@ -2,6 +2,11 @@ import { type DateInput, toDate } from './coerce.js';
 import { TimeSolverError } from './errors.js';
 import { MONTHS_PER_UNIT } from './units.js';
 
+// Stryker disable StringLiteral: every string literal below this point is an
+// error message or an English calendar name. The names are asserted by
+// test/calendar.test.ts through the public helpers; the messages are
+// deliberately not, because docs/support.md states message text is not API.
+
 const MONTH_NAMES = [
   'January',
   'February',

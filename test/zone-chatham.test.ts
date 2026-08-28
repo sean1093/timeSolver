@@ -1,11 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { getString } from '../src/format.js';
 import { endOf, startOf } from '../src/manipulate.js';
 
 /**
- * Pacific/Chatham, the awkward case. This file runs under `TZ=Pacific/Chatham`
- * as its own Vitest project, because the two shapes below cannot happen in
- * America/New_York where the rest of the suite runs.
+ * Pacific/Chatham, the awkward case. This file switches the process time zone
+ * for itself, because the two shapes below cannot happen in America/New_York
+ * where the rest of the suite runs.
+ *
+ * The switch is a runtime assignment rather than a Vitest project because not
+ * every tool that drives this suite honours per-project `env`: Stryker's runner
+ * reads `vitest.config.ts` and runs every file in one zone. Vitest isolates each
+ * file in its own worker, and the zone is restored afterwards regardless.
  *
  * Chatham sits at +12:45 and +13:45 and shifts at 02:45 rather than on the hour:
  *
@@ -19,6 +24,29 @@ import { endOf, startOf } from '../src/manipulate.js';
  * Both are checked across 366 days by `npm run test:zones`; these pin the exact
  * instants so a regression names itself.
  */
+const ZONE = 'Pacific/Chatham';
+const CHATHAM_STANDARD = -765; // +12:45
+const CHATHAM_SUMMER = -825; // +13:45
+const inherited = process.env.TZ;
+
+// Set at import time, before the suites below are registered, so the check on
+// the next line sees the result.
+process.env.TZ = ZONE;
+
+/**
+ * Assigning `process.env.TZ` invalidates the date cache under Node's default
+ * process model, which is what Vitest uses. It does *not* work inside a worker
+ * thread, because the environment there is a copy: Stryker's Vitest runner
+ * hard-codes `pool: 'threads'`, so under mutation testing this file skips rather
+ * than asserting confidently about the wrong zone. The mutants it alone covers
+ * are marked in `src/manipulate.ts` with that reason.
+ */
+const switched = new Date(Date.UTC(2024, 0, 15)).getTimezoneOffset() === CHATHAM_SUMMER;
+
+afterAll(() => {
+  process.env.TZ = inherited;
+});
+
 const STAMP = 'YYYY-MM-DD HH:mm:ss.SSS';
 const UNITS = ['millisecond', 'second', 'minute', 'hour', 'day', 'week', 'month', 'year'] as const;
 
@@ -37,14 +65,14 @@ function expectConsistent(date: Date) {
   }
 }
 
-describe('the zone this file exists for', () => {
+describe.skipIf(!switched)('the zone this file exists for', () => {
   it('is Pacific/Chatham, at a quarter-hour offset', () => {
-    expect(new Date(Date.UTC(2024, 0, 15)).getTimezoneOffset()).toBe(-825); // +13:45
-    expect(new Date(Date.UTC(2024, 5, 15)).getTimezoneOffset()).toBe(-765); // +12:45
+    expect(new Date(Date.UTC(2024, 0, 15)).getTimezoneOffset()).toBe(CHATHAM_SUMMER);
+    expect(new Date(Date.UTC(2024, 5, 15)).getTimezoneOffset()).toBe(CHATHAM_STANDARD);
   });
 });
 
-describe('a unit whose start never happened', () => {
+describe.skipIf(!switched)('a unit whose start never happened', () => {
   // 2024-09-28T14:00:00Z is 02:45 local; the next millisecond reads 03:45.
   const shift = new Date('2024-09-28T14:00:00.000Z');
 
@@ -69,7 +97,7 @@ describe('a unit whose start never happened', () => {
   });
 });
 
-describe('a unit reached twice with other units in between', () => {
+describe.skipIf(!switched)('a unit reached twice with other units in between', () => {
   // 2024-04-06T14:00:00Z is when 03:45 becomes 02:45.
   const shift = new Date('2024-04-06T14:00:00.000Z');
   const firstRun = new Date('2024-04-06T13:00:30.000Z'); // 02:45:30 at +13:45

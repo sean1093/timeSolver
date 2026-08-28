@@ -58,17 +58,18 @@ function monthsBetween(from: Date, to: Date): number {
     (end.getMonth() - start.getMonth());
   const anchorTime = add(start, wholeMonths, 'month').getTime();
   const endTime = end.getTime();
-  let months = wholeMonths;
 
-  if (endTime > anchorTime) {
-    const next = add(start, wholeMonths + 1, 'month').getTime();
-
-    months = wholeMonths + (endTime - anchorTime) / (next - anchorTime);
-  } else if (endTime < anchorTime) {
-    const previous = add(start, wholeMonths - 1, 'month').getTime();
-
-    months = wholeMonths - (anchorTime - endTime) / (anchorTime - previous);
-  }
+  // One formula covers every case. The neighbouring anchor is the next month
+  // when the target overshoots this one and the previous month otherwise; the
+  // distance between the two anchors is the month length the remainder is
+  // scaled by, and the signed numerator supplies the direction. When the target
+  // sits exactly on its anchor the numerator is zero, so no special case is
+  // needed and the two anchors are always a month apart, never zero.
+  // Stryker disable next-line EqualityOperator: at equality the numerator is
+  // zero, so either neighbour gives the same answer. Unkillable by construction.
+  const step = endTime > anchorTime ? 1 : -1;
+  const neighbourTime = add(start, wholeMonths + step, 'month').getTime();
+  const months = wholeMonths + (endTime - anchorTime) / Math.abs(neighbourTime - anchorTime);
 
   return reversed ? -months : months;
 }

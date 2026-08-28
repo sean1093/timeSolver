@@ -50,6 +50,7 @@ export function parse(input: string, format: string): Date {
   if (typeof input !== 'string') {
     throw new TimeSolverError(
       'INVALID_ARGUMENT',
+      // Stryker disable next-line StringLiteral: not API; see docs/support.md
       `parse expects a string input, received ${typeof input}.`,
     );
   }
@@ -67,12 +68,14 @@ export function parse(input: string, format: string): Date {
 
   const draft: ParseDraft = {};
 
-  for (const [index, name] of tokens.entries()) {
-    const raw = match[index + 1];
+  // Every capture group in a generated matcher is mandatory, so a match means
+  // every group participated. The cast records that; there is no runtime case
+  // where a group is absent, which mutation testing confirmed by showing a
+  // guard here could never fail.
+  const captured = match.slice(1) as string[];
 
-    if (raw !== undefined) {
-      readToken(name, draft, raw);
-    }
+  for (const [index, name] of tokens.entries()) {
+    readToken(name, draft, captured[index] as string);
   }
 
   // Build from a safe anchor: `new Date(year, ...)` maps years 0-99 into the
@@ -121,12 +124,11 @@ export function isValid(input: DateInput, format?: string): boolean {
     }
   }
 
-  if (typeof input !== 'string') {
-    return false;
-  }
-
+  // No guard for a non-string input: `parse` rejects it with INVALID_ARGUMENT,
+  // which the catch below turns into `false`. An early return here would be
+  // dead code, as mutation testing showed by deleting it with no test failing.
   try {
-    parse(input, format);
+    parse(input as string, format);
     return true;
   } catch (error) {
     if (error instanceof TimeSolverError && error.code === 'INVALID_FORMAT') {

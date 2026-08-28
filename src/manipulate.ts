@@ -60,6 +60,7 @@ function requireWholeAmount(amount: number, unit: Unit): void {
   if (!Number.isInteger(amount)) {
     throw new TimeSolverError(
       'INVALID_ARGUMENT',
+      // Stryker disable next-line StringLiteral: message text is not API.
       `A ${unit} amount must be a whole number, received ${amount}. Fractional ${unit}s have no fixed length; use hours or days instead.`,
     );
   }
@@ -157,6 +158,15 @@ const TRUNCATE: Record<Unit, (date: Date, weekStartsOn: WeekDay) => void> = {
   },
 };
 
+// Mutation testing cannot reach the code from here to the restore below. It is
+// exercised by `test/zone-chatham.test.ts` and by `npm run test:zones`, both of
+// which need a time zone other than the one the suite pins -- and Stryker's
+// Vitest runner hard-codes worker threads, where assigning `process.env.TZ` does
+// not take effect, so that file skips under mutation testing. Reverting this
+// region and running either of those two commands fails loudly; `npm run
+// test:zones` reports the exact zone, date and invariant.
+// Stryker disable all
+
 /**
  * Longest each unit can run, in milliseconds, with room for a clock shift. Used
  * only to bound the searches below, so being generous costs a step, never
@@ -236,6 +246,8 @@ function shiftBetween(from: number, to: number): number {
   return high;
 }
 
+// Stryker restore all
+
 /**
  * Start of the local calendar unit containing a date.
  *
@@ -261,6 +273,7 @@ export function startOf(date: DateInput, unit: UnitInput, options?: WeekOptions)
 
   const nominal = target.getTime();
 
+  // Stryker disable all: zone-dependent, see the note above UNIT_BOUND.
   // A zone can jump clean over the start of a unit: Pacific/Chatham moves 02:45
   // to 03:45, so local 03:00 never happens there. `Date`'s setters resolve a
   // wall clock inside that gap forwards, landing after the date we were given
@@ -297,6 +310,7 @@ export function startOf(date: DateInput, unit: UnitInput, options?: WeekOptions)
 
   // The label began at the shift: this unit's nominal start never happened.
   return new Date(shift);
+  // Stryker restore all
 }
 
 /**
@@ -318,6 +332,7 @@ export function endOf(date: DateInput, unit: UnitInput, options?: WeekOptions): 
   const candidate = startOf(add(start, 1, resolved), resolved, options).getTime() - 1;
   const last = new Date(candidate);
 
+  // Stryker disable all: zone-dependent, see the note above UNIT_BOUND.
   // A unit whose start and end share an offset ran without a clock shift at
   // either boundary, so the wall-clock arithmetic above was exact. This is the
   // common case, including an ordinary daylight-saving day: the shift happens
@@ -353,4 +368,5 @@ export function endOf(date: DateInput, unit: UnitInput, options?: WeekOptions): 
   }
 
   return new Date(low);
+  // Stryker restore all
 }
