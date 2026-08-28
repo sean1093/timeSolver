@@ -4,6 +4,7 @@
 #
 # Generated; do not edit by hand. After an intentional API change, run:
 #   npm run build && npm run check:api -- --update
+timesolver Bounds  type Bounds = '[]' | '[)' | '(]' | '()'
 timesolver DEFAULT_FORMAT  const DEFAULT_FORMAT = "YYYYMMDD"
 timesolver DateInput  type DateInput = Date | string | number
 timesolver ExactUnit  type ExactUnit = keyof typeof MS_PER_EXACT_UNIT
@@ -28,12 +29,16 @@ timesolver UNITS  const UNITS: readonly ["millisecond", "second", "minute", "hou
 timesolver Unit  type Unit = (typeof UNITS)[number]
 timesolver UnitAlias  type UnitAlias = keyof typeof UNIT_ALIASES
 timesolver UnitInput  type UnitInput = UnitAlias | Uppercase<UnitAlias> | (string & Record<never, never>)
+timesolver WeekDay  type WeekDay = 0 | 1 | 2 | 3 | 4 | 5 | 6
+timesolver WeekOptions  interface WeekOptions { ... }
+timesolver WeekOptions.weekStartsOn  readonly weekStartsOn?: WeekDay
 timesolver add  function add(date: DateInput, amount?: number, unit?: UnitInput): Date
-timesolver after  function after(first: DateInput, second: DateInput, unit?: UnitInput): boolean
+timesolver after  function after(first: DateInput, second: DateInput, unit?: UnitInput, options?: WeekOptions): boolean
 timesolver afterToday  function afterToday(date: DateInput): boolean
-timesolver before  function before(first: DateInput, second: DateInput, unit?: UnitInput): boolean
+timesolver before  function before(first: DateInput, second: DateInput, unit?: UnitInput, options?: WeekOptions): boolean
 timesolver beforeToday  function beforeToday(date: DateInput): boolean
 timesolver between  function between(from: DateInput, to: DateInput, unit?: UnitInput): number
+timesolver clamp  function clamp(date: DateInput, lower: DateInput, upper: DateInput): Date
 timesolver createProfiler  function createProfiler(): Profiler
 timesolver daysInMonth  function daysInMonth(year: number, month: number): number
 timesolver default  const timeSolver: { ... }
@@ -43,6 +48,7 @@ timesolver default.afterToday  readonly afterToday: typeof afterToday
 timesolver default.before  readonly before: typeof before
 timesolver default.beforeToday  readonly beforeToday: typeof beforeToday
 timesolver default.between  readonly between: typeof between
+timesolver default.clamp  readonly clamp: typeof clamp
 timesolver default.createProfiler  readonly createProfiler: typeof createProfiler
 timesolver default.daysInMonth  readonly daysInMonth: typeof daysInMonth
 timesolver default.endOf  readonly endOf: typeof endOf
@@ -52,11 +58,17 @@ timesolver default.getAbbrWeek  readonly getAbbrWeek: typeof getAbbrWeek
 timesolver default.getFirstMonthByQuarter  readonly getFirstMonthByQuarter: typeof getFirstMonthByQuarter
 timesolver default.getFullMonth  readonly getFullMonth: typeof getFullMonth
 timesolver default.getFullWeek  readonly getFullWeek: typeof getFullWeek
+timesolver default.getISOWeek  readonly getISOWeek: typeof getISOWeek
+timesolver default.getISOWeekYear  readonly getISOWeekYear: typeof getISOWeekYear
 timesolver default.getQuarter  readonly getQuarter: typeof getQuarter
 timesolver default.getQuarterByMonth  readonly getQuarterByMonth: typeof getQuarterByMonth
 timesolver default.getString  readonly getString: typeof getString
+timesolver default.getWeekOfYear  readonly getWeekOfYear: typeof getWeekOfYear
+timesolver default.isBetween  readonly isBetween: typeof isBetween
 timesolver default.isLeapYear  readonly isLeapYear: typeof isLeapYear
 timesolver default.isValid  readonly isValid: typeof isValid
+timesolver default.max  readonly max: typeof max
+timesolver default.min  readonly min: typeof min
 timesolver default.monthAbbreviation  readonly monthAbbreviation: typeof monthAbbreviation
 timesolver default.monthName  readonly monthName: typeof monthName
 timesolver default.parse  readonly parse: typeof parse
@@ -67,22 +79,28 @@ timesolver default.timeLookReport  readonly timeLookReport: typeof timeLookRepor
 timesolver default.timeLookStart  readonly timeLookStart: typeof timeLookStart
 timesolver default.weekdayAbbreviation  readonly weekdayAbbreviation: typeof weekdayAbbreviation
 timesolver default.weekdayName  readonly weekdayName: typeof weekdayName
-timesolver endOf  function endOf(date: DateInput, unit: UnitInput): Date
-timesolver equal  function equal(first: DateInput, second: DateInput, unit?: UnitInput): boolean
+timesolver endOf  function endOf(date: DateInput, unit: UnitInput, options?: WeekOptions): Date
+timesolver equal  function equal(first: DateInput, second: DateInput, unit?: UnitInput, options?: WeekOptions): boolean
 timesolver getAbbrMonth  function getAbbrMonth(date: DateInput): string
 timesolver getAbbrWeek  function getAbbrWeek(date: DateInput): string
 timesolver getFirstMonthByQuarter  function getFirstMonthByQuarter(quarter: number): number | null
 timesolver getFullMonth  function getFullMonth(date: DateInput): string
 timesolver getFullWeek  function getFullWeek(date: DateInput): string
+timesolver getISOWeek  function getISOWeek(date: DateInput): number
+timesolver getISOWeekYear  function getISOWeekYear(date: DateInput): number
 timesolver getQuarter  function getQuarter(date: DateInput): number
 timesolver getQuarterByMonth  function getQuarterByMonth(month: number): number | null
 timesolver getString  function getString(date: DateInput, format?: string): string
+timesolver getWeekOfYear  function getWeekOfYear(date: DateInput, options?: WeekOptions): number
+timesolver isBetween  function isBetween(date: DateInput, start: DateInput, end: DateInput, unit?: UnitInput, bounds?: Bounds, options?: WeekOptions): boolean
 timesolver isLeapYear  function isLeapYear(year: number): boolean
 timesolver isValid  function isValid(input: DateInput, format?: string): boolean
+timesolver max  function max(first: DateInput, ...rest: readonly DateInput[]): Date
+timesolver min  function min(first: DateInput, ...rest: readonly DateInput[]): Date
 timesolver monthAbbreviation  function monthAbbreviation(month: number): string
 timesolver monthName  function monthName(month: number): string
 timesolver parse  function parse(input: string, format: string): Date
-timesolver startOf  function startOf(date: DateInput, unit: UnitInput): Date
+timesolver startOf  function startOf(date: DateInput, unit: UnitInput, options?: WeekOptions): Date
 timesolver subtract  function subtract(date: DateInput, amount?: number, unit?: UnitInput): Date
 timesolver timeLook  function timeLook(label: string): void
 timesolver timeLookReport  function timeLookReport(): ProfileReport
