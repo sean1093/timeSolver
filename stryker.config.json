@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Mutation testing. Line coverage says a line ran; this says a test would have failed had the line been wrong. Not a pull-request gate: a full run takes minutes, so it runs on a schedule and on demand.",
+  "packageManager": "npm",
+  "testRunner": "vitest",
+  "reporters": ["clear-text", "progress", "html", "json"],
+  "htmlReporter": {
+    "fileName": "reports/mutation/index.html"
+  },
+  "coverageAnalysis": "all",
+  "mutate": ["src/**/*.ts"],
+  "ignorePatterns": ["dist", "coverage", "reports", "bench", "examples"],
+  "timeoutMS": 20000,
+  "concurrency": 4,
+  "tempDirName": ".stryker-tmp",
+  "cleanTempDir": true,
+  "jsonReporter": {
+    "fileName": "reports/mutation/report.json"
+  },
+  "thresholds": {
+    "high": 100,
+    "low": 99,
+    "break": 100
+  }
+}

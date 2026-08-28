@@ -62,7 +62,8 @@
     "check:api": "node scripts/api-surface.mjs",
     "bench": "vitest bench --run",
     "check:docs": "node scripts/check-docs.mjs",
-    "test:gates": "vitest run test/gates.test.ts"
+    "test:gates": "vitest run test/gates.test.ts",
+    "test:mutation": "stryker run"
   },
   "keywords": [
     "date",
@@ -96,6 +97,8 @@
     "@biomejs/biome": "^2.3.11",
     "@changesets/cli": "^3.0.1",
     "@size-limit/preset-small-lib": "^13.0.3",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
     "@types/node": "^26.4.0",
     "@vitest/coverage-v8": "^4.1.11",
     "date-fns": "^4.1.0",

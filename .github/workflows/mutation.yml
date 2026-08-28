@@ -1,0 +1,49 @@
+name: Mutation
+
+# Mutation testing asks a different question from coverage: not "did this line
+# run" but "would a test have failed had this line been wrong". A full run takes
+# about a minute locally and rather longer on a shared runner, which is too slow
+# for every pull request, so it runs weekly and on demand.
+on:
+  schedule:
+    - cron: '17 4 * * 3'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    name: Mutation score
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Fails when the score drops below the configured threshold. Every mutant
+      # that cannot be killed carries a `Stryker disable` comment naming why, so
+      # a new survivor means either a missing test or a reason worth writing
+      # down -- both of which want a human decision.
+      - name: Run mutation testing
+        run: npm run test:mutation
+
+      - name: Upload mutation report
+        if: ${{ !cancelled() && hashFiles('reports/mutation/**') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          retention-days: 30
