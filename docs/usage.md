@@ -157,9 +157,16 @@ startOf(stamp, 'quarter'); // 2024-01-01 00:00
 A month-to-date query, for example:
 
 ```ts
-const rows = all.filter(
-  (row) => !before(row.createdAt, startOf(new Date(), 'month')),
-);
+const monthStart = startOf(new Date(), 'month');
+const monthEnd = endOf(new Date(), 'month');
+const rows = all.filter((row) => isBetween(row.createdAt, monthStart, monthEnd));
+```
+
+For back-to-back ranges, ask for a half-open interval so neither overlaps nor
+leaves a gap:
+
+```ts
+isBetween(date, monthStart, add(monthStart, 1, 'month'), undefined, '[)');
 ```
 
 ## Comparing and measuring
