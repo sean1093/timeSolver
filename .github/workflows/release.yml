@@ -3,6 +3,10 @@ name: Release
 on:
   push:
     branches: [master]
+  # Releasing on demand, without waiting for a push: Actions tab, Release,
+  # Run workflow. Changesets publishes only versions absent from the registry,
+  # so a run with nothing to do is a no-op rather than a duplicate publish.
+  workflow_dispatch:
 
 # Releases must not race. Never cancel a run that may already be publishing.
 concurrency:
