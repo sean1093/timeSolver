@@ -127,8 +127,9 @@ better split into a reviewable series.
 
 ## Quality gates
 
-CI runs on `ubuntu-latest` across Node 20, 22, and 24, in this order. Every one
-must pass before a PR can merge:
+Two CI jobs guard `master`, and both must pass before a PR can merge.
+
+The **quality** job runs once, on Node 22, in this order:
 
 1. `lint` — Biome formatting and rules.
 2. `typecheck` — `tsc --noEmit` clean.
@@ -138,7 +139,13 @@ must pass before a PR can merge:
 5. `check:exports` — `attw` and `publint` agree the packed tarball resolves for
    ESM, CJS, and TypeScript.
 6. `size` — the bundle is within budget.
-7. `smoke` — the built ESM, CJS, and IIFE bundles all load and work.
+7. `smoke` — the built ESM, CJS, and IIFE bundles load, resolve by package
+   name through the `exports` map, and compute correctly.
+
+The **test** job runs `test`, `build`, and `smoke` on Node 20, 22, and 24, which
+is what proves the published artifacts work on every supported runtime. Lint,
+typechecking, coverage, packaging and size are runtime-independent, so they run
+once rather than three times.
 
 You can run the same sequence locally. The fast pre-push check is:
 
