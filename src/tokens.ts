@@ -65,6 +65,24 @@ interface TokenSpec {
   readonly read?: (draft: ParseDraft, raw: string) => void;
 }
 
+const DIGIT_PATTERN = /^(?:\\d\{\d+(?:,\d+)?\}|\[\d-\d\])$/;
+
+/**
+ * How many digits a token's pattern can consume, derived from the pattern
+ * itself so the two can never drift apart.
+ *
+ * A variable-width token running straight into another numeric token makes a
+ * format ambiguous: `'YYYYMD'` renders 12 January 2024 as `'2024112'`, which
+ * reads equally well as month 11 day 2. `tokenize` rejects those formats.
+ */
+function digitWidth(pattern: string | undefined): 'none' | 'fixed' | 'variable' {
+  if (pattern === undefined || !DIGIT_PATTERN.test(pattern)) {
+    return 'none';
+  }
+
+  return pattern.includes(',') ? 'variable' : 'fixed';
+}
+
 const YEAR_DIGITS = 4;
 const MILLISECOND_DIGITS = 3;
 const PAIR = 2;
@@ -397,6 +415,8 @@ export function tokenize(format: string): FormatPart[] {
     );
   }
 
+  let previous: FormatPart | undefined;
+
   for (const part of parts) {
     if (part.kind === 'literal' && /[[\]]/.test(part.text)) {
       throw new TimeSolverError(
@@ -404,6 +424,20 @@ export function tokenize(format: string): FormatPart[] {
         `${JSON.stringify(format)} has an unmatched square bracket.`,
       );
     }
+
+    if (previous?.kind === 'token' && part.kind === 'token') {
+      const before: TokenSpec = TOKENS[previous.name];
+      const current: TokenSpec = TOKENS[part.name];
+
+      if (digitWidth(before.pattern) === 'variable' && digitWidth(current.pattern) !== 'none') {
+        throw new TimeSolverError(
+          'INVALID_FORMAT',
+          `${JSON.stringify(format)} is ambiguous: "${previous.name}" matches one or two digits and runs straight into "${part.name}". Separate them, or use the fixed-width token.`,
+        );
+      }
+    }
+
+    previous = part;
   }
 
   return parts;

@@ -102,6 +102,33 @@ describe('getString composition', () => {
     expect(getString('2024-03-17T18:30:45.123Z', 'YYYY-MM-DD HH:mm')).toBe('2024-03-17 14:30');
     expect(getString(SAMPLE.getTime(), 'YYYY')).toBe('2024');
   });
+
+  it.each([
+    ['YYYYMD', 'M', 'D'],
+    ['MD', 'M', 'D'],
+    ['YYYY-M-DHH', 'D', 'HH'],
+    ['sQ', 's', 'Q'],
+    ['H:m:sSSS', 's', 'SSS'],
+  ])('rejects the ambiguous format %s, where %s runs into %s', (format) => {
+    // Rendering 12 January 2024 with 'YYYYMD' emits '2024112', which reads
+    // equally well as month 11 day 2, so the format is refused outright rather
+    // than producing output the same grammar cannot read back.
+    expect(() => getString(SAMPLE, format)).toThrowError(/is ambiguous/);
+  });
+
+  it.each([
+    'YYYY-M-D',
+    'YYYY M D H:m:s',
+    'YYYYMMDD',
+    'MMDDYYYY',
+    'MM/DD/YYYY hh:mm:ss.SSS A',
+    'D MMM YYYY',
+    'M[/]D',
+    'DA',
+    'hZ',
+  ])('accepts %s, where every variable-width token is separated', (format) => {
+    expect(() => getString(SAMPLE, format)).not.toThrow();
+  });
 });
 
 describe('getString failures', () => {

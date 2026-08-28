@@ -11,49 +11,66 @@ import {
 
 const DAYS_PER_WEEK = 7;
 
+/** Wall-clock milliseconds elapsed since local midnight, ignoring any DST shift. */
+function msIntoLocalDay(date: Date): number {
+  return (
+    date.getHours() * MS_PER_EXACT_UNIT.hour +
+    date.getMinutes() * MS_PER_EXACT_UNIT.minute +
+    date.getSeconds() * MS_PER_EXACT_UNIT.second +
+    date.getMilliseconds()
+  );
+}
+
 /**
  * Calendar days between two dates, with the fractional part taken from the
- * difference in time of day.
+ * difference in wall-clock time of day.
  *
- * Counting whole days from local midnights keeps the result correct across
- * daylight-saving changes, where dividing elapsed milliseconds by 86 400 000
- * would report 0.958 days for a 23-hour day.
+ * Both halves are deliberately offset-independent. Counting whole days between
+ * local midnights survives a daylight-saving change, and reading the remainder
+ * from the clock fields rather than from elapsed milliseconds keeps the same
+ * local time on adjacent dates exactly one day apart, instead of 0.958 across
+ * a spring transition and 1.042 across an autumn one.
  */
 function daysBetween(from: Date, to: Date): number {
-  const fromStart = startOf(from, 'day');
-  const toStart = startOf(to, 'day');
-  const wholeDays = Math.round((toStart.getTime() - fromStart.getTime()) / MS_PER_DAY);
-  const timeOfDayDelta = to.getTime() - toStart.getTime() - (from.getTime() - fromStart.getTime());
+  const wholeDays = Math.round(
+    (startOf(to, 'day').getTime() - startOf(from, 'day').getTime()) / MS_PER_DAY,
+  );
 
-  return wholeDays + timeOfDayDelta / MS_PER_DAY;
+  return wholeDays + (msIntoLocalDay(to) - msIntoLocalDay(from)) / MS_PER_DAY;
 }
 
 /**
  * Calendar months between two dates, with the fractional part scaled by the
  * length of the month the remainder falls in. January 1 to February 1 is
  * exactly 1, where v1's average-month constant reported 1.0184804928131417.
+ *
+ * Month arithmetic clamps, so it is not invertible: January 31 plus one month
+ * is February 29, but February 29 minus one month is January 29. Measuring
+ * always in the forward direction and negating preserves the guarantee callers
+ * rely on, that `between(a, b)` equals `-between(b, a)`.
  */
 function monthsBetween(from: Date, to: Date): number {
+  const reversed = to.getTime() < from.getTime();
+  const start = reversed ? to : from;
+  const end = reversed ? from : to;
   const wholeMonths =
-    (to.getFullYear() - from.getFullYear()) * MONTHS_PER_UNIT.year +
-    (to.getMonth() - from.getMonth());
-  const anchor = add(from, wholeMonths, 'month');
-  const anchorTime = anchor.getTime();
-  const toTime = to.getTime();
+    (end.getFullYear() - start.getFullYear()) * MONTHS_PER_UNIT.year +
+    (end.getMonth() - start.getMonth());
+  const anchorTime = add(start, wholeMonths, 'month').getTime();
+  const endTime = end.getTime();
+  let months = wholeMonths;
 
-  if (toTime === anchorTime) {
-    return wholeMonths;
+  if (endTime > anchorTime) {
+    const next = add(start, wholeMonths + 1, 'month').getTime();
+
+    months = wholeMonths + (endTime - anchorTime) / (next - anchorTime);
+  } else if (endTime < anchorTime) {
+    const previous = add(start, wholeMonths - 1, 'month').getTime();
+
+    months = wholeMonths - (anchorTime - endTime) / (anchorTime - previous);
   }
 
-  if (toTime > anchorTime) {
-    const next = add(from, wholeMonths + 1, 'month').getTime();
-
-    return wholeMonths + (toTime - anchorTime) / (next - anchorTime);
-  }
-
-  const previous = add(from, wholeMonths - 1, 'month').getTime();
-
-  return wholeMonths - (anchorTime - toTime) / (anchorTime - previous);
+  return reversed ? -months : months;
 }
 
 /** Signed difference per unit, keyed by canonical unit name. */

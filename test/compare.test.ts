@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { after, afterToday, before, beforeToday, between, equal } from '../src/compare.js';
 import { add } from '../src/manipulate.js';
+import { UNITS } from '../src/units.js';
 
 describe('between exact units', () => {
   it.each([
@@ -46,6 +47,20 @@ describe('between calendar day and week', () => {
     expect(between(new Date(2024, 10, 3), new Date(2024, 10, 4), 'hour')).toBe(25);
   });
 
+  it('reports one day between the same local time on adjacent dates, DST or not', () => {
+    // Reading the remainder from elapsed milliseconds instead of the clock
+    // fields reported 0.958 here, and 1.042 across the autumn transition.
+    expect(between(new Date(2024, 2, 9, 12), new Date(2024, 2, 10, 12), 'day')).toBe(1);
+    expect(between(new Date(2024, 10, 2, 12), new Date(2024, 10, 3, 12), 'day')).toBe(1);
+    expect(between(new Date(2024, 2, 9, 12, 30), new Date(2024, 2, 11, 12, 30), 'day')).toBe(2);
+    expect(between(new Date(2024, 2, 1), new Date(2024, 3, 1), 'day')).toBe(31);
+  });
+
+  it('keeps the fraction of a day offset-independent across a transition', () => {
+    expect(between(new Date(2024, 2, 9, 18), new Date(2024, 2, 10, 6), 'day')).toBe(0.5);
+    expect(between(new Date(2024, 10, 2, 18), new Date(2024, 10, 3, 6), 'day')).toBe(0.5);
+  });
+
   it('divides calendar days by seven for weeks', () => {
     expect(between(new Date(2020, 0, 1), new Date(2020, 0, 8), 'week')).toBe(1);
     expect(between(new Date(2024, 2, 6), new Date(2024, 2, 13), 'week')).toBe(1);
@@ -89,6 +104,26 @@ describe('between calendar month, quarter and year', () => {
 
     expect(between(stamp, stamp, 'month')).toBe(0);
     expect(between(stamp, stamp, 'day')).toBe(0);
+  });
+});
+
+describe('between antisymmetry', () => {
+  // Month arithmetic clamps, so a naive reverse measurement disagreed with the
+  // forward one: Jan 31 to Feb 29 was 1, and the reverse was -0.935.
+  const PAIRS: ReadonlyArray<readonly [Date, Date, string]> = [
+    [new Date(2024, 0, 31), new Date(2024, 1, 29), 'clamped month end'],
+    [new Date(2020, 1, 29), new Date(2020, 2, 31), 'leap day to month end'],
+    [new Date(2024, 0, 31), new Date(2024, 3, 30), 'across a quarter'],
+    [new Date(2024, 2, 9, 12), new Date(2024, 2, 10, 12), 'across a spring transition'],
+    [new Date(2024, 10, 2, 12), new Date(2024, 10, 3, 12), 'across an autumn transition'],
+    [new Date(2023, 5, 15, 8, 30, 15, 250), new Date(2026, 0, 2, 21, 45), 'a long odd span'],
+  ];
+
+  it.each(
+    UNITS.flatMap((unit) => PAIRS.map(([from, to, label]) => [unit, label, from, to] as const)),
+  )('between(a, b, %s) is the negation of between(b, a) for %s', (unit, _label, from, to) => {
+    // `+ 0` normalises -0, which Object.is distinguishes from 0.
+    expect(between(from, to, unit) + 0).toBe(-between(to, from, unit) + 0);
   });
 });
 
