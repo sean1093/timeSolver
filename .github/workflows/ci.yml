@@ -72,13 +72,15 @@ jobs:
       - name: Check zone invariants
         run: npm run test:zones
 
-      # The gates above decide whether a release is publishable. This proves
-      # each of them still fails when it should, rather than passing
-      # everything. It drives the scripts against fixture packages built from
-      # dist/, so it runs after the build; the same tests skip in the coverage
-      # run above, where dist/ does not exist yet.
-      - name: Test the gate scripts
-        run: npm run test:gates
+      # Two suites need the build. The gate tests drive each release gate
+      # against fixture packages cut from dist/, proving it still fails when it
+      # should rather than passing everything. The format fuzzer's pathological
+      # cases run in child processes with a wall-clock limit, because a
+      # backtracking regular expression is synchronous -- no in-process timeout
+      # can interrupt one, so a runaway would hang the suite instead of failing
+      # it. Both skip in the coverage run above, where dist/ does not exist yet.
+      - name: Test against the built bundles
+        run: npm run test:built
 
       # Runs even when a later gate failed, provided coverage was produced.
       - name: Upload coverage report
