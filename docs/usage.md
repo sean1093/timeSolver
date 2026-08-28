@@ -148,6 +148,7 @@ add(stamp, 1.5, 'month'); // throws INVALID_ARGUMENT
 startOf(stamp, 'day');     // 2024-03-17 00:00:00.000
 endOf(stamp, 'day');       // 2024-03-17 23:59:59.999
 startOf(stamp, 'week');    // 2024-03-17 00:00 (weeks start on Sunday)
+startOf(stamp, 'week', { weekStartsOn: 1 }); // 2024-03-11 00:00 (ISO-8601)
 startOf(stamp, 'month');   // 2024-03-01 00:00
 endOf(stamp, 'month');     // 2024-03-31 23:59:59.999
 startOf(stamp, 'quarter'); // 2024-01-01 00:00
@@ -267,4 +268,14 @@ with an explicit format when it matters.
 current offset but cannot be parsed. For zone-aware work use `Temporal` or
 `Intl.DateTimeFormat`.
 
-**Weeks start on Sunday**, matching `Date#getDay`.
+**Weeks start on Sunday by default**, matching `Date#getDay`. Pass
+`{ weekStartsOn: 1 }` for ISO-8601 weeks, or any day from `0` to `6`, to
+`startOf`, `endOf`, `equal`, `after` and `before`:
+
+```ts
+startOf(stamp, 'week', { weekStartsOn: 1 }); // Monday
+endOf(stamp, 'week', { weekStartsOn: 6 });   // Friday, for a Saturday-start week
+```
+
+`between(a, b, 'week')` needs no such option: it measures a span, which does not
+depend on where weeks begin.

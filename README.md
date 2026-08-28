@@ -134,6 +134,18 @@ rule per unit is deliberate rather than incidental:
 
 `between(a, b, unit) === -between(b, a, unit)` holds for every unit.
 
+### Where the week starts
+
+Weeks start on Sunday by default, matching `Date#getDay`. `startOf`, `endOf`,
+`equal`, `after` and `before` take `{ weekStartsOn }` — `0` for Sunday through
+`6` for Saturday — so ISO-8601 weeks are one argument away:
+
+```ts
+startOf(date, 'week');                      // Sunday
+startOf(date, 'week', { weekStartsOn: 1 }); // Monday, ISO-8601
+endOf(date, 'week', { weekStartsOn: 6 });   // Friday, for a Saturday-start week
+```
+
 ## Profiling
 
 The `timeLook` helper from 1.x, rewritten as an isolated timeline on a

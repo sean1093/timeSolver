@@ -152,6 +152,27 @@ for (const day of days) {
     getString(endOf(day, 'year'), 'YYYY') === getString(day, 'YYYY'),
     date,
   );
+
+  for (let weekStartsOn = 0; weekStartsOn < 7; weekStartsOn += 1) {
+    const weekStart = startOf(day, 'week', { weekStartsOn });
+    const weekEnd = endOf(day, 'week', { weekStartsOn });
+
+    check(
+      'startOf(week) lands on the requested weekday',
+      weekStart.getDay() === weekStartsOn,
+      date + ' with weekStartsOn ' + weekStartsOn + ' gave day ' + weekStart.getDay(),
+    );
+    check(
+      'the week brackets the date',
+      weekStart.getTime() <= day.getTime() && day.getTime() <= weekEnd.getTime(),
+      date + ' with weekStartsOn ' + weekStartsOn,
+    );
+    check(
+      'the week spans seven calendar days',
+      getString(add(weekStart, 6, 'day'), 'YYYY-MM-DD') === getString(weekEnd, 'YYYY-MM-DD'),
+      date + ' with weekStartsOn ' + weekStartsOn,
+    );
+  }
 }
 
 // Offset tokens must agree with the runtime, including fractional offsets.
