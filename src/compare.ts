@@ -9,7 +9,7 @@ import {
   type UnitInput,
 } from './units.js';
 
-const DAYS_PER_WEEK = 7;
+import { DAYS_PER_WEEK, type WeekOptions } from './week.js';
 
 /** Wall-clock milliseconds elapsed since local midnight, ignoring any DST shift. */
 function msIntoLocalDay(date: Date): number {
@@ -107,19 +107,31 @@ export function between(from: DateInput, to: DateInput, unit?: UnitInput): numbe
 }
 
 /**
- * Whether two dates are the same instant, or the same `unit` when one is given.
+ * Whether two dates are the same instant, or fall in the same `unit` when one
+ * is given.
  *
  * v1 compared `Date#toString()`, which has no millisecond field, so two dates
  * 998 ms apart compared equal.
  *
+ * @param options - `weekStartsOn` moves the week boundary when `unit` is
+ *   `'week'`; see {@link startOf}.
+ *
  * @example
- * equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999');          // false
+ * equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999');           // false
  * equal('2020-01-01T00:00:00.001', '2020-01-01T00:00:00.999', 'SECOND'); // true
+ * equal('2024-03-10', '2024-03-16', 'week', { weekStartsOn: 1 });        // false
  */
-export function equal(first: DateInput, second: DateInput, unit?: UnitInput): boolean {
+export function equal(
+  first: DateInput,
+  second: DateInput,
+  unit?: UnitInput,
+  options?: WeekOptions,
+): boolean {
   const resolved = normalizeUnit(unit);
 
-  return startOf(first, resolved).getTime() === startOf(second, resolved).getTime();
+  return (
+    startOf(first, resolved, options).getTime() === startOf(second, resolved, options).getTime()
+  );
 }
 
 /**
@@ -128,21 +140,37 @@ export function equal(first: DateInput, second: DateInput, unit?: UnitInput): bo
  * v1 accepted a `unit` argument and ignored it, so two times on the same day
  * compared as different days.
  *
+ * @param options - See {@link equal}.
+ *
  * @example
  * after('2020-01-01T23:00', '2020-01-01T01:00');        // true
  * after('2020-01-01T23:00', '2020-01-01T01:00', 'DAY'); // false, same day
  */
-export function after(first: DateInput, second: DateInput, unit?: UnitInput): boolean {
+export function after(
+  first: DateInput,
+  second: DateInput,
+  unit?: UnitInput,
+  options?: WeekOptions,
+): boolean {
   const resolved = normalizeUnit(unit);
 
-  return startOf(first, resolved).getTime() > startOf(second, resolved).getTime();
+  return startOf(first, resolved, options).getTime() > startOf(second, resolved, options).getTime();
 }
 
-/** Whether `first` is strictly before `second`, compared at `unit` granularity. */
-export function before(first: DateInput, second: DateInput, unit?: UnitInput): boolean {
+/**
+ * Whether `first` is strictly before `second`, compared at `unit` granularity.
+ *
+ * @param options - See {@link equal}.
+ */
+export function before(
+  first: DateInput,
+  second: DateInput,
+  unit?: UnitInput,
+  options?: WeekOptions,
+): boolean {
   const resolved = normalizeUnit(unit);
 
-  return startOf(first, resolved).getTime() < startOf(second, resolved).getTime();
+  return startOf(first, resolved, options).getTime() < startOf(second, resolved, options).getTime();
 }
 
 /** Whether a date falls on a later calendar day than today. */

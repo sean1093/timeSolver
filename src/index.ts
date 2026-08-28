@@ -43,6 +43,7 @@ export { TimeSolverError } from './errors.js';
 export type { ProfileMark, ProfileReport, Profiler } from './profiler.js';
 export type { ExactUnit, Unit, UnitAlias, UnitInput } from './units.js';
 export { UNITS } from './units.js';
+export type { WeekDay, WeekOptions } from './week.js';
 export {
   add,
   after,
