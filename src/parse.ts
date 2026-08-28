@@ -107,9 +107,9 @@ export function parse(input: string, format: string): Date {
  *   matching it exactly.
  *
  * @example
- * isValid('2020-02-29', 'YYYY-MM-DD'); // true  (v1 said false)
- * isValid('31-02-2020', 'DD-MM-YYYY'); // false (v1 said true)
- * isValid('12:30:00', 'HH:MM:SS');     // true  (v1 said false)
+ * isValid('2020-02-29', 'YYYY-MM-DD'); // true, and 1.x said false
+ * isValid('31-02-2020', 'DD-MM-YYYY'); // false, whatever 1.x said
+ * isValid('12:30:00', 'HH:MM:SS');     // true, and 1.x said false
  */
 export function isValid(input: DateInput, format?: string): boolean {
   if (format === undefined) {

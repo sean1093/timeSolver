@@ -298,10 +298,11 @@ const TOKEN_PATTERN =
 const V1_TIME_SEGMENT = /HH:MM:SS/g;
 
 /**
- * The 36 format names v1 accepted. v1 uppercased the whole string and used `MM`
- * for both month and minute; v2 tokens are case-sensitive, so these names are
- * translated to canonical tokens on an exact match. Anything else is treated as
- * a canonical token string.
+ * Every format name 1.x accepted, across the published 1.2.0 build and the
+ * later repository state that added the `DD`-first family. 1.x uppercased the
+ * whole string and used `MM` for both month and minute; v2 tokens are
+ * case-sensitive, so these names are translated to canonical tokens on an exact
+ * match. Anything else is treated as a canonical token string.
  */
 const V1_FORMATS: Record<string, true> = {
   YYYY: true,

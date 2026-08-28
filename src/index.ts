@@ -70,6 +70,13 @@ export {
   parse,
   startOf,
   subtract,
+  // v1 compatibility. Named as well as on the default export, so the browser
+  // global built from this entry point carries them too: a 1.x script tag
+  // calls `timeSolver.timeLook('step')` directly. Tree-shaking still drops
+  // them for anyone importing other names.
+  timeLook,
+  timeLookReport,
+  timeLookStart,
   weekdayAbbreviation,
   weekdayName,
 };

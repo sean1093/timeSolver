@@ -49,7 +49,7 @@ const V1_FORMATS: ReadonlyArray<readonly [string, string]> = [
 ];
 
 describe('v1 format names', () => {
-  it('covers all 36 names v1 supported', () => {
+  it('covers all 36 legacy names the tokenizer accepts', () => {
     expect(V1_FORMATS).toHaveLength(36);
   });
 
