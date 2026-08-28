@@ -60,7 +60,9 @@
     "release": "changeset publish",
     "prepublishOnly": "npm run build",
     "check:api": "node scripts/api-surface.mjs",
-    "bench": "vitest bench --run"
+    "bench": "vitest bench --run",
+    "check:docs": "node scripts/check-docs.mjs",
+    "test:gates": "vitest run test/gates.test.ts"
   },
   "keywords": [
     "date",

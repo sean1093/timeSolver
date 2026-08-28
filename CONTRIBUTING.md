@@ -83,7 +83,7 @@ git switch -c fix/endof-month-dst
 The subject is imperative, at most 72 characters, and has no trailing period.
 Explain *why* in the body, wrapped at 72 columns.
 
-```
+```text
 fix(manipulate): keep endOf('MONTH') inside the month across DST
 
 Adding a month before truncating overflowed a 30-day month into the
@@ -91,7 +91,7 @@ next one when the local offset shifted. Truncate first, then set the
 day from daysInMonth.
 ```
 
-```
+```text
 feat(compare): add between() support for the QUARTER unit
 ```
 
