@@ -175,6 +175,73 @@ for (const day of days) {
   }
 }
 
+// The truncation invariants, checked across a day rather than only at noon. A
+// zone can skip the start of a unit or reach it twice, and both only show up if
+// the probe lands in the affected wall clock -- the hour a zone repeats, or the
+// 45 minutes Pacific/Chatham jumps over.
+//
+// Probes come from two directions on purpose. Naming local fields can only ever
+// produce the *first* of two instants that share a wall clock, because that is
+// how the Date constructor resolves the ambiguity, so a bug in handling the
+// second pass is invisible to it. Stepping through elapsed milliseconds
+// reaches both.
+const UNITS = [
+  'millisecond',
+  'second',
+  'minute',
+  'hour',
+  'day',
+  'week',
+  'month',
+  'quarter',
+  'year',
+];
+
+for (const day of days) {
+  const midnight = new Date(day.getFullYear(), day.getMonth(), day.getDate()).getTime();
+  const probes = [];
+
+  for (const hour of [0, 1, 2, 3, 4, 23]) {
+    for (const minute of [0, 45]) {
+      // Named wall clock, resolved by the Date constructor.
+      probes.push(new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, minute, 30));
+      // The same reading as elapsed time from local midnight, which lands on the
+      // far side of a shift the wall-clock form cannot express.
+      probes.push(new Date(midnight + (hour * 60 + minute) * 60_000 + 30_000));
+    }
+  }
+
+  for (const probe of probes) {
+    const where = getString(probe, 'YYYY-MM-DD HH:mm:ss') + ' (' + probe.toISOString() + ')';
+
+      for (const unit of UNITS) {
+        const unitStart = startOf(probe, unit).getTime();
+        const unitEnd = endOf(probe, unit).getTime();
+
+        check(
+          'the unit brackets the date it contains',
+          unitStart <= probe.getTime() && probe.getTime() <= unitEnd,
+          where + ' ' + unit,
+        );
+        check(
+          'startOf is idempotent',
+          startOf(new Date(unitStart), unit).getTime() === unitStart,
+          where + ' ' + unit,
+        );
+        check(
+          'endOf is idempotent',
+          endOf(new Date(unitEnd), unit).getTime() === unitEnd,
+          where + ' ' + unit,
+        );
+        check(
+          'the last instant of a unit belongs to that unit',
+          startOf(new Date(unitEnd), unit).getTime() === unitStart,
+          where + ' ' + unit,
+        );
+      }
+  }
+}
+
 // Offset tokens must agree with the runtime, including fractional offsets.
 for (const day of [days[0], days[120], days[250], days[365]]) {
   const minutes = -day.getTimezoneOffset();

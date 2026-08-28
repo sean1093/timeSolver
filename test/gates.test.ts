@@ -14,7 +14,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
 /**
  * The gate scripts decide whether a release is publishable, so a gate that
@@ -32,6 +32,12 @@ import { afterAll, describe, expect, it } from 'vitest';
  * Everything in this file needs `npm run build` output. On a clean checkout the
  * suites skip, so `npm test` still passes.
  */
+
+// Every test here spawns at least one Node process, and the zones gate spawns
+// seven of its own, one per zone. Vitest's 5-second default is sized for unit
+// tests; on a shared CI runner process startup alone can approach it, so these
+// get a bound that fails on a genuine hang rather than on a slow machine.
+vi.setConfig({ testTimeout: 120_000 });
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 

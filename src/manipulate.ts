@@ -4,6 +4,7 @@ import { TimeSolverError } from './errors.js';
 import {
   isExactUnit,
   MONTHS_PER_UNIT,
+  MS_PER_DAY,
   MS_PER_EXACT_UNIT,
   normalizeUnit,
   type Unit,
@@ -157,6 +158,85 @@ const TRUNCATE: Record<Unit, (date: Date, weekStartsOn: WeekDay) => void> = {
 };
 
 /**
+ * Longest each unit can run, in milliseconds, with room for a clock shift. Used
+ * only to bound the searches below, so being generous costs a step, never
+ * correctness.
+ */
+const UNIT_BOUND: Record<Unit, number> = {
+  millisecond: 1,
+  second: 1_000,
+  minute: 60_000,
+  hour: 2 * 3_600_000,
+  day: 25 * 3_600_000,
+  week: 8 * MS_PER_DAY,
+  month: 32 * MS_PER_DAY,
+  quarter: 93 * MS_PER_DAY,
+  year: 367 * MS_PER_DAY,
+};
+
+/** Truncate an instant and report where it landed. */
+function truncatedTime(time: number, unit: Unit, weekStartsOn: WeekDay): number {
+  const probe = new Date(time);
+
+  TRUNCATE[unit](probe, weekStartsOn);
+
+  return probe.getTime();
+}
+
+/**
+ * Earliest instant in `(low, high]` that truncates to `nominal`.
+ *
+ * The caller guarantees `low` truncates elsewhere and `high` truncates to
+ * `nominal`, with one boundary between them, so this converges on the first
+ * instant that carried the label -- the moment the unit began.
+ */
+function runStart(
+  from: number,
+  to: number,
+  unit: Unit,
+  weekStartsOn: WeekDay,
+  nominal: number,
+): number {
+  let low = from;
+  let high = to;
+
+  while (low + 1 < high) {
+    const mid = low + Math.floor((high - low) / 2);
+
+    if (truncatedTime(mid, unit, weekStartsOn) === nominal) {
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+
+  return high;
+}
+
+/**
+ * Earliest instant in `(low, high]` whose offset matches the one at `high`: the
+ * clock shift that separates the two ends. Zones shift at most once a day, so
+ * callers keep the window inside one.
+ */
+function shiftBetween(from: number, to: number): number {
+  const offset = new Date(to).getTimezoneOffset();
+  let low = from;
+  let high = to;
+
+  while (low + 1 < high) {
+    const mid = low + Math.floor((high - low) / 2);
+
+    if (new Date(mid).getTimezoneOffset() === offset) {
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+
+  return high;
+}
+
+/**
  * Start of the local calendar unit containing a date.
  *
  * @param options - `weekStartsOn` moves the week boundary; it defaults to `0`
@@ -168,11 +248,55 @@ const TRUNCATE: Record<Unit, (date: Date, weekStartsOn: WeekDay) => void> = {
  * startOf('2024-03-13', 'week', { weekStartsOn: 1 });           // Monday 2024-03-11
  */
 export function startOf(date: DateInput, unit: UnitInput, options?: WeekOptions): Date {
+  const resolved = normalizeUnit(unit);
+  const weekStartsOn = resolveWeekStart(options);
   const target = toDate(date);
+  const time = target.getTime();
 
-  TRUNCATE[normalizeUnit(unit)](target, resolveWeekStart(options));
+  // Read before truncating: the same object carries the answer, so the shift
+  // check below costs a getter rather than another Date.
+  const offsetAtTime = target.getTimezoneOffset();
 
-  return target;
+  TRUNCATE[resolved](target, weekStartsOn);
+
+  const nominal = target.getTime();
+
+  // A zone can jump clean over the start of a unit: Pacific/Chatham moves 02:45
+  // to 03:45, so local 03:00 never happens there. `Date`'s setters resolve a
+  // wall clock inside that gap forwards, landing after the date we were given
+  // and inside the following unit. The unit really begins when the clocks
+  // shifted, so take the first instant that carried this label.
+  if (nominal > time) {
+    return new Date(runStart(time - UNIT_BOUND[resolved], time, resolved, weekStartsOn, nominal));
+  }
+
+  // Everything below needs a clock shift between the truncated start and the
+  // date, so equal offsets settle it. This is the common path.
+  if (target.getTimezoneOffset() === offsetAtTime) {
+    return target;
+  }
+
+  // A shift lies between them, and a wall clock can leave a unit and come back:
+  // when Chatham moves 03:45 back to 02:45, local 02:00 to 02:44 happens once
+  // while 02:45 to 02:59 happens twice, with local 03:xx in between. The label
+  // alone therefore does not say which visit a date belongs to.
+  const shift = shiftBetween(Math.max(nominal, time - MS_PER_DAY), time);
+
+  // This visit began after the shift: the shift itself carries another label, so
+  // the unit was left and re-entered.
+  if (truncatedTime(shift, resolved, weekStartsOn) !== nominal) {
+    return new Date(runStart(shift, time, resolved, weekStartsOn, nominal));
+  }
+
+  // The label survived the shift unbroken -- an ordinary daylight-saving day, or
+  // an hour repeated adjacently the way America/New_York repeats 01:00 -- so the
+  // truncated start still stands.
+  if (truncatedTime(shift - 1, resolved, weekStartsOn) === nominal) {
+    return target;
+  }
+
+  // The label began at the shift: this unit's nominal start never happened.
+  return new Date(shift);
 }
 
 /**
@@ -186,10 +310,47 @@ export function startOf(date: DateInput, unit: UnitInput, options?: WeekOptions)
  */
 export function endOf(date: DateInput, unit: UnitInput, options?: WeekOptions): Date {
   const resolved = normalizeUnit(unit);
+  const start = startOf(date, resolved, options);
+  const startTime = start.getTime();
   // Truncate again after the shift. In a zone whose clocks jump at midnight,
   // startOf('day') is 01:00, so start plus one day is 01:00 the next day and
   // subtracting a millisecond would land on the wrong calendar date.
-  const nextStart = startOf(add(startOf(date, resolved, options), 1, resolved), resolved, options);
+  const candidate = startOf(add(start, 1, resolved), resolved, options).getTime() - 1;
+  const last = new Date(candidate);
 
-  return new Date(nextStart.getTime() - 1);
+  // A unit whose start and end share an offset ran without a clock shift at
+  // either boundary, so the wall-clock arithmetic above was exact. This is the
+  // common case, including an ordinary daylight-saving day: the shift happens
+  // inside the day, not at the boundary that defines it.
+  if (candidate >= startTime && start.getTimezoneOffset() === last.getTimezoneOffset()) {
+    return last;
+  }
+
+  const inUnit = (time: number) =>
+    startOf(new Date(time), resolved, options).getTime() === startTime;
+
+  // Otherwise confirm the candidate really is the last instant of this unit: in
+  // it, with the next millisecond outside. Where the clocks repeat a wall clock
+  // the unit is entered twice under one name, and the first visit ends early --
+  // at the shift, not a nominal unit later.
+  if (candidate >= startTime && inUnit(candidate) && !inUnit(candidate + 1)) {
+    return last;
+  }
+
+  // Find where this visit actually ended. Membership holds over one run from
+  // the start, so the last instant of it is one bisection away.
+  let low = startTime;
+  let high = startTime + UNIT_BOUND[resolved];
+
+  while (low + 1 < high) {
+    const mid = low + Math.floor((high - low) / 2);
+
+    if (inUnit(mid)) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return new Date(low);
 }
