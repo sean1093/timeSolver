@@ -44,6 +44,7 @@ loudly if `package.json` and the lockfile disagree, which is what CI does.
 | `npm run size` | `size-limit` | Fails if the bundle grows past its budget, so the size claim in the README stays true. |
 | `npm run smoke` | `node scripts/smoke.mjs` | Imports the built ESM bundle, `require`s the built CJS bundle, and evaluates the IIFE bundle to assert the global. Requires `npm run build` first. |
 | `npm run check:api` | `node scripts/api-surface.mjs` | Compares the public API surface of the built declarations against the committed `api-surface.txt`. Requires `npm run build` first. Run it with `-- --update` to approve an intentional API change. |
+| `npm run bench` | `vitest bench --run` | Throughput of formatting, parsing and arithmetic against dayjs and date-fns. Not a CI gate; see below. Results and methodology: [docs/benchmarks.md](docs/benchmarks.md). |
 
 ## Project layout
 
@@ -156,6 +157,15 @@ You can run the same sequence locally. The fast pre-push check is:
 ```sh
 npm run lint && npm run typecheck && npm test
 ```
+
+`npm run bench` is deliberately **not** one of these gates and must not be
+added to either job. On several of the operations it measures, the spread
+between the three libraries is smaller than the run-to-run variance of a
+shared CI runner, so a threshold on those numbers would fail builds because of
+scheduling noise on the runner rather than because of anything in the commit
+under review. Benchmarks are a tool for investigating a suspected regression
+locally, on one machine, with nothing else running — `docs/benchmarks.md`
+records what the current numbers are and how much to trust them.
 
 ## Releases
 

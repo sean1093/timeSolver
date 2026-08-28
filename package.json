@@ -59,7 +59,8 @@
     "test:zones": "node scripts/zones.mjs",
     "release": "changeset publish",
     "prepublishOnly": "npm run build",
-    "check:api": "node scripts/api-surface.mjs"
+    "check:api": "node scripts/api-surface.mjs",
+    "bench": "vitest bench --run"
   },
   "keywords": [
     "date",
@@ -95,6 +96,8 @@
     "@size-limit/preset-small-lib": "^13.0.3",
     "@types/node": "^26.4.0",
     "@vitest/coverage-v8": "^4.1.11",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.19",
     "fast-check": "^4.9.0",
     "publint": "^0.3.14",
     "size-limit": "^13.0.3",
