@@ -12,15 +12,6 @@
   
   Adds `npm run test:zones`, which checks calendar invariants over 366 days in seven time zones — including one that shifts at midnight and three whose offsets are not whole hours — and runs in CI. Every defect above was invisible to a suite pinned to a single zone.
 
-All notable changes to this project are documented in this file.
-
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
-this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-From 2.0.0 onward, entries are generated from
-[changesets](https://github.com/changesets/changesets); see
-[CONTRIBUTING.md](CONTRIBUTING.md).
-
 ## [2.0.0] - 2026-08-28
 
 A full rewrite. Names and argument orders are preserved, so most 1.x call sites
