@@ -171,6 +171,11 @@ enforcement are rejected by unattended publishes. Until that secret exists the
 release workflow runs, builds, and then stops with a warning instead of
 publishing.
 
+To release on demand rather than on the next push to `master`, run the Release
+workflow manually: Actions, Release, Run workflow. Changesets publishes only
+versions the registry does not already have, so a run with nothing to do
+finishes without publishing anything.
+
 ## What does not belong in this library
 
 These are settled design decisions, not open questions. A PR adding one of them
