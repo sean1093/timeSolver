@@ -338,6 +338,7 @@ Details worth knowing:
 - Month and weekday names are matched case-sensitively against the English table.
 - `hh`/`h` without `A`/`a` are read as morning hours, so `parse('12:30', 'hh:mm')` is 00:30, not noon.
 - Throws `INVALID_ARGUMENT` if `input` is not a string.
+- A wall-clock string can be **ambiguous**. When the clocks go back, an hour repeats, so one local reading names two instants — `America/New_York` read `01:59` twice on 1946-09-29. `parse` resolves to the earlier of the two. The text always round-trips; the instant does not, in that hour.
 
 ### `isValid(input, format?): boolean`
 

@@ -290,12 +290,29 @@ describe('formatting and parsing', () => {
     );
   });
 
-  it('a full timestamp round-trips to the exact instant', () => {
+  it('a full timestamp round-trips, exactly unless its local time occurs twice', () => {
     fc.assert(
       fc.property(anyDate, (date) => {
         const format = 'YYYY-MM-DD HH:mm:ss.SSS';
+        const rendered = getString(date, format);
+        const parsed = parse(rendered, format);
 
-        return parse(getString(date, format), format).getTime() === date.getTime();
+        // The rendered text always survives the round trip.
+        if (getString(parsed, format) !== rendered) {
+          return false;
+        }
+
+        if (parsed.getTime() === date.getTime()) {
+          return true;
+        }
+
+        // The only way two instants share one wall-clock reading is a backward
+        // transition, where an hour repeats: America/New_York read 01:59 twice
+        // on 1946-09-29. A wall-clock string cannot distinguish them, so parse
+        // resolves to the earlier instant and the difference is the shift.
+        const shift = date.getTime() - parsed.getTime();
+
+        return shift > 0 && shift <= 2 * 3_600_000 && shift % 60_000 === 0;
       }),
     );
   });
