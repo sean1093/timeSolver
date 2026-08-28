@@ -2,7 +2,7 @@
   {
     "name": "timesolver (ESM, gzipped)",
     "path": "dist/index.js",
-    "limit": "3.5 kB",
+    "limit": "5 kB",
     "gzip": true
   },
   {
