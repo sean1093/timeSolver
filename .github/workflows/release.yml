@@ -13,26 +13,35 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+# Read-only by default. The write scopes live on the job that needs them, so a
+# job added to this workflow later does not silently inherit the ability to push
+# to the repository while an npm publish token is in scope.
 permissions:
-  contents: write # commit the version bump, push tags, create the GitHub release
-  pull-requests: write # open and update the "Version Packages" pull request
-  id-token: write # mint the OIDC token npm exchanges for a provenance attestation
+  contents: read
 
 jobs:
   release:
     name: Version or publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # commit the version bump, push tags, create the GitHub release
+      pull-requests: write # open and update the "Version Packages" pull request
+      id-token: write # mint the OIDC token npm exchanges for a provenance attestation
     steps:
       # Changesets needs the full history to work out what has already shipped.
+      #
+      # Every action in this workflow is pinned to a commit, not a tag: this job
+      # holds a publish token, and a mutable tag lets upstream change what runs
+      # with it. Dependabot's github-actions updates keep the pins current.
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       # registry-url writes the .npmrc that reads NODE_AUTH_TOKEN; without it
       # the publish step authenticates as an anonymous user and is rejected.
       - name: Set up Node.js 22
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: 'npm'
