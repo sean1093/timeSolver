@@ -45,6 +45,7 @@ loudly if `package.json` and the lockfile disagree, which is what CI does.
 | `npm run smoke` | `node scripts/smoke.mjs` | Imports the built ESM bundle, `require`s the built CJS bundle, and evaluates the IIFE bundle to assert the global. Requires `npm run build` first. |
 | `npm run check:api` | `node scripts/api-surface.mjs` | Compares the public API surface of the built declarations against the committed `api-surface.txt`. Requires `npm run build` first. Run it with `-- --update` to approve an intentional API change. |
 | `npm run bench` | `vitest bench --run` | Throughput of formatting, parsing and arithmetic against dayjs and date-fns. Not a CI gate; see below. Results and methodology: [docs/benchmarks.md](docs/benchmarks.md). |
+| `npm run test:mutation` | `stryker run` | Mutation testing: changes the source in small ways and checks a test fails each time. Not a pull-request gate; runs weekly. See below. |
 
 ## Project layout
 
@@ -137,6 +138,8 @@ The **quality** job runs once, on Node 22, in this order:
 2. `typecheck` — `tsc --noEmit` clean.
 3. `test:coverage` — the suite plus coverage thresholds: **95% lines, 95%
    functions, 95% statements, 90% branches**. Below any of those, the job fails.
+   The suite currently sits at 100% of all four, so a drop means something new
+   is untested rather than that the bar is tight.
 4. `build` — `tsup` produces all four outputs.
 5. `check:exports` — `attw` and `publint` agree the packed tarball resolves for
    ESM, CJS, and TypeScript.
@@ -166,6 +169,44 @@ scheduling noise on the runner rather than because of anything in the commit
 under review. Benchmarks are a tool for investigating a suspected regression
 locally, on one machine, with nothing else running — `docs/benchmarks.md`
 records what the current numbers are and how much to trust them.
+
+## Mutation testing
+
+Coverage answers "did this line run". Mutation testing answers the question that
+actually matters: **would a test have failed had this line been wrong?**
+
+`npm run test:mutation` changes the source in small ways — flips a comparison,
+swaps an operator, empties a string — and reruns the suite for each change. A
+change that no test notices is a *survivor*, and a survivor is either a missing
+assertion or a mutation nothing could ever detect.
+
+The suite kills every mutant it can, and every mutant it cannot carries a
+comment naming why:
+
+```ts
+// Stryker disable next-line EqualityOperator: at equality the numerator is
+// zero, so either neighbour gives the same answer. Unkillable by construction.
+const step = endTime > anchorTime ? 1 : -1;
+```
+
+Those comments are the point. If you add code and the mutation run reports a
+survivor, one of two things is true, and both want a decision from you rather
+than a threshold change:
+
+1. **A test is missing.** Add it. This is the usual case, and it is how several
+   real gaps were found: nothing had parsed a format containing `ddd`, nothing
+   asserted an error `code` at four throw sites, and nothing pinned the minute
+   and second fields of a day fraction.
+2. **The mutation cannot be observed.** Say so in a `Stryker disable` comment
+   with the reason. Membership tables read only through `Object.hasOwn` never
+   observe their values; an error message is not part of the API.
+
+Twice, a survivor turned out to be **dead code** — a guard that could never
+fail. Deleting it was the right fix, and it took branch coverage to 100% as a
+side effect. Prefer deleting to annotating.
+
+The run takes about a minute and is deliberately not a pull-request gate. It
+runs weekly and on demand: Actions, Mutation, Run workflow.
 
 ## Releases
 
