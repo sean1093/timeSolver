@@ -1,5 +1,54 @@
 # Changelog
 
+## 2.1.0
+
+### Minor Changes
+
+- e09e412: Add `isBetween`, `min`, `max` and `clamp`.
+  
+  `isBetween(date, start, end, unit?, bounds?, options?)` takes interval notation for its bounds — `'[]'`, `'[)'`, `'(]'` or `'()'` — because a date range usually wants the half-open form, so consecutive ranges neither overlap nor leave a gap. It compares at a `unit` like `equal` does, and takes the same `weekStartsOn` option. A reversed range returns `false` rather than being silently reordered.
+  
+  `min` and `max` require at least one argument, which the types enforce, so there is no empty case to define; both return a new `Date`, and of equal dates the first wins.
+  
+  `clamp(date, lower, upper)` returns the nearest endpoint when the date falls outside, and throws `INVALID_ARGUMENT` when `lower` is later than `upper` rather than swapping them and hiding the caller's mistake.
+- 446c557: Add week numbering: `getISOWeek`, `getISOWeekYear` and `getWeekOfYear`.
+  
+  `getISOWeek` and `getISOWeekYear` implement ISO-8601, where weeks start on Monday and week 1 is the week containing 4 January. The pair exists because the week-numbering year is not always the calendar year: 30 December 2024 is week 1 of 2025, and 1 January 2023 is week 52 of 2022. Rendering an ISO week beside `YYYY` produces a wrong label for a few days either side of January, so both functions are needed to build one correctly.
+  
+  `getWeekOfYear` is the plainer convention — week 1 contains 1 January, counted in the calendar year — and takes the same `weekStartsOn` option as `startOf`. Its first and last weeks may be partial, so it can return up to 54.
+  
+  No `W` format tokens were added: a week number cannot be parsed back into a date on its own, and a token that rendered a week number next to `YYYY` would be wrong at the year boundary.
+- 6a2ec68: Add `weekStartsOn` so weeks no longer have to start on Sunday.
+  
+  `startOf`, `endOf`, `equal`, `after` and `before` take an options object with `weekStartsOn`, `0` for Sunday through `6` for Saturday. It defaults to `0`, matching `Date#getDay`, so existing behaviour is unchanged; ISO-8601 weeks are `{ weekStartsOn: 1 }`, and the Saturday-start weeks used across much of the Middle East are `{ weekStartsOn: 6 }`. Every other unit ignores the option, and `between(a, b, 'week')` needs none: it measures a span, which does not depend on where weeks begin.
+  
+  Values outside 0–6, and non-integers, throw `INVALID_ARGUMENT`.
+  
+  The zone runner now checks, in all seven of its time zones and for all seven starts, that `startOf('week')` lands on the requested weekday, that the week brackets the date, and that it spans seven calendar days.
+
+### Patch Changes
+
+- fb7fe64: Document that a wall-clock string is ambiguous during a backward daylight-saving transition.
+  
+  When the clocks go back, an hour repeats, so one local reading names two instants — `America/New_York` read `01:59` twice on 1946-09-29. `parse` resolves to the earlier one. The rendered text always survives a `getString`/`parse` round trip; the exact instant does not, inside that hour.
+  
+  No behaviour changed. Found by the property-based suite, which failed only on Linux with Node 20, because the historical zone rules a platform ships decide whether that 1946 transition exists at all.
+- 44474f8: Restructure the documentation: an index, a recipes cookbook and a support policy.
+  
+  `docs/README.md` indexes every document. `docs/recipes.md` answers twelve jobs end to end — half-open range queries, month-to-date reports, validating user input, grouping by period, correct ISO week labels, log timestamps, form-to-storage conversion, clamping, profiling — and closes with the five behaviours that most often surprise callers. `docs/support.md` states what counts as a breaking change, which versions and runtimes are supported, and what the project promises about time zone data.
+  
+  Documentation only; no behaviour changed.
+- 54b1479: Document that day and week arithmetic can land in a daylight-saving gap.
+  
+  Both keep the wall-clock time, so a step can land on a local time that does not exist — `2023-03-12 02:00` in `America/New_York` is skipped — and the runtime normalises it forward to `03:00`. The calendar date is always the one requested; the clock can move by one transition.
+  
+  No behaviour changed. Found by the property-based suite, which was asserting an invertibility that calendars do not offer.
+- 9ce119f: Document that calendar month arithmetic is not invertible.
+  
+  31 December plus 18 months clamps to 30 June, and subtracting 18 months from that returns 30 December, not 31. Days 1 to 28 exist in every month, so the round trip is exact there. This is a property of calendars rather than a defect, and every date library behaves the same way, but the `add` reference now says so instead of leaving callers to discover it.
+  
+  Found by the new property-based suite, which is test-only and does not change any behaviour.
+
 ## 2.0.1
 
 ### Patch Changes
