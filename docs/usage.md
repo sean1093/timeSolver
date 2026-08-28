@@ -202,6 +202,22 @@ isLeapYear(2024);                // true
 daysInMonth(2024, 2);            // 29
 ```
 
+Week numbers come in two flavours, because the two conventions disagree at the
+turn of the year:
+
+```ts
+getISOWeek('2024-12-30T12:00');     // 1  -- ISO-8601: Monday starts week 1
+getISOWeekYear('2024-12-30T12:00'); // 2025, not 2024
+
+getWeekOfYear('2024-12-30T12:00');  // 53 -- calendar year, week 1 contains 1 January
+```
+
+Render the ISO pair together, never `YYYY` with an ISO week:
+
+```ts
+`${getISOWeekYear(date)}-W${String(getISOWeek(date)).padStart(2, '0')}`; // '2025-W01'
+```
+
 Names are English and come from a fixed table, so they do not vary by engine or
 locale. For localised output, format the parts you need with
 `Intl.DateTimeFormat`.
