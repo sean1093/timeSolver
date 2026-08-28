@@ -149,6 +149,31 @@ describe('truncation', () => {
     );
   });
 
+  it('endOf is idempotent and never moves backward', () => {
+    fc.assert(
+      fc.property(anyDate, anyUnit, anyWeekStart, (date, unit, weekStartsOn) => {
+        const once = endOf(date, unit, { weekStartsOn });
+        const twice = endOf(once, unit, { weekStartsOn });
+
+        return once.getTime() === twice.getTime() && once.getTime() >= date.getTime();
+      }),
+    );
+  });
+
+  it('the last instant of a unit belongs to that unit', () => {
+    fc.assert(
+      fc.property(anyDate, anyUnit, anyWeekStart, (date, unit, weekStartsOn) => {
+        // Both ends must agree on which unit they are in. A zone that repeats a
+        // wall clock can otherwise put them in different visits to the same
+        // nominal unit, which is how `endOf` used to land before its own start.
+        const start = startOf(date, unit, { weekStartsOn }).getTime();
+        const end = endOf(date, unit, { weekStartsOn });
+
+        return startOf(end, unit, { weekStartsOn }).getTime() === start;
+      }),
+    );
+  });
+
   it('endOf is one millisecond before the next unit begins', () => {
     fc.assert(
       fc.property(anyDate, calendarUnit, anyWeekStart, (date, unit, weekStartsOn) => {

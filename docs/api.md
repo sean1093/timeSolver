@@ -141,6 +141,39 @@ A week is not always 604 800 000 ms long: one containing a daylight-saving
 change is an hour shorter or longer. `endOf` is defined by the calendar, not by
 that arithmetic, so it always lands on the last millisecond of the seventh day.
 
+#### When a wall clock skips or repeats
+
+A wall clock is not a continuous line. When the clocks go forward a stretch of
+it never happens, and when they go back another stretch happens twice, so a unit
+named by wall clock may be missing its start or have two of them.
+
+`startOf` returns the beginning of the stretch of elapsed time that actually
+contains `date`, and `endOf` returns its last millisecond. Three consequences,
+all of them observable:
+
+```ts
+// America/Santiago moves 00:00 to 01:00, so a day can begin at 01:00.
+startOf('2024-09-08T12:00', 'day'); // 2024-09-08 01:00:00.000
+
+// America/New_York repeats 01:00 to 01:59:59.999, and the two runs are
+// adjacent, so that named hour is two hours of elapsed time.
+endOf(new Date('2009-11-01T05:30:00Z'), 'hour'); // 2009-11-01 01:59:59.999 EST
+
+// Pacific/Chatham moves 03:45 back to 02:45, so 02:45 to 02:59 happens twice
+// with 03:xx in between. The named hour is split, and you get the run your date
+// is in -- not the earlier one that shares its name.
+```
+
+What holds in every zone, for every unit, is what range queries need:
+
+- `startOf(d) <= d <= endOf(d)`
+- `startOf(startOf(d)) === startOf(d)` and `endOf(endOf(d)) === endOf(d)`
+- `startOf(endOf(d)) === startOf(d)` — both ends agree which unit they are in
+- `startOf(endOf(d) + 1ms) === endOf(d) + 1ms` — units tile without gaps
+
+These are checked over 366 days in seven zones by `npm run test:zones`, and as
+properties over random dates by the test suite.
+
 ## Comparison
 
 ### `between(from, to, unit?): number`

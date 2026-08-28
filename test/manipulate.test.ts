@@ -262,3 +262,68 @@ describe('endOf', () => {
     );
   });
 });
+
+/**
+ * A wall clock is not a line. Zones skip stretches of it when the clocks go
+ * forward and reach others twice when they go back, so a unit named by wall
+ * clock can be missing its start, or have two of them.
+ *
+ * The suite's zone is America/New_York, whose clocks go back at 02:00 on
+ * 2024-11-03: local 01:00 to 01:59:59.999 happens once on EDT and again on EST.
+ * The other shapes -- a zone that skips a unit start, and one that repeats a
+ * wall clock without repeating a whole hour -- need other zones, and are
+ * covered by `npm run test:zones` across seven of them.
+ */
+describe('units on a wall clock that repeats', () => {
+  // 05:59:59.999Z is 01:59:59.999 EDT, the last millisecond of the first pass.
+  const firstPass = new Date('2009-11-01T05:00:00.000Z');
+  const secondPass = new Date('2009-11-01T06:00:00.000Z');
+
+  it('reaches the same wall clock twice', () => {
+    expect(getString(firstPass, STAMP)).toBe('2009-11-01 01:00:00.000');
+    expect(getString(secondPass, STAMP)).toBe('2009-11-01 01:00:00.000');
+  });
+
+  it.each([
+    ['2009-11-01T05:00:00.000Z', 'first pass, on the hour'],
+    ['2009-11-01T05:59:59.999Z', 'first pass, last millisecond'],
+    ['2009-11-01T06:00:00.000Z', 'second pass, on the hour'],
+    ['2009-11-01T06:59:59.999Z', 'second pass, last millisecond'],
+  ])('brackets a date in the repeated hour: %s (%s)', (instant) => {
+    const date = new Date(instant);
+
+    for (const unit of ['millisecond', 'second', 'minute', 'hour', 'day'] as const) {
+      const start = startOf(date, unit).getTime();
+      const end = endOf(date, unit).getTime();
+
+      // Before this was fixed, endOf('hour') here returned 04:59:59.999Z -- an
+      // hour *before* the start -- because re-truncating the shifted instant
+      // resolved its ambiguous wall clock back to the earlier of the two.
+      expect(start).toBeLessThanOrEqual(date.getTime());
+      expect(date.getTime()).toBeLessThanOrEqual(end);
+      expect(startOf(new Date(end), unit).getTime()).toBe(start);
+      expect(endOf(new Date(end), unit).getTime()).toBe(end);
+      expect(startOf(new Date(start), unit).getTime()).toBe(start);
+    }
+  });
+
+  it('treats the doubled hour as one contiguous run', () => {
+    // Wall clock 01:xx covers two elapsed hours here, and they are adjacent, so
+    // the hour containing either pass runs from the first to the end of the
+    // second. A zone that repeats a wall clock without repeating a whole hour --
+    // Pacific/Chatham moves 03:45 back to 02:45 -- splits into two runs instead,
+    // and `npm run test:zones` covers that.
+    expect(startOf(secondPass, 'hour').getTime()).toBe(firstPass.getTime());
+    expect(getString(endOf(firstPass, 'hour'), STAMP)).toBe('2009-11-01 01:59:59.999');
+    expect(endOf(firstPass, 'hour').toISOString()).toBe('2009-11-01T06:59:59.999Z');
+  });
+
+  it('still gives the ordinary answer away from a shift', () => {
+    expect(getString(startOf(new Date(2024, 5, 15, 14, 30), 'hour'), STAMP)).toBe(
+      '2024-06-15 14:00:00.000',
+    );
+    expect(getString(endOf(new Date(2024, 5, 15, 14, 30), 'hour'), STAMP)).toBe(
+      '2024-06-15 14:59:59.999',
+    );
+  });
+});
