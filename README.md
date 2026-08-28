@@ -82,6 +82,7 @@ Full reference with every signature, error and edge case:
 | **Comparison** | `between` `equal` `after` `before` `afterToday` `beforeToday` |
 | **Strings** | `getString` `parse` `isValid` |
 | **Calendar** | `getFullWeek` `getAbbrWeek` `getFullMonth` `getAbbrMonth` `getQuarter` `getQuarterByMonth` `getFirstMonthByQuarter` `isLeapYear` `daysInMonth` `monthName` `monthAbbreviation` `weekdayName` `weekdayAbbreviation` |
+| **Week numbers** | `getISOWeek` `getISOWeekYear` `getWeekOfYear` |
 | **Profiling** | `createProfiler` (also at `timesolver/profiler`) |
 | **Errors** | `TimeSolverError` with `code`: `INVALID_DATE` `INVALID_UNIT` `INVALID_FORMAT` `INVALID_ARGUMENT` |
 
