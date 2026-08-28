@@ -175,5 +175,10 @@ export function startOf(date: DateInput, unit: UnitInput): Date {
  */
 export function endOf(date: DateInput, unit: UnitInput): Date {
   const resolved = normalizeUnit(unit);
-  return new Date(add(startOf(date, resolved), 1, resolved).getTime() - 1);
+  // Truncate again after the shift. In a zone whose clocks jump at midnight,
+  // startOf('day') is 01:00, so start plus one day is 01:00 the next day and
+  // subtracting a millisecond would land on the wrong calendar date.
+  const nextStart = startOf(add(startOf(date, resolved), 1, resolved), resolved);
+
+  return new Date(nextStart.getTime() - 1);
 }
