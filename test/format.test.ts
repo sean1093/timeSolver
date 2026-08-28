@@ -77,6 +77,22 @@ describe('getString tokens', () => {
 
     offset.mockRestore();
   });
+
+  it('carries the sign on years before 1 CE', () => {
+    // Padding the raw string rendered -1 as '00-1'.
+    const bce = new Date(2024, 0, 5);
+    bce.setFullYear(-1);
+
+    expect(getString(bce, 'YYYY-MM-DD')).toBe('-0001-01-05');
+    expect(getString(bce, 'YY')).toBe('-01');
+  });
+
+  it('renders years beyond four digits without truncating', () => {
+    const far = new Date(2024, 0, 5);
+    far.setFullYear(12345);
+
+    expect(getString(far, 'YYYY-MM-DD')).toBe('12345-01-05');
+  });
 });
 
 describe('getString composition', () => {
