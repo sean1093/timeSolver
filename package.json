@@ -25,10 +25,21 @@
         "default": "./dist/index.cjs"
       }
     },
+    "./profiler": {
+      "import": {
+        "types": "./dist/profiler.d.ts",
+        "default": "./dist/profiler.js"
+      },
+      "require": {
+        "types": "./dist/profiler.d.cts",
+        "default": "./dist/profiler.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "files": [
     "dist",
+    "profiler",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"

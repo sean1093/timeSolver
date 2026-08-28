@@ -35,10 +35,12 @@ import { after, afterToday, before, beforeToday, between, equal } from './compar
 import { DEFAULT_FORMAT, getString } from './format.js';
 import { add, endOf, startOf, subtract } from './manipulate.js';
 import { isValid, parse } from './parse.js';
+import { createProfiler, timeLook, timeLookReport, timeLookStart } from './profiler.js';
 
 export type { DateInput } from './coerce.js';
 export type { TimeSolverErrorCode } from './errors.js';
 export { TimeSolverError } from './errors.js';
+export type { ProfileMark, ProfileReport, Profiler } from './profiler.js';
 export type { ExactUnit, Unit, UnitAlias, UnitInput } from './units.js';
 export { UNITS } from './units.js';
 export {
@@ -48,6 +50,7 @@ export {
   before,
   beforeToday,
   between,
+  createProfiler,
   DEFAULT_FORMAT,
   daysInMonth,
   endOf,
@@ -82,6 +85,7 @@ const timeSolver = {
   before,
   beforeToday,
   between,
+  createProfiler,
   daysInMonth,
   endOf,
   equal,
@@ -100,6 +104,11 @@ const timeSolver = {
   parse,
   startOf,
   subtract,
+  // v1 compatibility: these three drive a shared profiler instance. The
+  // instance API above is what new code should reach for.
+  timeLook,
+  timeLookReport,
+  timeLookStart,
   weekdayAbbreviation,
   weekdayName,
 } as const;

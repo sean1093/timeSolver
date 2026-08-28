@@ -9,6 +9,7 @@ const EXPECTED_FUNCTIONS = [
   'before',
   'beforeToday',
   'between',
+  'createProfiler',
   'daysInMonth',
   'endOf',
   'equal',
@@ -31,6 +32,10 @@ const EXPECTED_FUNCTIONS = [
   'weekdayName',
 ] as const;
 
+// v1 compatibility names. They live on the default export only, so modern code
+// importing named bindings never pulls the shared profiler into its bundle.
+const LEGACY_DEFAULT_ONLY = ['timeLook', 'timeLookReport', 'timeLookStart'] as const;
+
 describe('package surface', () => {
   it.each(EXPECTED_FUNCTIONS)('exports %s as a named function', (name) => {
     expect(typeof namespace[name]).toBe('function');
@@ -46,8 +51,15 @@ describe('package surface', () => {
     }
   });
 
+  it.each(LEGACY_DEFAULT_ONLY)('exposes the v1 name %s on the default export only', (name) => {
+    expect(typeof timeSolver[name]).toBe('function');
+    expect(name in namespace).toBe(false);
+  });
+
   it('exports nothing on the default object beyond the documented functions', () => {
-    expect(Object.keys(timeSolver).sort()).toEqual([...EXPECTED_FUNCTIONS].sort());
+    expect(Object.keys(timeSolver).sort()).toEqual(
+      [...EXPECTED_FUNCTIONS, ...LEGACY_DEFAULT_ONLY].sort(),
+    );
   });
 
   it('exports the error class and the unit list', () => {

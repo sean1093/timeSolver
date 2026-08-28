@@ -1,0 +1,8 @@
+{
+  "//": "Legacy resolution stub. Node's exports map already routes timesolver/profiler; this file lets bundlers and TypeScript setups that predate exports maps resolve the subpath too.",
+  "name": "timesolver-profiler",
+  "private": true,
+  "main": "../dist/profiler.cjs",
+  "module": "../dist/profiler.js",
+  "types": "../dist/profiler.d.cts"
+}
