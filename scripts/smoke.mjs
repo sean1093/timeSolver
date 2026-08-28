@@ -229,6 +229,17 @@ check(
   ) === SAMPLE_RENDERED,
   'The global bundle loaded but did not format correctly.',
 );
+// Built inside the context so the Date is the sandbox's own intrinsic. A
+// bundle whose add() mutates its argument passes every other check here.
+check(
+  "the timeSolver global leaves the caller's Date untouched",
+  runInContext(
+    '(() => { const d = new Date(0); timeSolver.add(d, 1, "D"); return d.getTime() === 0; })()',
+    sandbox,
+    { filename: 'smoke:global-immutability' },
+  ) === true,
+  'The global bundle mutated its input. v1 mutated its argument; v2 must not.',
+);
 
 // 5. Every path the manifest advertises must exist. This is the exact check
 //    that would have stopped the 1.2.0 release.
@@ -264,7 +275,48 @@ for (const declaration of ['index.d.ts', 'profiler.d.ts']) {
 assertBehaviour('dist/index.js (ESM)', esm);
 assertBehaviour('dist/index.cjs (CJS)', cjs);
 
+// 7. Consume the package the way a dependent does: by name, so resolution goes
+//    through the exports map instead of reaching into dist/ directly. Node
+//    self-references a package by its own name when it declares "exports", so a
+//    broken or misordered condition fails here even though the files exist.
+const { name } = pkg;
+
+for (const [specifier, loader] of [
+  [name, async () => await import(name)],
+  [`${name}/profiler`, async () => await import(`${name}/profiler`)],
+]) {
+  try {
+    const mod = await loader();
+
+    ok(`import '${specifier}' resolves through the exports map`);
+    if (specifier === name) {
+      assertSurface(`import '${specifier}'`, mod, CORE_EXPORTS);
+      assertBehaviour(`import '${specifier}'`, mod);
+    } else {
+      assertProfiler(`import '${specifier}'`, mod);
+    }
+  } catch (error) {
+    fail(`import '${specifier}' resolves through the exports map`, error.message);
+  }
+}
+
+for (const specifier of [name, `${name}/profiler`]) {
+  try {
+    const mod = require(specifier);
+
+    ok(`require('${specifier}') resolves through the exports map`);
+    if (specifier === name) {
+      assertSurface(`require('${specifier}')`, mod, CORE_EXPORTS);
+      assertBehaviour(`require('${specifier}')`, mod);
+    } else {
+      assertProfiler(`require('${specifier}')`, mod);
+    }
+  } catch (error) {
+    fail(`require('${specifier}') resolves through the exports map`, error.message);
+  }
+}
+
 console.log('');
 console.log(
-  `smoke passed - ${passed} checks over ESM, CommonJS, the global bundle, the exports map, and behaviour.`,
+  `smoke passed - ${passed} checks over ESM, CommonJS, the global bundle, the exports map, package-name resolution, and behaviour.`,
 );
