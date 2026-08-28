@@ -1,9 +1,12 @@
 # 使用指南
 
 timeSolver 2.x 的任務導向導覽。完整的函式簽章請見 [API 參考文件](api.md)；
-從 1.x 升級請見[遷移指南](migration-v1-v2.md)。
+從 1.x 升級請見[遷移指南](migration-v1-v2.md)；
+全部文件的索引請見[文件總覽](README.md)。
 
 也有 [English](usage.md) 與 [日本語](usage.ja.md) 版本。
+
+API 參考文件、範例集與支援政策目前只有英文版。
 
 ## 安裝與匯入
 
@@ -19,10 +22,14 @@ import {
   after,
   before,
   between,
+  clamp,
   endOf,
   equal,
   getString,
+  isBetween,
   isValid,
+  max,
+  min,
   parse,
   startOf,
   subtract,
@@ -73,7 +80,7 @@ getString(stamp, 'nope');   // 拋出例外：完全沒有格式符號；請改�
 請注意，單一字母也是格式符號：`'oops'` 會輸出 `'oop45'`，因為 `s` 就是秒數符號。
 凡是不想被當成格式符號的字面文字，都要記得跳脫。
 
-1.x 的 36 種格式名稱全部仍然可用，而且不分大小寫，
+1.x 接受過的格式名稱全部仍然可用，而且不分大小寫，
 所以 `getString(stamp, 'YYYY-MM-DD HH:MM:SS')` 依舊會輸出
 `'2024-03-17 14:30:45'`。
 
@@ -148,6 +155,7 @@ add(stamp, 1.5, 'month'); // 拋出 INVALID_ARGUMENT
 startOf(stamp, 'day');     // 2024-03-17 00:00:00.000
 endOf(stamp, 'day');       // 2024-03-17 23:59:59.999
 startOf(stamp, 'week');    // 2024-03-17 00:00（一週從星期日開始）
+startOf(stamp, 'week', { weekStartsOn: 1 }); // 2024-03-11 00:00（ISO-8601）
 startOf(stamp, 'month');   // 2024-03-01 00:00
 endOf(stamp, 'month');     // 2024-03-31 23:59:59.999
 startOf(stamp, 'quarter'); // 2024-01-01 00:00
@@ -156,9 +164,15 @@ startOf(stamp, 'quarter'); // 2024-01-01 00:00
 例如查詢本月至今的資料：
 
 ```ts
-const rows = all.filter(
-  (row) => !before(row.createdAt, startOf(new Date(), 'month')),
-);
+const monthStart = startOf(new Date(), 'month');
+const monthEnd = endOf(new Date(), 'month');
+const rows = all.filter((row) => isBetween(row.createdAt, monthStart, monthEnd));
+```
+
+連續銜接的區間請改用半開區間，這樣既不會重疊，也不會留下空隙：
+
+```ts
+isBetween(date, monthStart, add(monthStart, 1, 'month'), undefined, '[)');
 ```
 
 ## 比較與計算差距
@@ -187,6 +201,21 @@ afterToday(add(new Date(), 1, 'day'));                // true
 beforeToday(new Date());                              // false
 ```
 
+## 區間
+
+```ts
+isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+min('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-01-01
+max('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-03-17
+clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');           // 2024-03-01
+```
+
+`isBetween` 的邊界以區間符號表示：`'[]'`、`'[)'`、`'(]'` 或 `'()'`。
+區間前後相連時請選 `'[)'`，這樣既不會重疊，也不會留下空隙。
+它同樣接受單位與 `weekStartsOn`，和上面的比較函式一致。
+`clamp` 的下界若晚於上界就會拋出例外。
+
 ## 日曆輔助函式
 
 ```ts
@@ -199,6 +228,21 @@ getQuarterByMonth(5);            // 2
 getFirstMonthByQuarter(3);       // 7
 isLeapYear(2024);                // true
 daysInMonth(2024, 2);            // 29
+```
+
+週數有兩種算法，因為這兩套慣例在跨年時的答案並不一致：
+
+```ts
+getISOWeek('2024-12-30T12:00');     // 1  -- ISO-8601：第 1 週從星期一開始
+getISOWeekYear('2024-12-30T12:00'); // 2025，不是 2024
+
+getWeekOfYear('2024-12-30T12:00');  // 53 -- 日曆年，第 1 週包含 1 月 1 日
+```
+
+ISO 的年與週請成對輸出，切勿把 `YYYY` 與 ISO 週數並用：
+
+```ts
+`${getISOWeekYear(date)}-W${String(getISOWeek(date)).padStart(2, '0')}`; // '2025-W01'
 ```
 
 這些名稱一律是英文，而且來自固定的對照表，
@@ -265,4 +309,18 @@ profiler.print();
 **沒有時區概念。** 一切都以主機當地時間為準。`Z` 與 `ZZ` 可以輸出目前的時差，
 但無法反過來解析。需要處理時區時，請改用 `Temporal` 或 `Intl.DateTimeFormat`。
 
-**一週從星期日開始**，與 `Date#getDay` 一致。
+**重複的那一小時是有歧義的。** 時鐘往回調時，同一個時鐘讀數會對應到兩個時間點，
+而 `parse` 會解析成較早的那一個。這個差別若會影響結果，
+請儲存時間點本身，而不是時鐘讀數的字串。
+
+**一週預設從星期日開始**，與 `Date#getDay` 一致。想要 ISO-8601 的一週，
+請把 `{ weekStartsOn: 1 }`，或是 `0` 到 `6` 之間的任何一天，傳給
+`startOf`、`endOf`、`equal`、`after` 與 `before`：
+
+```ts
+startOf(stamp, 'week', { weekStartsOn: 1 }); // 星期一
+endOf(stamp, 'week', { weekStartsOn: 6 });   // 星期五，對應星期六起始的一週
+```
+
+`between(a, b, 'week')` 不需要這個選項：它量的是一段跨距，
+與一週從哪一天開始無關。
