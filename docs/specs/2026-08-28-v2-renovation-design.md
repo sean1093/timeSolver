@@ -47,7 +47,11 @@ code that is not the package entry point.
 
 ### 1.3 Confirmed behavioural defects
 
-Reproduced against `src/index.js` loaded as CJS (`node /tmp/probe.cjs`):
+Reproduced against `src/index.js` loaded as CJS (`node /tmp/probe.cjs`) — that
+is, the repository's last 1.x source, which is what this rewrite replaces. The
+tarball published as 1.2.0 is an older build with 23 of these format names and
+no `DD`-first validators, so some of the numbers below have no counterpart
+there; §1.1 covers that build separately.
 
 | # | Defect | Observed | Expected |
 |---|--------|----------|----------|
@@ -188,7 +192,7 @@ format that renders also parses and validates.
 - `isValid(input, format?): boolean` — never throws for bad *data*: that is the point of the function. It does throw `INVALID_FORMAT` when the format string itself is malformed, because a broken format is a bug in the calling code rather than a property of the data. Without `format`, the check is `Date`-parseability (v1 behaviour). With `format`, it delegates to `parse`.
 
 **v1 compatibility.** v1 used `MM` for both month and minute and normalised
-formats with `toUpperCase()`. v2 tokens are case-sensitive, so the 36 v1 format
+formats with `toUpperCase()`. v2 tokens are case-sensitive, so the 36 legacy
 names are kept in an explicit table: if `format.toUpperCase()` matches a v1 name,
 it is rewritten to canonical tokens (`HH:MM:SS` → `HH:mm:ss`) before tokenising.
 Every v1 format string — in any case — keeps working; anything else is treated as
