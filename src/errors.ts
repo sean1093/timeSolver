@@ -24,6 +24,7 @@ export class TimeSolverError extends Error {
 
   constructor(code: TimeSolverErrorCode, message: string) {
     super(`[timeSolver] ${message}`);
+    // Stryker disable next-line StringLiteral: not API; see docs/support.md
     this.name = 'TimeSolverError';
     this.code = code;
   }

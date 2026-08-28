@@ -13,6 +13,8 @@ import type { WeekOptions } from './week.js';
  */
 export type Bounds = '[]' | '[)' | '(]' | '()';
 
+// Stryker disable next-line BooleanLiteral: only key presence is read, through
+// Object.hasOwn, so the values cannot be observed by any test.
 const BOUNDS: Record<Bounds, true> = { '[]': true, '[)': true, '(]': true, '()': true };
 
 /**
@@ -92,6 +94,9 @@ function pick(first: DateInput, rest: readonly DateInput[], direction: 1 | -1): 
   for (const candidate of rest) {
     const date = toDate(candidate);
 
+    // Stryker disable next-line ArithmeticOperator,EqualityOperator: direction is
+    // +1 or -1, for which multiply and divide agree, and two equal instants are
+    // indistinguishable, so the boundary cannot be observed.
     if ((date.getTime() - chosen.getTime()) * direction > 0) {
       chosen = date;
     }
@@ -123,9 +128,13 @@ export function clamp(date: DateInput, lower: DateInput, upper: DateInput): Date
     );
   }
 
+  // Stryker disable next-line EqualityOperator: at the boundary both branches
+  // return the same instant, so the comparison cannot be observed.
   if (target.getTime() < low.getTime()) {
     return low;
   }
 
+  // Stryker disable next-line EqualityOperator: as above, the boundary returns
+  // the same instant either way.
   return target.getTime() > high.getTime() ? high : target;
 }

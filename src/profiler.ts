@@ -59,6 +59,8 @@ const STYLES = {
  * profiler.print();
  */
 export function createProfiler(): Profiler {
+  // Stryker disable next-line ArrayDeclaration: start() clears this before any
+  // read, so its initial contents cannot be observed.
   const segments: Array<{ label: string; ms: number }> = [];
   let origin: number | undefined;
   let previous = 0;
@@ -71,6 +73,7 @@ export function createProfiler(): Profiler {
 
   function mark(label: string): void {
     if (typeof label !== 'string' || label.length === 0) {
+      // Stryker disable next-line StringLiteral: not API; see docs/support.md
       throw new TimeSolverError('INVALID_ARGUMENT', 'A profiler mark needs a non-empty label.');
     }
     if (origin === undefined) {

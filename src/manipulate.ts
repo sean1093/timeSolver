@@ -60,6 +60,7 @@ function requireWholeAmount(amount: number, unit: Unit): void {
   if (!Number.isInteger(amount)) {
     throw new TimeSolverError(
       'INVALID_ARGUMENT',
+      // Stryker disable next-line StringLiteral: message text is not API.
       `A ${unit} amount must be a whole number, received ${amount}. Fractional ${unit}s have no fixed length; use hours or days instead.`,
     );
   }

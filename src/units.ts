@@ -115,12 +115,15 @@ export function normalizeUnit(unit?: UnitInput): Unit {
     return 'millisecond';
   }
 
+  // Stryker disable next-line StringLiteral: any placeholder is equally absent
+  // from the alias table, so a non-string unit throws INVALID_UNIT either way.
   const key = typeof unit === 'string' ? unit.toLowerCase() : '';
   const resolved = Object.hasOwn(ALIAS_LOOKUP, key) ? ALIAS_LOOKUP[key] : undefined;
 
   if (resolved === undefined) {
     throw new TimeSolverError(
       'INVALID_UNIT',
+      // Stryker disable next-line StringLiteral: message text is not API.
       `Unknown time unit ${JSON.stringify(unit)}. Supported units: ${UNITS.join(', ')}.`,
     );
   }

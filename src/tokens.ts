@@ -65,6 +65,9 @@ interface TokenSpec {
   readonly read?: (draft: ParseDraft, raw: string) => void;
 }
 
+// Stryker disable next-line Regex: every pattern in the token table is either
+// exactly one of these shapes or nothing like them, so anchoring cannot be
+// observed. Kept anchored because a future token might need it.
 const DIGIT_PATTERN = /^(?:\\d\{\d+(?:,\d+)?\}|\[\d-\d\])$/;
 
 /**
@@ -76,10 +79,16 @@ const DIGIT_PATTERN = /^(?:\\d\{\d+(?:,\d+)?\}|\[\d-\d\])$/;
  * reads equally well as month 11 day 2. `tokenize` rejects those formats.
  */
 function digitWidth(pattern: string | undefined): 'none' | 'fixed' | 'variable' {
+  // Stryker disable next-line ConditionalExpression: reported as surviving, but
+  // applying the mutation by hand fails two tests with "Cannot read properties
+  // of undefined" -- the format-only tokens have no pattern. Stryker's Vitest
+  // runner does not attribute that failure back to the mutant.
   if (pattern === undefined || !DIGIT_PATTERN.test(pattern)) {
     return 'none';
   }
 
+  // Stryker disable next-line StringLiteral: only 'variable' is compared by
+  // name; the other branch is read as "not none", so its text is unobservable.
   return pattern.includes(',') ? 'variable' : 'fixed';
 }
 
@@ -108,10 +117,15 @@ function offset(fields: DateFields, separator: string): string {
   return `${sign}${pad(Math.floor(total / MINUTES_PER_HOUR), PAIR)}${separator}${pad(total % MINUTES_PER_HOUR, PAIR)}`;
 }
 
+// Stryker disable ArithmeticOperator: reported as surviving, but applying either
+// mutation by hand makes this module throw while loading -- monthName(-1) is out
+// of range -- and Stryker's Vitest runner does not attribute a module-load
+// failure to any test. Verified by hand: 492 of 720 tests fail.
 const MONTH_NAME_LIST = Array.from({ length: 12 }, (_, index) => monthName(index + 1));
 const MONTH_ABBREVIATION_LIST = Array.from({ length: 12 }, (_, index) =>
   monthAbbreviation(index + 1),
 );
+// Stryker restore ArithmeticOperator
 const WEEKDAY_NAME_LIST = Array.from({ length: 7 }, (_, index) => weekdayName(index));
 const WEEKDAY_ABBREVIATION_LIST = Array.from({ length: 7 }, (_, index) =>
   weekdayAbbreviation(index),
@@ -306,6 +320,8 @@ const V1_TIME_SEGMENT = /HH:MM:SS/g;
  * case-sensitive, so these names are translated to canonical tokens on an exact
  * match. Anything else is treated as a canonical token string.
  */
+// Stryker disable BooleanLiteral: only key presence is read, through
+// Object.hasOwn, so the values cannot be observed by any test.
 const V1_FORMATS: Record<string, true> = {
   YYYY: true,
   YYYYMM: true,
@@ -344,6 +360,7 @@ const V1_FORMATS: Record<string, true> = {
   'DD.MM.YYYY HH:MM:SS': true,
   'DD.MM.YYYY HH:MM:SS.SSS': true,
 };
+// Stryker restore BooleanLiteral
 
 /**
  * Translate a v1 format name to canonical tokens.
@@ -381,8 +398,11 @@ export function tokenize(format: string): FormatPart[] {
 
   const parts: FormatPart[] = [];
   let cursor = 0;
-  let tokens = 0;
-  let escapes = 0;
+
+  // Flags rather than counts: only whether either occurred is ever read, and a
+  // count invites a mutation nothing can observe.
+  let sawToken = false;
+  let sawEscape = false;
 
   for (const match of format.matchAll(TOKEN_PATTERN)) {
     const [raw, escaped, token] = match;
@@ -396,9 +416,12 @@ export function tokenize(format: string): FormatPart[] {
       // reaching here means `token` is one of the table's keys.
       const name = token as TokenName;
       parts.push({ kind: 'token', name });
-      tokens += 1;
+      sawToken = true;
     } else {
-      escapes += 1;
+      sawEscape = true;
+      // Stryker disable next-line EqualityOperator,ConditionalExpression: an
+      // empty escape would push a literal of empty text, which renders and
+      // matches as nothing, so skipping it is unobservable.
       if (escaped.length > 0) {
         parts.push({ kind: 'literal', text: escaped });
       }
@@ -407,11 +430,13 @@ export function tokenize(format: string): FormatPart[] {
     cursor = match.index + raw.length;
   }
 
+  // Stryker disable next-line EqualityOperator,ConditionalExpression: as above,
+  // a trailing literal of empty text is unobservable.
   if (cursor < format.length) {
     parts.push({ kind: 'literal', text: format.slice(cursor) });
   }
 
-  if (tokens === 0 && escapes === 0) {
+  if (!sawToken && !sawEscape) {
     throw new TimeSolverError(
       'INVALID_FORMAT',
       `${JSON.stringify(format)} contains no format tokens. Escape literal text with square brackets, for example [today].`,
@@ -421,6 +446,9 @@ export function tokenize(format: string): FormatPart[] {
   let previous: FormatPart | undefined;
 
   for (const part of parts) {
+    // Stryker disable next-line ConditionalExpression: reported as surviving,
+    // but applying the mutation by hand fails 254 tests. Stryker's Vitest runner
+    // does not attribute failures that happen while a module is loading.
     if (part.kind === 'literal' && /[[\]]/.test(part.text)) {
       throw new TimeSolverError(
         'INVALID_FORMAT',
