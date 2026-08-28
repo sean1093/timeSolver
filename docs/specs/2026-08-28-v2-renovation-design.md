@@ -133,7 +133,9 @@ everything else. No cycles.
 
 ## 6. Public API
 
-All functions are pure. Inputs accepted as `Date | string | number`.
+All functions are pure. Inputs accepted as `Date | string | number`, including a
+`Date` from another realm — an iframe, a worker, or a `node:vm` context — where
+`instanceof Date` is false, so detection uses the internal class tag instead.
 
 ### 6.1 Manipulation
 
@@ -183,7 +185,7 @@ format that renders also parses and validates.
 
 - `getString(date, format = 'YYYYMMDD'): string` — throws `INVALID_FORMAT` on an unknown token sequence rather than returning an error string.
 - `parse(input, format): Date` — strict. The input must match the format exactly and the resulting fields must round-trip, so `31-02-2020` is rejected.
-- `isValid(input, format?): boolean` — never throws. Without `format`, `Date`-parseability (v1 behaviour). With `format`, delegates to `parse`.
+- `isValid(input, format?): boolean` — never throws for bad *data*: that is the point of the function. It does throw `INVALID_FORMAT` when the format string itself is malformed, because a broken format is a bug in the calling code rather than a property of the data. Without `format`, the check is `Date`-parseability (v1 behaviour). With `format`, it delegates to `parse`.
 
 **v1 compatibility.** v1 used `MM` for both month and minute and normalised
 formats with `toUpperCase()`. v2 tokens are case-sensitive, so the 36 v1 format
