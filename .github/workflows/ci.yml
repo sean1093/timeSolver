@@ -38,6 +38,13 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
+      # Zero dependencies and no build output, so it belongs with the cheap
+      # gates: relative links, heading anchors, fence languages, and the
+      # absolute-in-README, relative-in-docs convention. External URLs are
+      # never fetched.
+      - name: Check documentation links
+        run: npm run check:docs
+
       - name: Test with coverage
         run: npm run test:coverage
 
