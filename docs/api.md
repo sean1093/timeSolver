@@ -6,6 +6,7 @@ is written to the console, and nothing mutates the `Date` you pass in.
 - [Conventions](#conventions)
 - [Arithmetic](#arithmetic)
 - [Comparison](#comparison)
+- [Ranges](#ranges)
 - [Formatting, parsing and validation](#formatting-parsing-and-validation)
 - [Calendar helpers](#calendar-helpers)
 - [Profiling](#profiling)
@@ -188,6 +189,62 @@ The mirror of `after`. Equal instants are neither after nor before.
 
 Whether `date` falls on a later, or earlier, calendar day than today. Any time
 today is neither.
+
+## Ranges
+
+### `isBetween(date, start, end, unit?, bounds?, options?): boolean`
+
+Whether `date` falls between `start` and `end`.
+
+`bounds` is interval notation: `[` and `]` include an endpoint, `(` and `)`
+exclude it. It defaults to `'[]'`, both inclusive.
+
+```ts
+isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
+isBetween('2024-03-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true, inclusive
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+```
+
+`'[)'` is usually what a date range wants: a month runs from 1 January up to but
+not including 1 February, so consecutive ranges neither overlap nor leave a gap.
+
+`unit` compares at a granularity, as `equal` does, and `options` carries
+`weekStartsOn`:
+
+```ts
+// 2024-03-31 is inside March, so a month-granularity test includes it
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00');          // false
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00', 'month'); // true
+```
+
+A reversed range returns `false` rather than being silently reordered, because a
+range given backwards is usually a bug and hiding it does the caller no favours.
+Unrecognised `bounds` throw `INVALID_ARGUMENT`.
+
+### `min(first, ...rest): Date` / `max(first, ...rest): Date`
+
+Earliest and latest of the dates given. At least one argument is required, which
+the types enforce, so there is no empty case to define. Both return a new `Date`,
+and of equal dates the first wins.
+
+```ts
+min('2024-03-17T00:00', '2024-01-01T00:00', '2024-12-31T00:00'); // 2024-01-01
+max(new Date(0), '2024-01-01T00:00', 1_700_000_000_000);         // 2024-01-01
+```
+
+### `clamp(date, lower, upper): Date`
+
+Constrains `date` to a range, returning the nearest endpoint when it falls
+outside.
+
+```ts
+clamp('2024-02-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00'); // 2024-02-01
+clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00'); // 2024-03-01
+```
+
+Throws `INVALID_ARGUMENT` when `lower` is later than `upper`. There is no
+sensible answer for an inverted range, and swapping the arguments would hide the
+caller's mistake.
 
 ## Formatting, parsing and validation
 
@@ -434,6 +491,7 @@ Messages are prefixed `[timeSolver]`, as in 1.x.
 
 ```ts
 import type {
+  Bounds,             // '[]' | '[)' | '(]' | '()'
   DateInput,          // Date | string | number
   ExactUnit,          // units with a fixed millisecond length
   ProfileMark,

@@ -80,6 +80,7 @@ Full reference with every signature, error and edge case:
 |---|---|
 | **Arithmetic** | `add` `subtract` `startOf` `endOf` |
 | **Comparison** | `between` `equal` `after` `before` `afterToday` `beforeToday` |
+| **Ranges** | `isBetween` `min` `max` `clamp` |
 | **Strings** | `getString` `parse` `isValid` |
 | **Calendar** | `getFullWeek` `getAbbrWeek` `getFullMonth` `getAbbrMonth` `getQuarter` `getQuarterByMonth` `getFirstMonthByQuarter` `isLeapYear` `daysInMonth` `monthName` `monthAbbreviation` `weekdayName` `weekdayAbbreviation` |
 | **Week numbers** | `getISOWeek` `getISOWeekYear` `getWeekOfYear` |
