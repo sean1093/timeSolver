@@ -29,6 +29,8 @@ const anyDate = fc
 const anyUnit: fc.Arbitrary<Unit> = fc.constantFrom(...UNITS);
 const calendarUnit: fc.Arbitrary<Unit> = fc.constantFrom('day', 'week', 'month', 'quarter', 'year');
 const calendarMonthUnit: fc.Arbitrary<Unit> = fc.constantFrom('month', 'quarter', 'year');
+const exactUnit: fc.Arbitrary<Unit> = fc.constantFrom('millisecond', 'second', 'minute', 'hour');
+const calendarDayUnit: fc.Arbitrary<Unit> = fc.constantFrom('day', 'week');
 const anyWeekStart: fc.Arbitrary<WeekDay> = fc.constantFrom(0, 1, 2, 3, 4, 5, 6);
 const wholeAmount = fc.integer({ min: -500, max: 500 });
 
@@ -48,20 +50,34 @@ describe('arithmetic', () => {
     );
   });
 
-  it('adding then subtracting the same amount is the identity, where clamping cannot occur', () => {
+  it('day and week arithmetic returns to the same calendar day', () => {
     fc.assert(
-      fc.property(anyDate, wholeAmount, anyUnit, (date, amount, unit) => {
-        const clampable = unit === 'month' || unit === 'quarter' || unit === 'year';
+      fc.property(anyDate, wholeAmount, calendarDayUnit, (date, amount, unit) => {
+        const returned = subtract(add(date, amount, unit), amount, unit);
 
-        // Calendar month arithmetic is not invertible when the day of the month
-        // does not exist in the target month: 31 December plus 18 months clamps
-        // to 30 June, and subtracting 18 months from that gives 30 December.
-        // Every calendar library behaves this way. Days 1 to 28 exist in every
-        // month, so the identity holds there.
-        if (clampable && date.getDate() > 28) {
+        if (returned.getTime() === date.getTime()) {
           return true;
         }
 
+        // Day and week arithmetic keeps the wall-clock time, so a step can land
+        // on a local time that does not exist: 2023-03-12 02:00 in
+        // America/New_York is skipped and the runtime normalises it to 03:00,
+        // which the return trip carries back. The calendar day survives; the
+        // clock moves by one transition.
+        const drift = Math.abs(returned.getTime() - date.getTime());
+
+        return (
+          getString(returned, 'YYYY-MM-DD') === getString(date, 'YYYY-MM-DD') &&
+          drift <= 2 * 3_600_000 &&
+          drift % 60_000 === 0
+        );
+      }),
+    );
+  });
+
+  it('is exactly invertible for units of fixed length', () => {
+    fc.assert(
+      fc.property(anyDate, wholeAmount, exactUnit, (date, amount, unit) => {
         return subtract(add(date, amount, unit), amount, unit).getTime() === date.getTime();
       }),
     );
@@ -80,20 +96,32 @@ describe('arithmetic', () => {
     );
   });
 
-  it('adds in whole steps, in any order', () => {
+  it('adds in whole steps, in any order, for units of fixed length', () => {
     fc.assert(
-      fc.property(anyDate, fc.integer({ min: -50, max: 50 }), anyUnit, (date, amount, unit) => {
+      fc.property(anyDate, fc.integer({ min: -50, max: 50 }), exactUnit, (date, amount, unit) => {
         const once = add(date, amount * 2, unit);
         const twice = add(add(date, amount, unit), amount, unit);
 
-        // Month arithmetic clamps, so two steps of one month can differ from one
-        // step of two; every other unit composes exactly.
-        if (unit === 'month' || unit === 'quarter' || unit === 'year') {
-          return true;
-        }
-
         return once.getTime() === twice.getTime();
       }),
+    );
+  });
+
+  it('adds calendar steps to the same calendar date, in any order', () => {
+    fc.assert(
+      fc.property(
+        anyDate,
+        fc.integer({ min: -50, max: 50 }),
+        fc.constantFrom<Unit>('day', 'week'),
+        (date, amount, unit) => {
+          // Instants can differ by a transition when a step lands in a gap, but
+          // the calendar date cannot.
+          const once = add(date, amount * 2, unit);
+          const twice = add(add(date, amount, unit), amount, unit);
+
+          return getString(once, 'YYYY-MM-DD') === getString(twice, 'YYYY-MM-DD');
+        },
+      ),
     );
   });
 });
