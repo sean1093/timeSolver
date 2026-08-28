@@ -58,7 +58,8 @@
     "smoke": "node scripts/smoke.mjs",
     "test:zones": "node scripts/zones.mjs",
     "release": "changeset publish",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "check:api": "node scripts/api-surface.mjs"
   },
   "keywords": [
     "date",
