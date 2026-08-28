@@ -1,0 +1,147 @@
+# timesolver public API surface, extracted from dist/ by scripts/api-surface.mjs.
+# One line per exported declaration or member:  <module> <path>  <declaration>
+# A ~ prefix marks a declaration reachable from the surface but not exported.
+#
+# Generated; do not edit by hand. After an intentional API change, run:
+#   npm run build && npm run check:api -- --update
+timesolver DEFAULT_FORMAT  const DEFAULT_FORMAT = "YYYYMMDD"
+timesolver DateInput  type DateInput = Date | string | number
+timesolver ExactUnit  type ExactUnit = keyof typeof MS_PER_EXACT_UNIT
+timesolver ProfileMark  interface ProfileMark { ... }
+timesolver ProfileMark.label  readonly label: string
+timesolver ProfileMark.ms  readonly ms: number
+timesolver ProfileMark.share  readonly share: number
+timesolver ProfileReport  interface ProfileReport { ... }
+timesolver ProfileReport.marks  readonly marks: readonly ProfileMark[]
+timesolver ProfileReport.slowest  readonly slowest: ProfileMark | undefined
+timesolver ProfileReport.total  readonly total: number
+timesolver Profiler  interface Profiler { ... }
+timesolver Profiler.mark  mark(label: string): void
+timesolver Profiler.print  print(): ProfileReport
+timesolver Profiler.report  report(): ProfileReport
+timesolver Profiler.start  start(): void
+timesolver TimeSolverError  class TimeSolverError extends Error { ... }
+timesolver TimeSolverError.code  readonly code: TimeSolverErrorCode
+timesolver TimeSolverError.constructor  constructor(code: TimeSolverErrorCode, message: string)
+timesolver TimeSolverErrorCode  type TimeSolverErrorCode = 'INVALID_DATE' | 'INVALID_UNIT' | 'INVALID_FORMAT' | 'INVALID_ARGUMENT'
+timesolver UNITS  const UNITS: readonly ["millisecond", "second", "minute", "hour", "day", "week", "month", "quarter", "year"]
+timesolver Unit  type Unit = (typeof UNITS)[number]
+timesolver UnitAlias  type UnitAlias = keyof typeof UNIT_ALIASES
+timesolver UnitInput  type UnitInput = UnitAlias | Uppercase<UnitAlias> | (string & Record<never, never>)
+timesolver add  function add(date: DateInput, amount?: number, unit?: UnitInput): Date
+timesolver after  function after(first: DateInput, second: DateInput, unit?: UnitInput): boolean
+timesolver afterToday  function afterToday(date: DateInput): boolean
+timesolver before  function before(first: DateInput, second: DateInput, unit?: UnitInput): boolean
+timesolver beforeToday  function beforeToday(date: DateInput): boolean
+timesolver between  function between(from: DateInput, to: DateInput, unit?: UnitInput): number
+timesolver createProfiler  function createProfiler(): Profiler
+timesolver daysInMonth  function daysInMonth(year: number, month: number): number
+timesolver default  const timeSolver: { ... }
+timesolver default.add  readonly add: typeof add
+timesolver default.after  readonly after: typeof after
+timesolver default.afterToday  readonly afterToday: typeof afterToday
+timesolver default.before  readonly before: typeof before
+timesolver default.beforeToday  readonly beforeToday: typeof beforeToday
+timesolver default.between  readonly between: typeof between
+timesolver default.createProfiler  readonly createProfiler: typeof createProfiler
+timesolver default.daysInMonth  readonly daysInMonth: typeof daysInMonth
+timesolver default.endOf  readonly endOf: typeof endOf
+timesolver default.equal  readonly equal: typeof equal
+timesolver default.getAbbrMonth  readonly getAbbrMonth: typeof getAbbrMonth
+timesolver default.getAbbrWeek  readonly getAbbrWeek: typeof getAbbrWeek
+timesolver default.getFirstMonthByQuarter  readonly getFirstMonthByQuarter: typeof getFirstMonthByQuarter
+timesolver default.getFullMonth  readonly getFullMonth: typeof getFullMonth
+timesolver default.getFullWeek  readonly getFullWeek: typeof getFullWeek
+timesolver default.getQuarter  readonly getQuarter: typeof getQuarter
+timesolver default.getQuarterByMonth  readonly getQuarterByMonth: typeof getQuarterByMonth
+timesolver default.getString  readonly getString: typeof getString
+timesolver default.isLeapYear  readonly isLeapYear: typeof isLeapYear
+timesolver default.isValid  readonly isValid: typeof isValid
+timesolver default.monthAbbreviation  readonly monthAbbreviation: typeof monthAbbreviation
+timesolver default.monthName  readonly monthName: typeof monthName
+timesolver default.parse  readonly parse: typeof parse
+timesolver default.startOf  readonly startOf: typeof startOf
+timesolver default.subtract  readonly subtract: typeof subtract
+timesolver default.timeLook  readonly timeLook: typeof timeLook
+timesolver default.timeLookReport  readonly timeLookReport: typeof timeLookReport
+timesolver default.timeLookStart  readonly timeLookStart: typeof timeLookStart
+timesolver default.weekdayAbbreviation  readonly weekdayAbbreviation: typeof weekdayAbbreviation
+timesolver default.weekdayName  readonly weekdayName: typeof weekdayName
+timesolver endOf  function endOf(date: DateInput, unit: UnitInput): Date
+timesolver equal  function equal(first: DateInput, second: DateInput, unit?: UnitInput): boolean
+timesolver getAbbrMonth  function getAbbrMonth(date: DateInput): string
+timesolver getAbbrWeek  function getAbbrWeek(date: DateInput): string
+timesolver getFirstMonthByQuarter  function getFirstMonthByQuarter(quarter: number): number | null
+timesolver getFullMonth  function getFullMonth(date: DateInput): string
+timesolver getFullWeek  function getFullWeek(date: DateInput): string
+timesolver getQuarter  function getQuarter(date: DateInput): number
+timesolver getQuarterByMonth  function getQuarterByMonth(month: number): number | null
+timesolver getString  function getString(date: DateInput, format?: string): string
+timesolver isLeapYear  function isLeapYear(year: number): boolean
+timesolver isValid  function isValid(input: DateInput, format?: string): boolean
+timesolver monthAbbreviation  function monthAbbreviation(month: number): string
+timesolver monthName  function monthName(month: number): string
+timesolver parse  function parse(input: string, format: string): Date
+timesolver startOf  function startOf(date: DateInput, unit: UnitInput): Date
+timesolver subtract  function subtract(date: DateInput, amount?: number, unit?: UnitInput): Date
+timesolver timeLook  function timeLook(label: string): void
+timesolver timeLookReport  function timeLookReport(): ProfileReport
+timesolver timeLookStart  function timeLookStart(): void
+timesolver weekdayAbbreviation  function weekdayAbbreviation(weekday: number): string
+timesolver weekdayName  function weekdayName(weekday: number): string
+timesolver ~MS_PER_EXACT_UNIT  const MS_PER_EXACT_UNIT: { ... }
+timesolver ~MS_PER_EXACT_UNIT.hour  readonly hour: 3600000
+timesolver ~MS_PER_EXACT_UNIT.millisecond  readonly millisecond: 1
+timesolver ~MS_PER_EXACT_UNIT.minute  readonly minute: 60000
+timesolver ~MS_PER_EXACT_UNIT.second  readonly second: 1000
+timesolver ~UNIT_ALIASES  const UNIT_ALIASES: { ... }
+timesolver ~UNIT_ALIASES.d  readonly d: "day"
+timesolver ~UNIT_ALIASES.day  readonly day: "day"
+timesolver ~UNIT_ALIASES.days  readonly days: "day"
+timesolver ~UNIT_ALIASES.h  readonly h: "hour"
+timesolver ~UNIT_ALIASES.hour  readonly hour: "hour"
+timesolver ~UNIT_ALIASES.hours  readonly hours: "hour"
+timesolver ~UNIT_ALIASES.hr  readonly hr: "hour"
+timesolver ~UNIT_ALIASES.m  readonly m: "month"
+timesolver ~UNIT_ALIASES.mill  readonly mill: "millisecond"
+timesolver ~UNIT_ALIASES.millisecond  readonly millisecond: "millisecond"
+timesolver ~UNIT_ALIASES.milliseconds  readonly milliseconds: "millisecond"
+timesolver ~UNIT_ALIASES.min  readonly min: "minute"
+timesolver ~UNIT_ALIASES.minute  readonly minute: "minute"
+timesolver ~UNIT_ALIASES.minutes  readonly minutes: "minute"
+timesolver ~UNIT_ALIASES.mon  readonly mon: "month"
+timesolver ~UNIT_ALIASES.month  readonly month: "month"
+timesolver ~UNIT_ALIASES.months  readonly months: "month"
+timesolver ~UNIT_ALIASES.ms  readonly ms: "millisecond"
+timesolver ~UNIT_ALIASES.msec  readonly msec: "millisecond"
+timesolver ~UNIT_ALIASES.q  readonly q: "quarter"
+timesolver ~UNIT_ALIASES.quarter  readonly quarter: "quarter"
+timesolver ~UNIT_ALIASES.quarters  readonly quarters: "quarter"
+timesolver ~UNIT_ALIASES.s  readonly s: "second"
+timesolver ~UNIT_ALIASES.sec  readonly sec: "second"
+timesolver ~UNIT_ALIASES.second  readonly second: "second"
+timesolver ~UNIT_ALIASES.seconds  readonly seconds: "second"
+timesolver ~UNIT_ALIASES.w  readonly w: "week"
+timesolver ~UNIT_ALIASES.week  readonly week: "week"
+timesolver ~UNIT_ALIASES.weeks  readonly weeks: "week"
+timesolver ~UNIT_ALIASES.y  readonly y: "year"
+timesolver ~UNIT_ALIASES.year  readonly year: "year"
+timesolver ~UNIT_ALIASES.years  readonly years: "year"
+timesolver ~UNIT_ALIASES.yr  readonly yr: "year"
+timesolver/profiler ProfileMark  interface ProfileMark { ... }
+timesolver/profiler ProfileMark.label  readonly label: string
+timesolver/profiler ProfileMark.ms  readonly ms: number
+timesolver/profiler ProfileMark.share  readonly share: number
+timesolver/profiler ProfileReport  interface ProfileReport { ... }
+timesolver/profiler ProfileReport.marks  readonly marks: readonly ProfileMark[]
+timesolver/profiler ProfileReport.slowest  readonly slowest: ProfileMark | undefined
+timesolver/profiler ProfileReport.total  readonly total: number
+timesolver/profiler Profiler  interface Profiler { ... }
+timesolver/profiler Profiler.mark  mark(label: string): void
+timesolver/profiler Profiler.print  print(): ProfileReport
+timesolver/profiler Profiler.report  report(): ProfileReport
+timesolver/profiler Profiler.start  start(): void
+timesolver/profiler createProfiler  function createProfiler(): Profiler
+timesolver/profiler timeLook  function timeLook(label: string): void
+timesolver/profiler timeLookReport  function timeLookReport(): ProfileReport
+timesolver/profiler timeLookStart  function timeLookStart(): void
