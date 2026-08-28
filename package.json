@@ -62,7 +62,7 @@
     "check:api": "node scripts/api-surface.mjs",
     "bench": "vitest bench --run",
     "check:docs": "node scripts/check-docs.mjs",
-    "test:gates": "vitest run test/gates.test.ts",
+    "test:built": "vitest run test/gates.test.ts test/fuzz.test.ts",
     "test:mutation": "stryker run"
   },
   "keywords": [

@@ -46,6 +46,9 @@ loudly if `package.json` and the lockfile disagree, which is what CI does.
 | `npm run check:api` | `node scripts/api-surface.mjs` | Compares the public API surface of the built declarations against the committed `api-surface.txt`. Requires `npm run build` first. Run it with `-- --update` to approve an intentional API change. |
 | `npm run bench` | `vitest bench --run` | Throughput of formatting, parsing and arithmetic against dayjs and date-fns. Not a CI gate; see below. Results and methodology: [docs/benchmarks.md](docs/benchmarks.md). |
 | `npm run test:mutation` | `stryker run` | Mutation testing: changes the source in small ways and checks a test fails each time. Not a pull-request gate; runs weekly. See below. |
+| `npm run test:zones` | `node scripts/zones.mjs` | Runs the calendar invariants over 366 days in seven time zones, each in its own process. Requires `npm run build` first. |
+| `npm run test:built` | `vitest run test/gates.test.ts test/fuzz.test.ts` | The two suites that need `dist/`: the release gates' own tests, and the format fuzzer's pathological cases. Requires `npm run build` first. |
+| `npm run check:docs` | `node scripts/check-docs.mjs` | Every relative link and heading anchor in the docs resolves, every code fence declares a language, and no merge marker or unfinished-work note survived. (It flags this row too if written literally, which is the gate working.) |
 
 ## Project layout
 
@@ -149,6 +152,12 @@ The **quality** job runs once, on Node 22, in this order:
 7. `size` — the bundle is within budget.
 8. `smoke` — the built ESM, CJS, and IIFE bundles load, resolve by package
    name through the `exports` map, and compute correctly.
+9. `test:zones` — the calendar invariants hold over 366 days in seven zones,
+   including ones whose clocks shift at midnight and at a quarter past the hour.
+10. `test:built` — the release gates still fail when they should, and no format
+    string can make the parser backtrack.
+
+`check:docs` runs third, before the build, since it needs nothing built.
 
 The **test** job runs `test`, `build`, and `smoke` on Node 20, 22, and 24, which
 is what proves the published artifacts work on every supported runtime. Lint,
@@ -217,6 +226,29 @@ side effect. Prefer deleting to annotating.
 
 The run takes about a minute and is deliberately not a pull-request gate. It
 runs weekly and on demand: Actions, Mutation, Run workflow.
+
+## Fuzzing the format grammar
+
+The format grammar is the only place a caller's string becomes something
+executable: `getString` walks it, and `parse` compiles it into a regular
+expression. `test/fuzz.test.ts` generates formats — from grammar-shaped pieces,
+from arbitrary text, and from lone surrogates and control characters — and holds
+two lines.
+
+**Only declared failures escape.** A malformed format is a programmer error and
+throws `TimeSolverError`. A `SyntaxError` from a bracket that reached the regular
+expression unescaped is a different thing entirely, and the fuzzer catches it:
+deleting the escaping in `buildMatcher` fails within a second, with the
+counterexample `")YYYY"`.
+
+**Work stays bounded.** These cases run in child processes with a wall-clock
+limit rather than in the test worker. A regular expression runs synchronously, so
+it never reaches an await point and no test timeout can interrupt it — measured,
+not assumed: adding one nested quantifier to the generated matcher made an
+in-process version run for ten minutes reporting nothing, while the child-process
+version fails in under a minute saying which format did it.
+
+If you add a token or change how patterns are built, run `npm run test:built`.
 
 ## Releases
 
