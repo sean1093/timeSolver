@@ -4,7 +4,7 @@
 [![CI](https://github.com/sean1093/timeSolver/actions/workflows/ci.yml/badge.svg)](https://github.com/sean1093/timeSolver/actions/workflows/ci.yml)
 [![types](https://img.shields.io/npm/types/timesolver)](https://www.npmjs.com/package/timesolver)
 [![downloads](https://img.shields.io/npm/dm/timesolver)](https://www.npmjs.com/package/timesolver)
-[![license](https://img.shields.io/npm/l/timesolver)](LICENSE)
+[![license](https://img.shields.io/npm/l/timesolver)](https://github.com/sean1093/timeSolver/blob/master/LICENSE)
 
 Tiny, immutable date utilities for JavaScript and TypeScript. Formatting,
 strict parsing, format-aware validation, calendar-correct comparison, and a
@@ -27,7 +27,7 @@ parse('17/03/2024', 'DD/MM/YYYY');            // Date, or throws
 - **Small.** 4.8 kB minified and gzipped for the whole library, tree-shakable down to what you import, no dependencies.
 - **Loud, not silent.** Bad input throws `TimeSolverError` with a `code`; nothing is written to the console, and nothing returns a sentinel you have to remember to check.
 
-Upgrading from 1.x? See the [migration guide](docs/migration-v1-v2.md) — most call
+Upgrading from 1.x? See the [migration guide](https://github.com/sean1093/timeSolver/blob/master/docs/migration-v1-v2.md) — most call
 sites need no changes, but the semantics they relied on were often wrong.
 
 ## Installation
@@ -73,8 +73,8 @@ Browser, no bundler:
 ## API
 
 Full reference with every signature, error and edge case:
-**[docs/api.md](docs/api.md)**. Guides:
-[English](docs/usage.md) · [繁體中文](docs/usage.zh.md) · [日本語](docs/usage.ja.md).
+**[docs/api.md](https://github.com/sean1093/timeSolver/blob/master/docs/api.md)**. Guides:
+[English](https://github.com/sean1093/timeSolver/blob/master/docs/usage.md) · [繁體中文](https://github.com/sean1093/timeSolver/blob/master/docs/usage.zh.md) · [日本語](https://github.com/sean1093/timeSolver/blob/master/docs/usage.ja.md).
 
 | | |
 |---|---|
@@ -90,7 +90,7 @@ Every function takes a `Date`, epoch milliseconds, or a string `Date` can parse.
 ### Units
 
 Case-insensitive. Plural forms are accepted too (`days`, `months`); the full
-table is in the [API reference](docs/api.md#conventions).
+table is in the [API reference](https://github.com/sean1093/timeSolver/blob/master/docs/api.md#conventions).
 
 | Unit | Aliases |
 |---|---|
@@ -178,13 +178,13 @@ local. This library passes strings to `Date`, so the same rule applies. Pass a
 ## Contributing
 
 Setup, scripts, quality gates and the release process are in
-[CONTRIBUTING.md](CONTRIBUTING.md). Bug reports and feature requests go through
+[CONTRIBUTING.md](https://github.com/sean1093/timeSolver/blob/master/CONTRIBUTING.md). Bug reports and feature requests go through
 the [issue templates](https://github.com/sean1093/timeSolver/issues/new/choose);
-vulnerabilities go through [SECURITY.md](SECURITY.md).
+vulnerabilities go through [SECURITY.md](https://github.com/sean1093/timeSolver/blob/master/SECURITY.md).
 
 Design decisions, including the audit that motivated 2.0.0, are recorded in
-[docs/specs](docs/specs).
+[docs/specs](https://github.com/sean1093/timeSolver/tree/master/docs/specs).
 
 ## License
 
-[MIT](LICENSE) © Sean Chou
+[MIT](https://github.com/sean1093/timeSolver/blob/master/LICENSE) © Sean Chou
