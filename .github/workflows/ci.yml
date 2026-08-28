@@ -65,6 +65,14 @@ jobs:
       - name: Check zone invariants
         run: npm run test:zones
 
+      # The gates above decide whether a release is publishable. This proves
+      # each of them still fails when it should, rather than passing
+      # everything. It drives the scripts against fixture packages built from
+      # dist/, so it runs after the build; the same tests skip in the coverage
+      # run above, where dist/ does not exist yet.
+      - name: Test the gate scripts
+        run: npm run test:gates
+
       # Runs even when a later gate failed, provided coverage was produced.
       - name: Upload coverage report
         if: ${{ !cancelled() && hashFiles('coverage/**') != '' }}
