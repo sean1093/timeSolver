@@ -191,12 +191,15 @@ function truncatedTime(time: number, unit: Unit, weekStartsOn: WeekDay): number 
  * instant that carried the label -- the moment the unit began.
  */
 function runStart(
-  low: number,
-  high: number,
+  from: number,
+  to: number,
   unit: Unit,
   weekStartsOn: WeekDay,
   nominal: number,
 ): number {
+  let low = from;
+  let high = to;
+
   while (low + 1 < high) {
     const mid = low + Math.floor((high - low) / 2);
 
@@ -215,8 +218,10 @@ function runStart(
  * clock shift that separates the two ends. Zones shift at most once a day, so
  * callers keep the window inside one.
  */
-function shiftBetween(low: number, high: number): number {
-  const offset = new Date(high).getTimezoneOffset();
+function shiftBetween(from: number, to: number): number {
+  const offset = new Date(to).getTimezoneOffset();
+  let low = from;
+  let high = to;
 
   while (low + 1 < high) {
     const mid = low + Math.floor((high - low) / 2);
