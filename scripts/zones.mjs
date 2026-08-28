@@ -21,7 +21,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ZONES = [
   'UTC',
@@ -35,6 +35,30 @@ const ZONES = [
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
+/** Two instants six months apart, so a zone's standard and summer offsets differ. */
+const SAMPLES = [Date.UTC(2024, 0, 15, 12), Date.UTC(2024, 6, 15, 12)];
+
+/**
+ * Minutes east of UTC for an instant in a named zone, read through `Intl` so it
+ * is independent of the process time zone.
+ */
+function offsetInZone(instant, zone) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: zone,
+    timeZoneName: 'longOffset',
+  }).formatToParts(new Date(instant));
+  const name = parts.find((part) => part.type === 'timeZoneName')?.value ?? '';
+  const match = /GMT(?<sign>[+-])(?<hours>\d{1,2}):?(?<minutes>\d{2})?/.exec(name);
+
+  if (match?.groups === undefined) {
+    return 0; // 'GMT' with no offset means UTC.
+  }
+
+  const { sign, hours, minutes } = match.groups;
+
+  return (sign === '-' ? -1 : 1) * (Number(hours) * 60 + Number(minutes ?? 0));
+}
+
 if (!existsSync(join(root, 'dist', 'index.js'))) {
   console.error('dist/index.js is missing. Run `npm run build` first.');
   process.exit(1);
@@ -42,12 +66,28 @@ if (!existsSync(join(root, 'dist', 'index.js'))) {
 
 // Runs inside each child process, once per zone.
 const CHECKS = /* js */ `
+// The specifier must be a file:// URL: on Windows a bare absolute path starts
+// with a drive letter, which the ESM loader reads as an unsupported protocol.
 import { add, between, endOf, getString, parse, startOf, subtract } from ${JSON.stringify(
-  join(root, 'dist', 'index.js'),
+  pathToFileURL(join(root, 'dist', 'index.js')).href,
 )};
 
 const zone = process.env.TZ;
 const failures = [];
+
+// Some platforms ignore a TZ set by the parent process. Comparing the effective
+// offsets rather than the zone's name avoids a false alarm when the platform
+// reports a legacy spelling: macOS resolves Asia/Kathmandu as Asia/Katmandu.
+const expected = process.env.EXPECTED_OFFSETS.split(',').map(Number);
+const samples = process.env.SAMPLE_INSTANTS.split(',').map(Number);
+const actual = samples.map((instant) => -new Date(instant).getTimezoneOffset());
+
+if (actual.join(',') !== expected.join(',')) {
+  console.log(
+    '  skip - ' + zone + ' (runtime reported offsets ' + actual + ', expected ' + expected + ')',
+  );
+  process.exit(0);
+}
 
 function check(label, condition, detail) {
   if (!condition) {
@@ -150,17 +190,28 @@ console.log('  ok - ' + zone);
 `;
 
 let failed = 0;
+let skipped = 0;
 
 console.log(`zone invariants over ${ZONES.length} zones, 366 days each`);
 
 for (const zone of ZONES) {
   try {
     const output = execFileSync(process.execPath, ['--input-type=module', '-e', CHECKS], {
-      env: { ...process.env, TZ: zone },
+      env: {
+        ...process.env,
+        TZ: zone,
+        SAMPLE_INSTANTS: SAMPLES.join(','),
+        EXPECTED_OFFSETS: SAMPLES.map((instant) => offsetInZone(instant, zone)).join(','),
+      },
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'inherit'],
     });
+
     process.stdout.write(output);
+
+    if (output.includes('skip - ')) {
+      skipped += 1;
+    }
   } catch {
     failed += 1;
   }
@@ -171,4 +222,15 @@ if (failed > 0) {
   process.exit(1);
 }
 
-console.log(`\nall ${ZONES.length} zones hold.`);
+if (skipped === ZONES.length) {
+  console.error(
+    `\nEvery zone was skipped: this runtime ignores a TZ set by the parent process, so the invariants only ever ran in the host zone. The checks themselves did not fail, but they proved nothing about other zones.`,
+  );
+  process.exit(1);
+}
+
+const checked = ZONES.length - skipped;
+
+console.log(
+  `\n${checked} of ${ZONES.length} zones hold${skipped > 0 ? `, ${skipped} skipped because the runtime ignored TZ` : ''}.`,
+);
