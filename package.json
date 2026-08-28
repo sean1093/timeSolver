@@ -94,6 +94,7 @@
     "@size-limit/preset-small-lib": "^13.0.3",
     "@types/node": "^26.4.0",
     "@vitest/coverage-v8": "^4.1.11",
+    "fast-check": "^4.9.0",
     "publint": "^0.3.14",
     "size-limit": "^13.0.3",
     "tsup": "^8.5.0",

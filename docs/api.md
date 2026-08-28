@@ -79,6 +79,13 @@ Throws `INVALID_ARGUMENT` for a non-finite `amount`, or a fractional amount of
 a calendar unit — a third of a month has no defined length, so it is refused
 rather than rounded.
 
+Clamping also means month arithmetic is **not invertible**: 31 December plus 18
+months clamps to 30 June, and subtracting 18 months from that gives 30 December,
+not 31. Days 1 to 28 exist in every month, so the round trip is exact there.
+This is true of every calendar library; it is a property of calendars, not a
+defect, but it is worth knowing before you rely on `subtract(add(d, n, 'month'),
+n, 'month')` returning `d`.
+
 ### `subtract(date, amount?, unit?): Date`
 
 `add` with the amount negated. Same rules, same errors.
