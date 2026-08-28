@@ -80,8 +80,10 @@ Full reference with every signature, error and edge case:
 |---|---|
 | **Arithmetic** | `add` `subtract` `startOf` `endOf` |
 | **Comparison** | `between` `equal` `after` `before` `afterToday` `beforeToday` |
+| **Ranges** | `isBetween` `min` `max` `clamp` |
 | **Strings** | `getString` `parse` `isValid` |
 | **Calendar** | `getFullWeek` `getAbbrWeek` `getFullMonth` `getAbbrMonth` `getQuarter` `getQuarterByMonth` `getFirstMonthByQuarter` `isLeapYear` `daysInMonth` `monthName` `monthAbbreviation` `weekdayName` `weekdayAbbreviation` |
+| **Week numbers** | `getISOWeek` `getISOWeekYear` `getWeekOfYear` |
 | **Profiling** | `createProfiler` (also at `timesolver/profiler`) |
 | **Errors** | `TimeSolverError` with `code`: `INVALID_DATE` `INVALID_UNIT` `INVALID_FORMAT` `INVALID_ARGUMENT` |
 
@@ -117,9 +119,8 @@ table is in the [API reference](https://github.com/sean1093/timeSolver/blob/mast
 | `hh` `h` | `01` `1` | `[text]` | literal `text` |
 
 Every format name 1.x accepted still works, in any case, including the ones
-where `MM` meant minutes. The tokenizer recognises 36 such names: the set
-published in 1.2.0 plus the `DD`-first family added to the repository
-afterwards.
+where `MM` meant minutes. The tokenizer recognises 36 such names: the 27 that
+`timesolver@1.2.0` shipped, plus the nine `DD`-first names added afterwards.
 
 ### How `between` measures each unit
 
@@ -133,6 +134,18 @@ rule per unit is deliberate rather than incidental:
 | `month`, `quarter`, `year` | local calendar, with the remainder scaled by the month it falls in | January 1 to February 1 is exactly `1` |
 
 `between(a, b, unit) === -between(b, a, unit)` holds for every unit.
+
+### Where the week starts
+
+Weeks start on Sunday by default, matching `Date#getDay`. `startOf`, `endOf`,
+`equal`, `after` and `before` take `{ weekStartsOn }` — `0` for Sunday through
+`6` for Saturday — so ISO-8601 weeks are one argument away:
+
+```ts
+startOf(date, 'week');                      // Sunday
+startOf(date, 'week', { weekStartsOn: 1 }); // Monday, ISO-8601
+endOf(date, 'week', { weekStartsOn: 6 });   // Friday, for a Saturday-start week
+```
 
 ## Profiling
 

@@ -59,6 +59,17 @@
         ["between('2020-01-01', '2020-02-01', 'month')", timeSolver.between('2020-01-01', '2020-02-01', 'month')],
         ["isValid('31-02-2020', 'DD-MM-YYYY')", timeSolver.isValid('31-02-2020', 'DD-MM-YYYY')],
         ['getFullWeek(stamp)', timeSolver.getFullWeek(stamp)],
+        [
+          "isBetween('2024-04-01', '2024-03-01', '2024-04-01', undefined, '[)')",
+          timeSolver.isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'),
+        ],
+        // getISOWeek must be paired with getISOWeekYear: 2024-12-30 is week 1 of 2025.
+        [
+          'ISO week label for 2024-12-30',
+          timeSolver.getISOWeekYear('2024-12-30T12:00') +
+            '-W' +
+            String(timeSolver.getISOWeek('2024-12-30T12:00')).padStart(2, '0'),
+        ],
       ];
 
       // Bad input throws TimeSolverError with a `code`, rather than returning a sentinel.
