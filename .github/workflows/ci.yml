@@ -2,21 +2,80 @@ name: CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master]
   pull_request:
-    branches: [ master, main ]
+
+# A new push to a branch or PR makes the in-flight run obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  test:
+  # Every gate, once, on the development Node version. Ordered cheapest first so
+  # a formatting slip does not burn a full build before it reports.
+  quality:
+    name: Quality gates
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Test with coverage
+        run: npm run test:coverage
+
+      - name: Build distributables
+        run: npm run build
+
+      - name: Validate published entry points
+        run: npm run check:exports
+
+      - name: Enforce bundle size budget
+        run: npm run size
+
+      - name: Smoke-test built bundles
+        run: npm run smoke
+
+      # Runs even when a later gate failed, provided coverage was produced.
+      - name: Upload coverage report
+        if: ${{ !cancelled() && hashFiles('coverage/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 14
+
+  # Proves the built ESM, CJS and IIFE bundles load on every supported runtime,
+  # not just the one that built them.
+  test:
+    name: Test on Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
@@ -27,5 +86,9 @@ jobs:
 
       - name: Run tests
         run: npm test
-        env:
-          CI: true
+
+      - name: Build distributables
+        run: npm run build
+
+      - name: Smoke-test built bundles
+        run: npm run smoke
