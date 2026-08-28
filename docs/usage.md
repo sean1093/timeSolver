@@ -1,8 +1,10 @@
 # Usage guide
 
 A task-oriented tour of timeSolver 2.x. For exhaustive signatures see the
-[API reference](api.md); for upgrading from 1.x see the
-[migration guide](migration-v1-v2.md).
+[API reference](api.md); for complete answers to specific jobs see the
+[recipes](recipes.md); for upgrading from 1.x see the
+[migration guide](migration-v1-v2.md). All documents are indexed in
+[docs/](README.md).
 
 Also available in [繁體中文](usage.zh.md) and [日本語](usage.ja.md).
 
