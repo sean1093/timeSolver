@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or usage help
+    url: https://github.com/sean1093/timeSolver/discussions
+    about: Ask how to do something, or propose an idea before writing it up as a request.
+  - name: Report a security vulnerability
+    url: https://github.com/sean1093/timeSolver/security/policy
+    about: Read the security policy and report privately. Never open a public issue for a vulnerability.

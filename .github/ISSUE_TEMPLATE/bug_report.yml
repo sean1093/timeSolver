@@ -1,0 +1,107 @@
+name: Bug report
+description: Something in timesolver behaves differently from what is documented.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a report. A minimal snippet we can paste into a file
+        and run is worth more than any amount of description.
+
+        Do not report a security vulnerability here. Use
+        [private reporting](https://github.com/sean1093/timeSolver/security/advisories/new)
+        instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you observe? Include the exact error message or returned value.
+      placeholder: getString(new Date(2026, 0, 5), 'YYYY-MM-DD') returned '2026-01-5'.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: >-
+        The smallest snippet that shows the problem. Use a fixed date literal
+        rather than `new Date()` so the result does not depend on when it runs.
+      render: javascript
+      placeholder: |
+        import { getString } from 'timesolver';
+
+        const d = new Date(2026, 0, 5);
+        console.log(getString(d, 'YYYY-MM-DD'));
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened, and where is that documented?
+      placeholder: "'2026-01-05' -- DD is documented as the zero-padded day."
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: timesolver version
+      description: "`npm ls timesolver`. Please confirm on the latest 2.x before filing."
+      placeholder: 2.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      description: "`node --version`. If the bug is browser-only, name the browser and version here."
+      placeholder: v22.11.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module-system
+    attributes:
+      label: How are you loading the library?
+      options:
+        - ESM (import)
+        - CJS (require)
+        - Browser global (script tag)
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Operating system and time zone
+      description: >-
+        Every timesolver function works in the host local time zone, so results
+        can depend on your offset and on daylight saving transitions. Give the
+        IANA zone from `Intl.DateTimeFormat().resolvedOptions().timeZone`.
+      placeholder: macOS 15.3, Asia/Taipei
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Workarounds you found, when it started, or a link to a failing branch.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing open and closed issues and this is not a duplicate.
+          required: true
