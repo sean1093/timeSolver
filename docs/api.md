@@ -317,6 +317,54 @@ depends on the engine and its locale.
 `getQuarterByMonth` and `getFirstMonthByQuarter` return `null` rather than
 throwing, preserving 1.x behaviour.
 
+### Week numbers
+
+Two conventions exist and they disagree at the turn of the year, so both are
+available under names that say which is which.
+
+`getISOWeek(date)` and `getISOWeekYear(date)` implement ISO-8601: weeks start on
+Monday and week 1 is the week containing 4 January. The week number runs 1–53,
+and the **week-numbering year is not always the calendar year**:
+
+```ts
+getISOWeek('2024-01-01T12:00');     // 1
+getISOWeekYear('2024-01-01T12:00'); // 2024
+
+getISOWeek('2024-12-30T12:00');     // 1   -- a Monday, so week 1 has started
+getISOWeekYear('2024-12-30T12:00'); // 2025
+
+getISOWeek('2023-01-01T12:00');     // 52  -- a Sunday, so it belongs to 2022
+getISOWeekYear('2023-01-01T12:00'); // 2022
+```
+
+Always render the pair together. Combining `getISOWeek` with `YYYY` produces a
+wrong label for a few days either side of January:
+
+```ts
+// Right
+`${getISOWeekYear(date)}-W${String(getISOWeek(date)).padStart(2, '0')}`; // '2025-W01'
+
+// Wrong for 2024-12-30: says 2024-W01, a week that ended in January
+`${getString(date, 'YYYY')}-W${String(getISOWeek(date)).padStart(2, '0')}`;
+```
+
+`getWeekOfYear(date, options?)` is the plainer reading: week 1 is the week
+containing 1 January, counted in the calendar year, with the same
+`weekStartsOn` option as `startOf`. The first and last weeks may be partial, so
+the result runs 1 to as high as 54.
+
+```ts
+getWeekOfYear('2024-01-01T12:00');                      // 1
+getWeekOfYear('2024-01-07T12:00');                      // 2
+getWeekOfYear('2024-01-07T12:00', { weekStartsOn: 1 }); // 1
+getWeekOfYear('2024-12-31T12:00');                      // 53
+```
+
+There are deliberately no `W` format tokens. A week number cannot be parsed back
+into a date on its own, and a token pair that renders `YYYY` next to a week
+number would be wrong at the year boundary — the composition above is explicit
+about which year it means.
+
 ## Profiling
 
 Available from the root export and from `timesolver/profiler`.
