@@ -1,0 +1,75 @@
+name: Feature request
+description: Propose a capability timesolver does not have yet.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read the "What does not belong in this library" section of
+        [CONTRIBUTING.md](https://github.com/sean1093/timeSolver/blob/master/CONTRIBUTING.md#what-does-not-belong-in-this-library)
+        first. Time zones, locale catalogues, plugins, a chainable wrapper, a
+        humanize API, and runtime dependencies are settled non-goals.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: >-
+        What are you trying to do, and what makes it awkward or impossible with
+        the current API? Describe the situation, not the solution.
+      placeholder: >-
+        I need the ISO week number for a date and there is no way to get it
+        without reimplementing the Thursday rule by hand.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API
+      description: >-
+        Sketch the signature and show a call with its result. Keep it a flat
+        function over the native Date, consistent with the rest of the API.
+      render: typescript
+      placeholder: |
+        // src/calendar.ts
+        export function getISOWeek(input: Date | string | number): number;
+
+        getISOWeek(new Date(2026, 0, 1)); // 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: >-
+        What did you try instead, and why was it not good enough? Userland code,
+        another library, or a different shape of the same idea.
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Compatibility and cost
+      description: >-
+        Does this break any existing behaviour? Roughly how much code and bundle
+        size does it add? Say so if you are willing to open the pull request.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing open and closed issues and this is not a duplicate.
+          required: true
+        - label: >-
+            I read the non-goals in CONTRIBUTING.md and this request is not a time
+            zone engine, a locale catalogue, a plugin system, a chainable wrapper,
+            a humanize API, or anything that adds a runtime dependency.
+          required: true
