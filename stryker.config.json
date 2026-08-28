@@ -9,6 +9,7 @@
   },
   "coverageAnalysis": "all",
   "mutate": ["src/**/*.ts"],
+  "_ignoreComment": "dist is excluded so the sandbox has no build output, which keeps test/gates.test.ts skipped (describe.skipIf(!isBuilt)) during the sweep. Those 17 tests each spawn a subprocess; running them once per mutant would take the run from seconds to hours.",
   "ignorePatterns": ["dist", "coverage", "reports", "bench", "examples"],
   "timeoutMS": 20000,
   "concurrency": 4,
