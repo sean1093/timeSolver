@@ -69,14 +69,22 @@ jobs:
           retention-days: 14
 
   # Proves the built ESM, CJS and IIFE bundles load on every supported runtime,
-  # not just the one that built them.
+  # not just the one that built them. A date library is sensitive to the host
+  # platform's time zone database and ICU build, so the newest supported Node
+  # also runs on Windows and macOS.
   test:
-    name: Test on Node ${{ matrix.node-version }}
-    runs-on: ubuntu-latest
+    name: Test on Node ${{ matrix.node-version }} (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20, 22, 24]
+        os: [ubuntu-latest]
+        node-version: [20, 22, 24, 26]
+        include:
+          - os: windows-latest
+            node-version: 24
+          - os: macos-latest
+            node-version: 24
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
