@@ -200,6 +200,16 @@ than a threshold change:
 2. **The mutation cannot be observed.** Say so in a `Stryker disable` comment
    with the reason. Membership tables read only through `Object.hasOwn` never
    observe their values; an error message is not part of the API.
+3. **The test that kills it cannot run under Stryker.** One region is like this:
+   the clock-shift handling in `src/manipulate.ts` needs a time zone other than
+   the one the suite pins, and Stryker's Vitest runner hard-codes worker threads,
+   where assigning `process.env.TZ` has no effect. `test/zone-chatham.test.ts`
+   therefore skips during a mutation run. The region carries a `Stryker disable
+   all` with that reason and names the two commands that do cover it --
+   `npm test` in a normal run, and `npm run test:zones`, which reports the exact
+   zone, date and invariant on failure. Both are CI gates, so the code is not
+   unguarded; it is guarded somewhere Stryker cannot look. Keep such regions as
+   small as the reason justifies.
 
 Twice, a survivor turned out to be **dead code** — a guard that could never
 fail. Deleting it was the right fix, and it took branch coverage to 100% as a
