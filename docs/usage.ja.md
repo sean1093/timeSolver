@@ -3,8 +3,11 @@
 timeSolver 2.x をタスク別に案内します。網羅的なシグネチャは
 [API リファレンス](api.md)、1.x からの移行は
 [移行ガイド](migration-v1-v2.md)を参照してください。
+ドキュメント全体の索引は[ドキュメント一覧](README.md)にあります。
 
 [English](usage.md) と [繁體中文](usage.zh.md) でもお読みいただけます。
+
+API リファレンス、レシピ集、サポートポリシーは現時点では英語のみです。
 
 ## インストールとインポート
 
@@ -20,10 +23,14 @@ import {
   after,
   before,
   between,
+  clamp,
   endOf,
   equal,
   getString,
+  isBetween,
   isValid,
+  max,
+  min,
   parse,
   startOf,
   subtract,
@@ -75,7 +82,7 @@ getString(stamp, 'nope');   // 例外：トークンが 1 つもない。'[nope]
 `'oops'` は `'oop45'` になります。トークンとして扱いたくないリテラルは、
 必ずエスケープしてください。
 
-1.x の 36 種類のフォーマット名は大文字小文字を問わずすべて有効なので、
+1.x が受け付けていたフォーマット名は大文字小文字を問わずすべて有効なので、
 `getString(stamp, 'YYYY-MM-DD HH:MM:SS')` は引き続き
 `'2024-03-17 14:30:45'` を返します。
 
@@ -150,6 +157,7 @@ add(stamp, 1.5, 'month'); // INVALID_ARGUMENT を投げる
 startOf(stamp, 'day');     // 2024-03-17 00:00:00.000
 endOf(stamp, 'day');       // 2024-03-17 23:59:59.999
 startOf(stamp, 'week');    // 2024-03-17 00:00（週は日曜始まり）
+startOf(stamp, 'week', { weekStartsOn: 1 }); // 2024-03-11 00:00（ISO-8601）
 startOf(stamp, 'month');   // 2024-03-01 00:00
 endOf(stamp, 'month');     // 2024-03-31 23:59:59.999
 startOf(stamp, 'quarter'); // 2024-01-01 00:00
@@ -158,9 +166,15 @@ startOf(stamp, 'quarter'); // 2024-01-01 00:00
 たとえば月初から現在までを絞り込むには次のようにします。
 
 ```ts
-const rows = all.filter(
-  (row) => !before(row.createdAt, startOf(new Date(), 'month')),
-);
+const monthStart = startOf(new Date(), 'month');
+const monthEnd = endOf(new Date(), 'month');
+const rows = all.filter((row) => isBetween(row.createdAt, monthStart, monthEnd));
+```
+
+隣接する範囲を続けて並べるときは半開区間を指定すれば、重複も隙間も生じません。
+
+```ts
+isBetween(date, monthStart, add(monthStart, 1, 'month'), undefined, '[)');
 ```
 
 ## 比較と差分の計測
@@ -189,6 +203,21 @@ afterToday(add(new Date(), 1, 'day'));                // true
 beforeToday(new Date());                              // false
 ```
 
+## 範囲
+
+```ts
+isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+min('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-01-01
+max('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-03-17
+clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');           // 2024-03-01
+```
+
+`isBetween` の境界は区間記法で指定します。`'[]'`、`'[)'`、`'(]'`、`'()'` の
+4 種類です。範囲が前後で連続するときは `'[)'` を選べば、重複も隙間も生じません。
+上の比較関数と同じく、単位と `weekStartsOn` も受け取ります。`clamp` は下限が
+上限より後の場合に例外を投げます。
+
 ## カレンダーユーティリティ
 
 ```ts
@@ -201,6 +230,21 @@ getQuarterByMonth(5);            // 2
 getFirstMonthByQuarter(3);       // 7
 isLeapYear(2024);                // true
 daysInMonth(2024, 2);            // 29
+```
+
+週番号には 2 種類あります。年の変わり目で 2 つの慣習の答えが食い違うためです。
+
+```ts
+getISOWeek('2024-12-30T12:00');     // 1  -- ISO-8601：第 1 週は月曜始まり
+getISOWeekYear('2024-12-30T12:00'); // 2025。2024 ではない
+
+getWeekOfYear('2024-12-30T12:00');  // 53 -- 暦年。第 1 週は 1 月 1 日を含む
+```
+
+ISO の年と週は必ず対で出力し、`YYYY` を ISO 週番号と組み合わせないでください。
+
+```ts
+`${getISOWeekYear(date)}-W${String(getISOWeek(date)).padStart(2, '0')}`; // '2025-W01'
 ```
 
 名称は英語で、固定のテーブルから返されるため、エンジンやロケールによって
@@ -273,4 +317,18 @@ profiler.print();
 現在のオフセットを出力できますが、解析はできません。タイムゾーンを意識した
 処理には `Temporal` や `Intl.DateTimeFormat` を使ってください。
 
-**週は日曜日から始まり**、`Date#getDay` に合わせています。
+**繰り返される 1 時間は曖昧です。** 時計が巻き戻るときには、同じ時刻表記が
+2 つの時点を指すことになり、`parse` は早いほうを返します。この違いが結果に
+影響する場面では、時刻表記の文字列ではなく時点そのものを保存してください。
+
+**週は既定で日曜日から始まり**、`Date#getDay` に合わせています。ISO-8601 の週に
+したい場合は `{ weekStartsOn: 1 }` を、あるいは `0` から `6` までの任意の曜日を
+`startOf`、`endOf`、`equal`、`after`、`before` に渡してください。
+
+```ts
+startOf(stamp, 'week', { weekStartsOn: 1 }); // 月曜日
+endOf(stamp, 'week', { weekStartsOn: 6 });   // 金曜日。土曜始まりの週の場合
+```
+
+`between(a, b, 'week')` にこのオプションは不要です。測るのは期間の長さであり、
+週の開始曜日には左右されません。
