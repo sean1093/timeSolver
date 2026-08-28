@@ -119,9 +119,8 @@ table is in the [API reference](https://github.com/sean1093/timeSolver/blob/mast
 | `hh` `h` | `01` `1` | `[text]` | literal `text` |
 
 Every format name 1.x accepted still works, in any case, including the ones
-where `MM` meant minutes. The tokenizer recognises 36 such names: the set
-published in 1.2.0 plus the `DD`-first family added to the repository
-afterwards.
+where `MM` meant minutes. The tokenizer recognises 36 such names: the 27 that
+`timesolver@1.2.0` shipped, plus the nine `DD`-first names added afterwards.
 
 ### How `between` measures each unit
 

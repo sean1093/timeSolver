@@ -79,6 +79,13 @@ Throws `INVALID_ARGUMENT` for a non-finite `amount`, or a fractional amount of
 a calendar unit — a third of a month has no defined length, so it is refused
 rather than rounded.
 
+Clamping also means month arithmetic is **not invertible**: 31 December plus 18
+months clamps to 30 June, and subtracting 18 months from that gives 30 December,
+not 31. Days 1 to 28 exist in every month, so the round trip is exact there.
+This is true of every calendar library; it is a property of calendars, not a
+defect, but it is worth knowing before you rely on `subtract(add(d, n, 'month'),
+n, 'month')` returning `d`.
+
 ### `subtract(date, amount?, unit?): Date`
 
 `add` with the amount negated. Same rules, same errors.
@@ -331,6 +338,7 @@ Details worth knowing:
 - Month and weekday names are matched case-sensitively against the English table.
 - `hh`/`h` without `A`/`a` are read as morning hours, so `parse('12:30', 'hh:mm')` is 00:30, not noon.
 - Throws `INVALID_ARGUMENT` if `input` is not a string.
+- A wall-clock string can be **ambiguous**. When the clocks go back, an hour repeats, so one local reading names two instants — `America/New_York` read `01:59` twice on 1946-09-29. `parse` resolves to the earlier of the two. The text always round-trips; the instant does not, in that hour.
 
 ### `isValid(input, format?): boolean`
 

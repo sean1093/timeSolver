@@ -49,7 +49,7 @@ code that is not the package entry point.
 
 Reproduced against `src/index.js` loaded as CJS (`node /tmp/probe.cjs`) — that
 is, the repository's last 1.x source, which is what this rewrite replaces. The
-tarball published as 1.2.0 is an older build with 23 of these format names and
+tarball published as 1.2.0 is an older build with 27 of these format names and
 no `DD`-first validators, so some of the numbers below have no counterpart
 there; §1.1 covers that build separately.
 

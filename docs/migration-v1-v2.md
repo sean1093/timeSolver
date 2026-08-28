@@ -10,8 +10,8 @@ were incorrect**.
 > **Which 1.x?** The behaviour described below is the 1.x source this rewrite
 > replaced — the last state of the repository, which is also what the
 > [design spec](specs/2026-08-28-v2-renovation-design.md) audited. The tarball
-> published as `timesolver@1.2.0` is an older build: it accepts 23 of the 36
-> format names 2.0 recognises, has no `DD`-first validators at all, and its
+> published as `timesolver@1.2.0` is an older build: it accepts 27 of the 36
+> format names 2.0 recognises — the nine `DD`-first names are new in 2.0 — and its
 > `main` points at a file the tarball does not contain, so `require('timesolver')`
 > never worked. Where the two 1.x builds differ in a way that changes what you
 > should do, it is called out inline.
