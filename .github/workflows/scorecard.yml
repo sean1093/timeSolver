@@ -1,0 +1,85 @@
+name: Scorecard
+
+on:
+  # Weekly, so a change in repository settings rather than in a file is still
+  # picked up. Offset from the hour, and from the Dependabot window (Monday
+  # 04:00 Asia/Taipei), because GitHub drops scheduled runs during the load
+  # spike that round times attract.
+  schedule:
+    - cron: '37 3 * * 2'
+
+  # Scorecard supports the default branch only. `publish_results` replaces the
+  # OpenSSF weekly cron snapshot with this run's, so analysing every push to
+  # master is what keeps the published result describing the current tree
+  # instead of whatever the cron last happened to see.
+  push:
+    branches: [master]
+
+  # Documented as experimental by scorecard-action, but it is the only way to
+  # refresh a published result on demand. Run it from master: the publishing
+  # API accepts results from the default branch only.
+  workflow_dispatch:
+
+# A superseded analysis has no value, and two publishes racing could leave the
+# older commit's result as the published one.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+# Read-only at the top level. This is both what the Token-Permissions check
+# scores and a hard requirement of the publishing API, which rejects results
+# produced by a workflow holding any write permission above the job.
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: Analyse and publish
+    runs-on: ubuntu-latest
+
+    # A job-level block replaces the top-level one outright rather than adding
+    # to it, so contents: read is restated here for the checkout.
+    permissions:
+      contents: read
+      # Push the SARIF to the code scanning dashboard.
+      security-events: write
+      # Mint the OIDC token the publishing API exchanges to prove the result
+      # really came from this repository. Required by publish_results, and the
+      # API rejects the run if any other job asks for it.
+      id-token: write
+      # Read workflow run history. Documented as needed on private
+      # repositories, where Scorecard cannot otherwise enumerate runs to see
+      # which checks CI actually performs; harmless on a public one.
+      actions: read
+
+    steps:
+      # persist-credentials: false leaves no token in .git/config, so the
+      # analysis step runs against a checkout it cannot push from.
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Every action here is pinned to a commit, not a tag. Scorecard's own
+      # Pinned-Dependencies check asks for it, and a mutable tag would let
+      # upstream change what runs in a job that carries an OIDC token.
+      - name: Run Scorecard analysis
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      # Keeps the raw SARIF readable for five days without repository write
+      # access, which is how a surprising result gets diagnosed.
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload SARIF to code scanning
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        with:
+          sarif_file: results.sarif
