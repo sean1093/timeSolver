@@ -89,6 +89,12 @@ This is true of every calendar library; it is a property of calendars, not a
 defect, but it is worth knowing before you rely on `subtract(add(d, n, 'month'),
 n, 'month')` returning `d`.
 
+Day and week arithmetic has a smaller version of the same wrinkle. It keeps the
+wall-clock time, so a step can land on a local time that does not exist —
+`2023-03-12 02:00` in `America/New_York` is skipped — and the runtime normalises
+it forward to `03:00`. The calendar date is always what you asked for; the clock
+can move by one transition.
+
 ### `subtract(date, amount?, unit?): Date`
 
 `add` with the amount negated. Same rules, same errors.
