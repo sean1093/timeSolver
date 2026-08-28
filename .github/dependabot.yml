@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # The package has no runtime dependencies, so every npm update is tooling.
+  # Ungrouped, a single transitive bump in the toolchain opens its own pull
+  # request; grouping collapses a week of that noise into one review.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Asia/Taipei
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    # Majors stay ungrouped on purpose: a toolchain major usually needs a
+    # config migration, and it should be reviewable and revertable alone.
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Asia/Taipei
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns:
+          - '*'
