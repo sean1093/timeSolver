@@ -245,7 +245,11 @@ check(
 //    that would have stopped the 1.2.0 release.
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const targets = [...exportTargets(pkg.exports, 'exports')];
-check('package.json declares an exports map', targets.length > 0, 'package.json has no "exports" field.');
+check(
+  'package.json declares an exports map',
+  targets.length > 0,
+  'package.json has no "exports" field.',
+);
 
 for (const [trail, target] of targets) {
   if (target.includes('*')) {
