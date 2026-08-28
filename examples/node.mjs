@@ -8,14 +8,21 @@
 import {
   add,
   between,
+  clamp,
   daysInMonth,
   endOf,
   getAbbrMonth,
   getFullWeek,
+  getISOWeek,
+  getISOWeekYear,
   getQuarter,
   getString,
+  getWeekOfYear,
+  isBetween,
   isLeapYear,
   isValid,
+  max,
+  min,
   parse,
   startOf,
   subtract,
@@ -65,7 +72,9 @@ log('the Date passed in is untouched', short(january31));
 log("add(stamp, 90, 'minute')", short(add(stamp, 90, 'minute')));
 
 section('calendar ranges');
-log("startOf(stamp, 'week')", full(startOf(stamp, 'week'))); // weeks start on Sunday
+const isoWeekStart = startOf(stamp, 'week', { weekStartsOn: 1 }); // ISO-8601 starts Monday
+log("startOf(stamp, 'week')", full(startOf(stamp, 'week'))); // the default, Sunday
+log("startOf(stamp, 'week', { weekStartsOn: 1 })", full(isoWeekStart));
 log("startOf(stamp, 'month')", full(startOf(stamp, 'month')));
 log("endOf(stamp, 'month')", full(endOf(stamp, 'month')));
 
@@ -79,12 +88,35 @@ log("that day -> the next, in 'day'", between(dayStart, nextDay, 'day')); // alw
 const oneMonth = between(new Date(2020, 0, 1), new Date(2020, 1, 1), 'month');
 log("between(2020-01-01, 2020-02-01, 'month')", oneMonth);
 
+section('ranges');
+const marchStart = new Date(2024, 2, 1);
+const aprilStart = new Date(2024, 3, 1);
+const spread = ['2024-03-17T00:00', '2024-01-01T00:00', '2024-12-31T00:00'];
+log('isBetween(Mar 15, Mar 1, Apr 1)', isBetween('2024-03-15T12:00', marchStart, aprilStart));
+// Bounds default to '[]', so 1 April counts as inside March. Half-open '[)' is what
+// back-to-back ranges want: March ends exactly where April begins, no overlap, no gap.
+log('isBetween(Apr 1, Mar 1, Apr 1)', isBetween(aprilStart, marchStart, aprilStart));
+log("  the same, bounds '[)'", isBetween(aprilStart, marchStart, aprilStart, undefined, '[)'));
+log('min(Mar 17, Jan 1, Dec 31)', short(min(...spread)));
+log('max(Mar 17, Jan 1, Dec 31)', short(max(...spread)));
+const clamped = clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');
+log('clamp(Jun 1 into Jan 1 .. Mar 1)', short(clamped)); // outside, so the nearest endpoint
+
 section('calendar helpers');
 log('getFullWeek(stamp)', getFullWeek(stamp));
 log('getAbbrMonth(stamp)', getAbbrMonth(stamp));
 log('getQuarter(stamp)', getQuarter(stamp));
 log('isLeapYear(2024)', isLeapYear(2024));
 log('daysInMonth(2024, 2)', daysInMonth(2024, 2));
+
+section('week numbers');
+const boundary = '2024-12-30T12:00'; // a Monday, so ISO week 1 of 2025 has begun
+log('getISOWeek(2024-12-30)', getISOWeek(boundary));
+log('getISOWeekYear(2024-12-30)', getISOWeekYear(boundary)); // 2025, not 2024
+log('getWeekOfYear(2024-12-30)', getWeekOfYear(boundary)); // calendar year, so 53 of 2024
+// Always compose the ISO pair. `getString(date, 'YYYY')` here would say 2024-W01,
+// labelling the date with a week that ends in the following January.
+log('ISO label', `${getISOWeekYear(boundary)}-W${String(getISOWeek(boundary)).padStart(2, '0')}`);
 
 section('profiler');
 const profiler = createProfiler();
