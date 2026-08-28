@@ -72,9 +72,17 @@ Browser, no bundler:
 
 ## API
 
-Full reference with every signature, error and edge case:
-**[docs/api.md](https://github.com/sean1093/timeSolver/blob/master/docs/api.md)**. Guides:
-[English](https://github.com/sean1093/timeSolver/blob/master/docs/usage.md) · [繁體中文](https://github.com/sean1093/timeSolver/blob/master/docs/usage.zh.md) · [日本語](https://github.com/sean1093/timeSolver/blob/master/docs/usage.ja.md).
+All documentation lives in
+**[docs/](https://github.com/sean1093/timeSolver/blob/master/docs/README.md)**:
+[usage guide](https://github.com/sean1093/timeSolver/blob/master/docs/usage.md) ·
+[recipes](https://github.com/sean1093/timeSolver/blob/master/docs/recipes.md) ·
+[API reference](https://github.com/sean1093/timeSolver/blob/master/docs/api.md) ·
+[migration from 1.x](https://github.com/sean1093/timeSolver/blob/master/docs/migration-v1-v2.md) ·
+[support policy](https://github.com/sean1093/timeSolver/blob/master/docs/support.md) ·
+[benchmarks](https://github.com/sean1093/timeSolver/blob/master/docs/benchmarks.md).
+The usage guide is also in
+[繁體中文](https://github.com/sean1093/timeSolver/blob/master/docs/usage.zh.md) and
+[日本語](https://github.com/sean1093/timeSolver/blob/master/docs/usage.ja.md).
 
 | | |
 |---|---|

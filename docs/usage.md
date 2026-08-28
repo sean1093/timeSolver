@@ -1,8 +1,10 @@
 # Usage guide
 
 A task-oriented tour of timeSolver 2.x. For exhaustive signatures see the
-[API reference](api.md); for upgrading from 1.x see the
-[migration guide](migration-v1-v2.md).
+[API reference](api.md); for complete answers to specific jobs see the
+[recipes](recipes.md); for upgrading from 1.x see the
+[migration guide](migration-v1-v2.md). All documents are indexed in
+[docs/](README.md).
 
 Also available in [繁體中文](usage.zh.md) and [日本語](usage.ja.md).
 
@@ -20,10 +22,14 @@ import {
   after,
   before,
   between,
+  clamp,
   endOf,
   equal,
   getString,
+  isBetween,
   isValid,
+  max,
+  min,
   parse,
   startOf,
   subtract,
@@ -195,6 +201,21 @@ afterToday(add(new Date(), 1, 'day'));                // true
 beforeToday(new Date());                              // false
 ```
 
+## Ranges
+
+```ts
+isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+min('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-01-01
+max('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-03-17
+clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');           // 2024-03-01
+```
+
+`isBetween` takes its bounds in interval notation — `'[]'`, `'[)'`, `'(]'` or
+`'()'`. Reach for `'[)'` when ranges are consecutive, so neither overlaps nor
+leaves a gap. It also accepts a unit and `weekStartsOn`, like the comparisons
+above. `clamp` throws if the lower bound is later than the upper one.
+
 ## Calendar helpers
 
 ```ts
@@ -290,6 +311,10 @@ with an explicit format when it matters.
 **There are no time zones.** Everything is host-local. `Z` and `ZZ` render the
 current offset but cannot be parsed. For zone-aware work use `Temporal` or
 `Intl.DateTimeFormat`.
+
+**A repeated hour is ambiguous.** When the clocks go back, one wall-clock
+reading names two instants, and `parse` resolves to the earlier one. Store
+instants rather than wall-clock strings when the difference matters.
 
 **Weeks start on Sunday by default**, matching `Date#getDay`. Pass
 `{ weekStartsOn: 1 }` for ISO-8601 weeks, or any day from `0` to `6`, to

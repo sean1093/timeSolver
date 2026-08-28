@@ -3,6 +3,9 @@
 Every function is pure: it reads its arguments and returns a new value. Nothing
 is written to the console, and nothing mutates the `Date` you pass in.
 
+Task-oriented answers live in the [recipes](recipes.md); what this project
+promises about versions and runtimes is in the [support policy](support.md).
+
 - [Conventions](#conventions)
 - [Arithmetic](#arithmetic)
 - [Comparison](#comparison)
