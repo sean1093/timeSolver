@@ -92,7 +92,9 @@ const TWO_DIGIT_YEAR_PIVOT = 69;
 const MINUTES_PER_HOUR = 60;
 
 function pad(value: number, width: number): string {
-  return String(value).padStart(width, '0');
+  // Years before 1 CE are negative. Padding the raw string would produce
+  // '00-1' for -1, so the sign is carried separately.
+  return value < 0 ? `-${String(-value).padStart(width, '0')}` : String(value).padStart(width, '0');
 }
 
 function twelveHour(hour: number): number {

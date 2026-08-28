@@ -23,9 +23,31 @@ function shiftMonths(date: Date, months: number): Date {
 
   shifted.setDate(1);
   shifted.setFullYear(shifted.getFullYear(), shifted.getMonth() + months, 1);
+
+  if (Number.isNaN(shifted.getTime())) {
+    return shifted;
+  }
+
   shifted.setDate(Math.min(day, daysInMonth(shifted.getFullYear(), shifted.getMonth() + 1)));
 
   return shifted;
+}
+
+/**
+ * A shift can leave the range `Date` can represent, roughly 100 million days
+ * either side of the epoch. Returning that Invalid Date would defer the failure
+ * to whatever touched it next, which is exactly the v1 behaviour this library
+ * exists to avoid.
+ */
+function requireRepresentable(result: Date, amount: number, unit: Unit): Date {
+  if (Number.isNaN(result.getTime())) {
+    throw new TimeSolverError(
+      'INVALID_ARGUMENT',
+      `Shifting by ${amount} ${unit}(s) leaves the range a Date can represent.`,
+    );
+  }
+
+  return result;
 }
 
 function requireWholeAmount(amount: number, unit: Unit): void {
@@ -69,17 +91,25 @@ export function add(date: DateInput, amount = 0, unit?: UnitInput): Date {
   }
 
   if (isExactUnit(resolved)) {
-    return new Date(target.getTime() + amount * MS_PER_EXACT_UNIT[resolved]);
+    return requireRepresentable(
+      new Date(target.getTime() + amount * MS_PER_EXACT_UNIT[resolved]),
+      amount,
+      resolved,
+    );
   }
 
   requireWholeAmount(amount, resolved);
 
   if (resolved === 'day' || resolved === 'week') {
     target.setDate(target.getDate() + amount * (resolved === 'week' ? DAYS_PER_WEEK : 1));
-    return target;
+    return requireRepresentable(target, amount, resolved);
   }
 
-  return shiftMonths(target, amount * MONTHS_PER_UNIT[resolved]);
+  return requireRepresentable(
+    shiftMonths(target, amount * MONTHS_PER_UNIT[resolved]),
+    amount,
+    resolved,
+  );
 }
 
 /**
@@ -145,6 +175,10 @@ export function startOf(date: DateInput, unit: UnitInput): Date {
  */
 export function endOf(date: DateInput, unit: UnitInput): Date {
   const resolved = normalizeUnit(unit);
+  // Truncate again after the shift. In a zone whose clocks jump at midnight,
+  // startOf('day') is 01:00, so start plus one day is 01:00 the next day and
+  // subtracting a millisecond would land on the wrong calendar date.
+  const nextStart = startOf(add(startOf(date, resolved), 1, resolved), resolved);
 
-  return new Date(add(startOf(date, resolved), 1, resolved).getTime() - 1);
+  return new Date(nextStart.getTime() - 1);
 }

@@ -53,6 +53,12 @@ jobs:
       - name: Smoke-test built bundles
         run: npm run smoke
 
+      # The unit suite pins TZ, so it never leaves one zone. This checks
+      # invariants across seven, including one whose clocks jump at midnight
+      # and three whose offsets are not whole hours.
+      - name: Check zone invariants
+        run: npm run test:zones
+
       # Runs even when a later gate failed, provided coverage was produced.
       - name: Upload coverage report
         if: ${{ !cancelled() && hashFiles('coverage/**') != '' }}
@@ -92,3 +98,6 @@ jobs:
 
       - name: Smoke-test built bundles
         run: npm run smoke
+
+      - name: Check zone invariants
+        run: npm run test:zones

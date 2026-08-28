@@ -101,6 +101,42 @@ describe('add calendar units', () => {
   });
 });
 
+describe('add range limits', () => {
+  // A Date spans roughly 100 million days either side of the epoch. Beyond
+  // that, v2.0.0 handed back an Invalid Date, deferring the failure to
+  // whatever touched it next.
+  it.each([
+    [1e9, 'day'],
+    [1e9, 'week'],
+    [1e7, 'month'],
+    [1e6, 'year'],
+    [1e18, 'millisecond'],
+    [1e15, 'hour'],
+  ])('throws rather than returning an Invalid Date for %s %s', (amount, unit) => {
+    try {
+      add(new Date(2024, 0, 1), amount, unit);
+      expect.unreachable('should have thrown');
+    } catch (error) {
+      expect((error as TimeSolverError).code).toBe('INVALID_ARGUMENT');
+      expect((error as TimeSolverError).message).toMatch(/leaves the range a Date can represent/);
+    }
+  });
+
+  it('throws in the negative direction too', () => {
+    expect(() => subtract(new Date(2024, 0, 1), 1e9, 'day')).toThrowError(
+      /leaves the range a Date can represent/,
+    );
+  });
+
+  it('still accepts the extremes of the representable range', () => {
+    expect(add(new Date(0), 8.64e15 - 1, 'millisecond').getTime()).toBe(8.64e15 - 1);
+    // Not asserted as an exact instant: day arithmetic follows the calendar, so
+    // the result shifts by an hour in a zone that observes daylight saving.
+    expect(Number.isNaN(add(new Date(0), 99_999_999, 'day').getTime())).toBe(false);
+    expect(Number.isNaN(add(new Date(0), -99_999_999, 'day').getTime())).toBe(false);
+  });
+});
+
 describe('add failures', () => {
   it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
     'rejects the amount %s',
