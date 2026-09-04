@@ -330,14 +330,18 @@ validates.
 | `ZZ` | UTC offset | `+0800` |
 | `[…]` | literal text | `[at]` renders `at` |
 
-Two rules the tokenizer enforces, both as `INVALID_FORMAT`:
+Three rules the tokenizer enforces, all as `INVALID_FORMAT`:
 
-- **A variable-width token may not run straight into another numeric token.**
-  `'YYYYMD'` would render 12 January 2024 as `'2024112'`, which reads equally
-  well as month 11, day 2. Use `'YYYYMMDD'`, or separate the tokens:
-  `'YYYY-M-D'`.
+- **A variable-width token may not run straight into a digit.** That digit may
+  be another numeric token — `'YYYYMD'` would render 12 January 2024 as
+  `'2024112'`, which reads equally well as month 11, day 2 — or literal text:
+  `'M0M'` is refused for the same reason. Use `'YYYYMMDD'`, or separate them:
+  `'YYYY-M-D'`, `'M-0'`.
 - **A format must contain at least one token**, or explicitly escaped text.
   `'!!!'` is refused; `'[!!!]'` is fine.
+- **A format that will be parsed is limited to 512 tokens.** Beyond that the
+  matcher cannot be compiled. `getString` builds no matcher, so it renders a
+  longer format happily; `parse` and `isValid` refuse one.
 
 `Z` and `ZZ` render but cannot be parsed: reading an offset would mean
 representing an instant in a zone this library does not model.
@@ -532,7 +536,7 @@ try {
 |---|---|
 | `INVALID_DATE` | the input could not be read as a date, or does not match the given format |
 | `INVALID_UNIT` | the unit is not a recognised alias |
-| `INVALID_FORMAT` | the format string is malformed: empty, tokenless, unbalanced brackets, ambiguous adjacent tokens, or a format-only token where parsing was requested |
+| `INVALID_FORMAT` | the format string is malformed: empty, tokenless, unbalanced brackets, a variable-width token against a digit, more than 512 tokens where parsing was requested, or a format-only token where parsing was requested |
 | `INVALID_ARGUMENT` | an argument is outside its documented domain |
 
 Messages are prefixed `[timeSolver]`, as in 1.x.

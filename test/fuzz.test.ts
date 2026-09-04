@@ -55,8 +55,13 @@ const TOKEN_NAMES = [
   'Z',
 ];
 
-/** Characters chosen to provoke: escapes, regex metacharacters, separators. */
-const LITERAL_CHARS = [...'[]-/.:,() \t\\^$*+?|{}#%@!"\'<>=~`&;'];
+/**
+ * Characters chosen to provoke: escapes, regex metacharacters, separators, and
+ * digits. Digits earn their place: a digit next to a variable-width token is
+ * the shape that made the generated matcher backtrack exponentially, and
+ * without one here the generator could never build it.
+ */
+const LITERAL_CHARS = [...'[]-/.:,() \t\\^$*+?|{}#%@!"\'<>=~`&;0189'];
 
 const formatPiece = fc.oneof(
   { arbitrary: fc.constantFrom(...TOKEN_NAMES), weight: 3 },
@@ -234,7 +239,7 @@ describe.skipIf(!existsSync(built))('pathological formats stay bounded', () => {
   const LIMIT_MS = 20_000;
 
   function probe(body: string): { stdout: string; stderr: string; status: number | null } {
-    const source = `const { getString, isValid } = await import(${JSON.stringify(built)});\n${body}`;
+    const source = `const { getString, isValid, parse } = await import(${JSON.stringify(built)});\n${body}`;
     const result = spawnSync(process.execPath, ['--input-type=module', '-e', source], {
       encoding: 'utf8',
       timeout: LIMIT_MS,
@@ -257,6 +262,8 @@ describe.skipIf(!existsSync(built))('pathological formats stay bounded', () => {
     ['token runs', "'YYYY'.repeat(n)"],
     ['unterminated escape', "'[' + 'x'.repeat(n)"],
     ['separator runs', "'YYYY' + '.'.repeat(n) + 'MM'"],
+    ['digit separators', "'M0'.repeat(n) + 'M'"],
+    ['digit-separated wide tokens', "'H0m0s0'.repeat(n) + 'H'"],
     ['every token', "'YYYYMMDDHHmmssSSS'.repeat(n)"],
     ['empty escapes', "'[]'.repeat(n)"],
     ['reversed brackets', "']['.repeat(n)"],
@@ -281,10 +288,22 @@ describe.skipIf(!existsSync(built))('pathological formats stay bounded', () => {
 
         try {
           // Validate against the format's own output where there is one, so the
-          // match runs deep instead of failing on the first character.
+          // match runs deep instead of failing on the first character, and then
+          // against a run of digits, which is where a matcher with two viable
+          // widths per group backtracks.
           isValid(rendered ?? 'x'.repeat(n), format);
+          isValid('0'.repeat(3 * n), format);
         } catch (error) {
           if (error.code !== 'INVALID_FORMAT') throw error;
+        }
+
+        try {
+          // parse is the only path that compiles a matcher and then reads the
+          // captures back; isValid swallows everything except INVALID_FORMAT,
+          // so a raw SyntaxError from RegExp construction would hide there.
+          parse(rendered ?? 'x'.repeat(n), format);
+        } catch (error) {
+          if (error.code !== 'INVALID_FORMAT' && error.code !== 'INVALID_DATE') throw error;
         }
       }
 

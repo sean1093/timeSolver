@@ -386,10 +386,32 @@ export function normalizeFormat(format: string): string {
 }
 
 /**
+ * How a format part collides with a variable-width numeric token in front of
+ * it, named for the error message, or `undefined` when it does not.
+ *
+ * A variable-width token matches one digit or two, so anything that can begin
+ * with a digit leaves the boundary between them undecided. `'YYYYMD'` renders
+ * 12 January 2024 as `'2024112'`, which reads equally well as month 11 day 2;
+ * `'M0M'` is no better, and it is slower to fail, because its matcher --
+ * `^(\d{1,2})0(\d{1,2})$` -- gives every group two viable widths at every
+ * position, so a run of digits that does not match costs 2^n steps.
+ */
+function digitCollision(part: FormatPart): string | undefined {
+  if (part.kind === 'token') {
+    const spec: TokenSpec = TOKENS[part.name];
+
+    return digitWidth(spec.pattern) === 'none' ? undefined : `"${part.name}"`;
+  }
+
+  return /^\d/.test(part.text) ? `the digit "${part.text.slice(0, 1)}"` : undefined;
+}
+
+/**
  * Split a format string into literals and tokens.
  *
  * @throws {TimeSolverError} `INVALID_FORMAT` for an empty string, a string with
- *   no tokens at all, or an unmatched `[` / `]`.
+ *   no tokens at all, an unmatched `[` / `]`, or a variable-width token running
+ *   straight into a digit.
  */
 export function tokenize(format: string): FormatPart[] {
   if (format.length === 0) {
@@ -456,14 +478,16 @@ export function tokenize(format: string): FormatPart[] {
       );
     }
 
-    if (previous?.kind === 'token' && part.kind === 'token') {
+    // One rule, whether the digit arrives as a token or as literal text.
+    if (previous?.kind === 'token') {
       const before: TokenSpec = TOKENS[previous.name];
-      const current: TokenSpec = TOKENS[part.name];
+      const collision =
+        digitWidth(before.pattern) === 'variable' ? digitCollision(part) : undefined;
 
-      if (digitWidth(before.pattern) === 'variable' && digitWidth(current.pattern) !== 'none') {
+      if (collision !== undefined) {
         throw new TimeSolverError(
           'INVALID_FORMAT',
-          `${JSON.stringify(format)} is ambiguous: "${previous.name}" matches one or two digits and runs straight into "${part.name}". Separate them, or use the fixed-width token.`,
+          `${JSON.stringify(format)} is ambiguous: "${previous.name}" matches one or two digits and runs straight into ${collision}. Separate them, or use the fixed-width token.`,
         );
       }
     }
@@ -480,11 +504,23 @@ export function formatToken(name: TokenName, fields: DateFields): string {
 }
 
 /**
+ * Ceiling on the capture groups a generated matcher may hold. V8 refuses to
+ * compile a pattern past a few thousand groups -- with "Stack overflow" first,
+ * whose threshold depends on the stack left, so it is not even deterministic,
+ * and "Too many captures" beyond about 32,000 -- and it reports that as a raw
+ * `SyntaxError`, which carries none of this library's error codes. A format
+ * with more tokens than this is a caller bug, so it is refused the same way
+ * every other malformed format is. The longest format anyone writes by hand has
+ * around a dozen tokens; the linearity probe in test/fuzz.test.ts uses 320.
+ */
+const MAX_MATCHER_TOKENS = 512;
+
+/**
  * Build an anchored regular expression that matches exactly the strings a
  * format can produce, plus the token order of its capture groups.
  *
  * @throws {TimeSolverError} `INVALID_FORMAT` when the format contains a
- *   format-only token such as `Z`.
+ *   format-only token such as `Z`, or more tokens than a matcher can hold.
  */
 export function buildMatcher(parts: readonly FormatPart[]): {
   matcher: RegExp;
@@ -510,6 +546,13 @@ export function buildMatcher(parts: readonly FormatPart[]): {
 
     source += `(${spec.pattern})`;
     tokens.push(part.name);
+
+    if (tokens.length > MAX_MATCHER_TOKENS) {
+      throw new TimeSolverError(
+        'INVALID_FORMAT',
+        `A parseable format is limited to ${MAX_MATCHER_TOKENS} tokens, and this one has more. Shorten it: a longer format cannot be compiled into a matcher.`,
+      );
+    }
   }
 
   return { matcher: new RegExp(`${source}$`), tokens };

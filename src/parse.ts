@@ -39,8 +39,9 @@ function resolveHour(draft: ParseDraft): number {
  * @param format - A token string, or any v1 format name.
  * @returns A new `Date` in the host time zone.
  * @throws {TimeSolverError} `INVALID_ARGUMENT` when `input` is not a string,
- *   `INVALID_FORMAT` for a malformed format or one containing a format-only
- *   token such as `Z`, `INVALID_DATE` when the input does not match.
+ *   `INVALID_FORMAT` for a malformed format, one containing a format-only
+ *   token such as `Z`, or one with more tokens than a matcher can hold,
+ *   `INVALID_DATE` when the input does not match.
  *
  * @example
  * parse('17/03/2024', 'DD/MM/YYYY'); // 2024-03-17T00:00:00 local
