@@ -19,24 +19,32 @@ export type Unit = (typeof UNITS)[number];
 /**
  * Every accepted spelling of a unit. Aliases are case-insensitive, and the v1
  * abbreviations (`'MILL'`, `'S'`, `'MIN'`, `'H'`, `'D'`, `'M'` for month,
- * `'Y'`) are all kept so existing call sites keep working.
+ * `'Y'`) are all kept so existing call sites keep working. Plurals are accepted
+ * wherever they read naturally, which is every spelling of more than one
+ * letter: `'days'` and `'mins'` both work, `'ds'` does not because nobody
+ * writes it.
  */
 const UNIT_ALIASES = {
   millisecond: 'millisecond',
   milliseconds: 'millisecond',
   mill: 'millisecond',
+  mills: 'millisecond',
   msec: 'millisecond',
+  msecs: 'millisecond',
   ms: 'millisecond',
   second: 'second',
   seconds: 'second',
   sec: 'second',
+  secs: 'second',
   s: 'second',
   minute: 'minute',
   minutes: 'minute',
   min: 'minute',
+  mins: 'minute',
   hour: 'hour',
   hours: 'hour',
   hr: 'hour',
+  hrs: 'hour',
   h: 'hour',
   day: 'day',
   days: 'day',
@@ -47,6 +55,7 @@ const UNIT_ALIASES = {
   month: 'month',
   months: 'month',
   mon: 'month',
+  mons: 'month',
   m: 'month',
   quarter: 'quarter',
   quarters: 'quarter',
@@ -54,6 +63,7 @@ const UNIT_ALIASES = {
   year: 'year',
   years: 'year',
   yr: 'year',
+  yrs: 'year',
   y: 'year',
 } as const satisfies Record<string, Unit>;
 

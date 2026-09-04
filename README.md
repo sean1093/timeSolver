@@ -99,8 +99,9 @@ Every function takes a `Date`, epoch milliseconds, or a string `Date` can parse.
 
 ### Units
 
-Case-insensitive. Plural forms are accepted too (`days`, `months`); the full
-table is in the [API reference](https://github.com/sean1093/timeSolver/blob/master/docs/api.md#conventions).
+Case-insensitive. Every alias of more than one letter also accepts its plural
+(`days`, `months`, `mins`, `hrs`); the full table is in the
+[API reference](https://github.com/sean1093/timeSolver/blob/master/docs/api.md#conventions).
 
 | Unit | Aliases |
 |---|---|

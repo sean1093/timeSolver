@@ -35,22 +35,25 @@ outside the `Date` range — throws `TimeSolverError` with code `INVALID_DATE`.
 **Time zone.** All functions work in the host time zone. There is no zone
 parameter; see [Scope](../README.md#scope).
 
-**Units.** Every `unit` parameter accepts any alias, in any case:
+**Units.** Every `unit` parameter accepts any alias, in any case. Every alias of
+more than one letter also accepts its plural:
 
 | Canonical | Aliases |
 |---|---|
-| `millisecond` | `milliseconds` `mill` `ms` `msec` |
-| `second` | `seconds` `sec` `s` |
-| `minute` | `minutes` `min` |
-| `hour` | `hours` `hr` `h` |
-| `day` | `days` `d` |
-| `week` | `weeks` `w` |
-| `month` | `months` `mon` `m` |
-| `quarter` | `quarters` `q` |
-| `year` | `years` `yr` `y` |
+| `millisecond` | `mill` `msec` `ms` |
+| `second` | `sec` `s` |
+| `minute` | `min` |
+| `hour` | `hr` `h` |
+| `day` | `d` |
+| `week` | `w` |
+| `month` | `mon` `m` |
+| `quarter` | `q` |
+| `year` | `yr` `y` |
 
-An unknown alias throws `INVALID_UNIT`. Where `unit` is optional it defaults to
-`millisecond`, matching 1.x.
+So `'minute'`, `'minutes'`, `'min'`, `'mins'` and `'MIN'` are the same unit, and
+`'d'` is a day while `'ds'` is not an alias at all. An unknown alias throws
+`INVALID_UNIT`. Where `unit` is optional it defaults to `millisecond`, matching
+1.x.
 
 ## Arithmetic
 
@@ -241,9 +244,11 @@ today is neither.
 
 ## Ranges
 
+### `isBetween(date, start, end, options?): boolean`
 ### `isBetween(date, start, end, unit?, bounds?, options?): boolean`
 
-Whether `date` falls between `start` and `end`.
+Whether `date` falls between `start` and `end`. The settings can be passed as
+one object — `{ unit?, bounds?, weekStartsOn? }` — or positionally.
 
 `bounds` is interval notation: `[` and `]` include an endpoint, `(` and `)`
 exclude it. It defaults to `'[]'`, both inclusive.
@@ -251,19 +256,23 @@ exclude it. It defaults to `'[]'`, both inclusive.
 ```ts
 isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
 isBetween('2024-03-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true, inclusive
-isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', { bounds: '[)' }); // false
 ```
 
 `'[)'` is usually what a date range wants: a month runs from 1 January up to but
 not including 1 February, so consecutive ranges neither overlap nor leave a gap.
+That is also why the object form exists — it is the common case, and reaching
+`bounds` positionally means writing `undefined` for the unit first.
 
-`unit` compares at a granularity, as `equal` does, and `options` carries
-`weekStartsOn`:
+`unit` compares at a granularity, as `equal` does, and `weekStartsOn` moves the
+week boundary:
 
 ```ts
 // 2024-03-31 is inside March, so a month-granularity test includes it
-isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00');          // false
-isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00', 'month'); // true
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00');            // false
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00', 'month');   // true
+isBetween('2024-03-31T23:00', '2024-03-01T00:00', '2024-03-15T00:00', { unit: 'month' }); // true
+isBetween(date, start, end, { unit: 'week', bounds: '[)', weekStartsOn: 1 });
 ```
 
 A reversed range returns `false` rather than being silently reordered, because a

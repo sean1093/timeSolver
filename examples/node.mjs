@@ -96,7 +96,7 @@ log('isBetween(Mar 15, Mar 1, Apr 1)', isBetween('2024-03-15T12:00', marchStart,
 // Bounds default to '[]', so 1 April counts as inside March. Half-open '[)' is what
 // back-to-back ranges want: March ends exactly where April begins, no overlap, no gap.
 log('isBetween(Apr 1, Mar 1, Apr 1)', isBetween(aprilStart, marchStart, aprilStart));
-log("  the same, bounds '[)'", isBetween(aprilStart, marchStart, aprilStart, undefined, '[)'));
+log("  the same, bounds '[)'", isBetween(aprilStart, marchStart, aprilStart, { bounds: '[)' }));
 log('min(Mar 17, Jan 1, Dec 31)', short(min(...spread)));
 log('max(Mar 17, Jan 1, Dec 31)', short(max(...spread)));
 const clamped = clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');

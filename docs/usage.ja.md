@@ -177,7 +177,7 @@ const rows = all.filter((row) => isBetween(row.createdAt, monthStart, monthEnd))
 隣接する範囲を続けて並べるときは半開区間を指定すれば、重複も隙間も生じません。
 
 ```ts
-isBetween(date, monthStart, add(monthStart, 1, 'month'), undefined, '[)');
+isBetween(date, monthStart, add(monthStart, 1, 'month'), { bounds: '[)' });
 ```
 
 ## 比較と差分の計測
@@ -210,7 +210,7 @@ beforeToday(new Date());                              // false
 
 ```ts
 isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
-isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', { bounds: '[)' }); // false
 min('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-01-01
 max('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-03-17
 clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');           // 2024-03-01
