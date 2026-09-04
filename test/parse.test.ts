@@ -185,6 +185,22 @@ describe('isValid without a format', () => {
     expect(isValid(0)).toBe(true);
     expect(isValid(new Date())).toBe(true);
   });
+
+  it.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['an object', {}],
+    ['an array', []],
+    ['a boolean', true],
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['a number past the range', 8.64e15 + 1],
+  ])('rejects %s without throwing', (_label, input) => {
+    // The JSDoc promises "Any value", and `toDate` is tested directly for these
+    // one layer down; nothing asserted that isValid itself answers rather than
+    // throwing for them.
+    expect(isValid(input as never)).toBe(false);
+  });
 });
 
 describe('isValid with a format', () => {

@@ -208,6 +208,21 @@ describe('subtract', () => {
 
     expect(subtract(base).getTime()).toBe(base.getTime());
   });
+
+  it('subtracts a fractional amount of an exact unit', () => {
+    // add's fractional path is asserted directly; subtract negates the amount,
+    // and only whole numbers were ever passed through that negation.
+    const base = new Date(2024, 5, 15, 12, 30);
+
+    expect(subtract(base, 1.5, 'hour').getTime() - base.getTime()).toBe(-5_400_000);
+    expect(subtract(base, 0.25, 'second').getTime() - base.getTime()).toBe(-250);
+  });
+
+  it('rejects a fractional amount of a calendar unit, as add does', () => {
+    expect(() => subtract(new Date(2024, 5, 15), 1.5, 'month')).toThrowError(
+      /must be a whole number/,
+    );
+  });
 });
 
 describe('startOf', () => {

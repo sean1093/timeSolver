@@ -171,6 +171,14 @@ describe('clamp', () => {
     expect(getString(clamp('2024-06-01T00:00', lower, upper), 'YYYY-MM-DD')).toBe('2024-03-01');
   });
 
+  it('accepts a Date, epoch milliseconds and a string in one call', () => {
+    const inside = clamp(new Date(2024, 1, 1).getTime(), new Date(2024, 0, 1), '2024-03-01T00:00');
+    const below = clamp('2023-06-01T00:00', new Date(2024, 0, 1).getTime(), upper);
+
+    expect(getString(inside, 'YYYY-MM-DD')).toBe('2024-02-01');
+    expect(getString(below, 'YYYY-MM-DD')).toBe('2024-01-01');
+  });
+
   it('is idempotent', () => {
     const once = clamp('2024-06-01T00:00', lower, upper);
     const twice = clamp(once, lower, upper);

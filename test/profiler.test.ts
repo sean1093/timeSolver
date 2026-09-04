@@ -108,9 +108,12 @@ describe('createProfiler', () => {
   });
 
   it.each([
-    ['mark', (profiler: Profiler) => profiler.mark('x')],
-    ['report', (profiler: Profiler) => profiler.report()],
-  ])('requires start() before %s()', (name, call) => {
+    ['mark', 'mark', (profiler: Profiler) => profiler.mark('x')],
+    ['report', 'report', (profiler: Profiler) => profiler.report()],
+    // print builds the report first, so it refuses for the same reason and
+    // names the same call.
+    ['print', 'report', (profiler: Profiler) => profiler.print()],
+  ])('requires start() before %s()', (_name, reported, call) => {
     const profiler = createProfiler();
 
     try {
@@ -118,7 +121,7 @@ describe('createProfiler', () => {
       expect.unreachable('should have thrown');
     } catch (error) {
       expect((error as TimeSolverError).code).toBe('INVALID_ARGUMENT');
-      expect((error as TimeSolverError).message).toContain(`before ${name}()`);
+      expect((error as TimeSolverError).message).toContain(`before ${reported}()`);
     }
   });
 
