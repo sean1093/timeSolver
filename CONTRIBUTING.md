@@ -261,6 +261,14 @@ version and writes `CHANGELOG.md`. Merging that PR publishes to npm with
 publishes from a laptop, and `CHANGELOG.md` is generated — please do not edit it
 by hand in a PR.
 
+Neither step runs unopposed: the release workflow's first job re-runs the
+quality gates on the same commit, and both the version pull request and the
+publish depend on it. A red `master` therefore does not ship, which was not
+true while the two workflows only shared a trigger. That job is also where the
+dependency install and the build happen; the job that holds the publish token
+installs with `--ignore-scripts` and runs no third-party install script beside
+it.
+
 One-time setup, for whoever owns the npm package: add an npm **automation**
 token as a repository secret named `NPM_TOKEN` under Settings, then Secrets and
 variables, then Actions. Classic tokens and granular tokens with 2FA
