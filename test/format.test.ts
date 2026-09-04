@@ -133,6 +133,19 @@ describe('getString composition', () => {
   });
 
   it.each([
+    ['M0M', 'M', '0'],
+    ['D0', 'D', '0'],
+    ['H:m:s9', 's', '9'],
+    ['M[0]D', 'M', '0'],
+  ])('rejects %s, where %s runs into the digit literal %s', (format) => {
+    // `'M0M'` compiles to `^(\d{1,2})0(\d{1,2})$`: every group has two viable
+    // widths at every position, so a run of digits that does not match costs
+    // exponential time. A digit is a digit whether it arrives as a token or as
+    // literal text.
+    expect(() => getString(SAMPLE, format)).toThrowError(/is ambiguous/);
+  });
+
+  it.each([
     'YYYY-M-D',
     'YYYY M D H:m:s',
     'YYYYMMDD',
@@ -145,6 +158,13 @@ describe('getString composition', () => {
   ])('accepts %s, where every variable-width token is separated', (format) => {
     expect(() => getString(SAMPLE, format)).not.toThrow();
   });
+
+  it.each(['M-0', 'YYYY0MM', 'MM0DD', '[0]M', 'M[ ]0'])(
+    'accepts %s, where no variable-width token touches a digit',
+    (format) => {
+      expect(() => getString(SAMPLE, format)).not.toThrow();
+    },
+  );
 });
 
 describe('getString failures', () => {

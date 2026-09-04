@@ -116,6 +116,39 @@ describe('parse', () => {
     }
   });
 
+  it('compiles a format at the 512-token limit', () => {
+    // A matcher is one capture group per token, and V8 gives up on a pattern
+    // with thousands of them -- as a raw SyntaxError, which carries no code.
+    const format = 'YYYY'.repeat(512);
+    const input = '2024'.repeat(512);
+
+    expect(getString(parse(input, format), 'YYYY')).toBe('2024');
+    expect(isValid(input, format)).toBe(true);
+  });
+
+  it('refuses one token past the limit, as INVALID_FORMAT', () => {
+    const format = 'YYYY'.repeat(513);
+    const input = '2024'.repeat(513);
+
+    expect(() => parse(input, format)).toThrowError(/limited to 512 tokens/);
+    expect(() => isValid(input, format)).toThrowError(/limited to 512 tokens/);
+  });
+
+  it('keeps the code on a refused oversized format', () => {
+    try {
+      parse('x', 'YYYY'.repeat(5000));
+      expect.unreachable('should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(TimeSolverError);
+      expect((error as TimeSolverError).code).toBe('INVALID_FORMAT');
+    }
+  });
+
+  it('still renders a format too long to parse', () => {
+    // getString builds no matcher, so the cap does not apply to it.
+    expect(getString(new Date(2024, 0, 1), 'YYYY'.repeat(300))).toHaveLength(1200);
+  });
+
   it('round-trips every date it accepts', () => {
     const format = 'YYYY-MM-DD HH:mm:ss.SSS';
 
