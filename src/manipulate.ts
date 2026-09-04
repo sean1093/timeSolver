@@ -22,19 +22,29 @@ import {
  * Shift a date by whole calendar months, clamping to the end of the target
  * month. Native `setMonth` overflows instead: v1's `add(Jan 31, 1, 'M')`
  * returned March 2.
+ *
+ * The target year, month and day are worked out arithmetically and set in one
+ * call, so there is no intermediate date to overflow or underflow: reaching the
+ * target through `setDate(1)` first made a shift from the very bottom of the
+ * representable range unanswerable, because 1 April -271821 is already past it.
+ *
+ * Returns the Invalid Date when the target itself leaves the range; `add` turns
+ * that into an `INVALID_ARGUMENT`. Internal, and exported for `between`, which
+ * measures a span and has to be able to ask for an anchor without being
+ * interrupted when one does not exist.
  */
-function shiftMonths(date: Date, months: number): Date {
-  const day = date.getDate();
+export function shiftMonths(date: Date, months: number): Date {
+  const targetMonth = date.getMonth() + months;
+  const year = date.getFullYear() + Math.floor(targetMonth / MONTHS_PER_UNIT.year);
+  // Remainder of a negative month index is negative, so it is folded forward.
+  const month =
+    ((targetMonth % MONTHS_PER_UNIT.year) + MONTHS_PER_UNIT.year) % MONTHS_PER_UNIT.year;
   const shifted = new Date(date.getTime());
 
-  shifted.setDate(1);
-  shifted.setFullYear(shifted.getFullYear(), shifted.getMonth() + months, 1);
-
-  if (Number.isNaN(shifted.getTime())) {
-    return shifted;
-  }
-
-  shifted.setDate(Math.min(day, daysInMonth(shifted.getFullYear(), shifted.getMonth() + 1)));
+  // No guard for a target outside the range: `setFullYear` yields the Invalid
+  // Date, which is what `add` reports on. A year of 1e17 is still an integer,
+  // so `daysInMonth` answers it from the calendar rather than refusing.
+  shifted.setFullYear(year, month, Math.min(date.getDate(), daysInMonth(year, month + 1)));
 
   return shifted;
 }
@@ -157,6 +167,13 @@ const TRUNCATE: Record<Unit, (date: Date, weekStartsOn: WeekDay) => void> = {
     date.setHours(0, 0, 0, 0);
   },
 };
+
+/**
+ * Last instant a `Date` can represent, 100,000,000 days after the epoch. The
+ * unit containing it has no successor, so `endOf` reads it as the end of that
+ * unit rather than asking for a shift that cannot land.
+ */
+const MAX_TIME = 8.64e15;
 
 // Mutation testing cannot reach the code from here to the restore below. It is
 // exercised by `test/zone-chatham.test.ts` and by `npm run test:zones`, both of
@@ -326,36 +343,53 @@ export function endOf(date: DateInput, unit: UnitInput, options?: WeekOptions): 
   const resolved = normalizeUnit(unit);
   const start = startOf(date, resolved, options);
   const startTime = start.getTime();
-  // Truncate again after the shift. In a zone whose clocks jump at midnight,
-  // startOf('day') is 01:00, so start plus one day is 01:00 the next day and
-  // subtracting a millisecond would land on the wrong calendar date.
-  const candidate = startOf(add(start, 1, resolved), resolved, options).getTime() - 1;
-  const last = new Date(candidate);
-
-  // Stryker disable all: zone-dependent, see the note above UNIT_BOUND.
-  // A unit whose start and end share an offset ran without a clock shift at
-  // either boundary, so the wall-clock arithmetic above was exact. This is the
-  // common case, including an ordinary daylight-saving day: the shift happens
-  // inside the day, not at the boundary that defines it.
-  if (candidate >= startTime && start.getTimezoneOffset() === last.getTimezoneOffset()) {
-    return last;
-  }
-
   const inUnit = (time: number) =>
     startOf(new Date(time), resolved, options).getTime() === startTime;
 
-  // Otherwise confirm the candidate really is the last instant of this unit: in
-  // it, with the next millisecond outside. Where the clocks repeat a wall clock
-  // the unit is entered twice under one name, and the first visit ends early --
-  // at the shift, not a nominal unit later.
-  if (candidate >= startTime && inUnit(candidate) && !inUnit(candidate + 1)) {
-    return last;
+  // A unit at the very top of the range has no next unit to step back from:
+  // adding one would leave what a `Date` can hold. The unit ends where `Date`
+  // does, and the bisection below finds that without asking for the shift.
+  // UNIT_BOUND is generous, so this is answered conservatively -- it costs a
+  // bisection, never correctness.
+  const steppable = startTime + UNIT_BOUND[resolved] <= MAX_TIME;
+  // Truncate again after the shift. In a zone whose clocks jump at midnight,
+  // startOf('day') is 01:00, so start plus one day is 01:00 the next day and
+  // subtracting a millisecond would land on the wrong calendar date.
+  const candidate = steppable
+    ? startOf(add(start, 1, resolved), resolved, options).getTime() - 1
+    : undefined;
+
+  // Stryker disable all: zone-dependent, see the note above UNIT_BOUND.
+  if (candidate !== undefined) {
+    const last = new Date(candidate);
+
+    // A unit whose start and end share an offset ran without a clock shift at
+    // either boundary, so the wall-clock arithmetic above was exact. This is
+    // the common case, including an ordinary daylight-saving day: the shift
+    // happens inside the day, not at the boundary that defines it.
+    if (candidate >= startTime && start.getTimezoneOffset() === last.getTimezoneOffset()) {
+      return last;
+    }
+
+    // Otherwise confirm the candidate really is the last instant of this unit:
+    // in it, with the next millisecond outside. Where the clocks repeat a wall
+    // clock the unit is entered twice under one name, and the first visit ends
+    // early -- at the shift, not a nominal unit later.
+    if (candidate >= startTime && inUnit(candidate) && !inUnit(candidate + 1)) {
+      return last;
+    }
   }
 
   // Find where this visit actually ended. Membership holds over one run from
   // the start, so the last instant of it is one bisection away.
   let low = startTime;
-  let high = startTime + UNIT_BOUND[resolved];
+  let high = Math.min(startTime + UNIT_BOUND[resolved], MAX_TIME);
+
+  // The unit runs to the end of the range, so there is no instant outside it to
+  // bisect towards.
+  if (inUnit(high)) {
+    return new Date(high);
+  }
 
   while (low + 1 < high) {
     const mid = low + Math.floor((high - low) / 2);
