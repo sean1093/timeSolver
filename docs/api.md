@@ -518,7 +518,9 @@ CSS-styled lines when a `window` exists and plain text otherwise.
 
 Each profiler owns its state, so nested and concurrent measurements do not
 interfere. The 1.x names `timeLookStart()`, `timeLook(label)` and
-`timeLookReport()` drive one shared instance. They are exported by name as well
+`timeLookReport()` drive one shared instance — one per process, whichever entry
+point they are imported from, so mixing `timesolver` and `timesolver/profiler`
+in the same codebase keeps a single timeline. They are exported by name as well
 as on the default object, so the browser global carries them for 1.x script
 tags.
 

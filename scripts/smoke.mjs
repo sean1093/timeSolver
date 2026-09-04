@@ -199,6 +199,37 @@ assertSurface('dist/index.cjs (CJS)', cjs, CORE_EXPORTS);
 assertProfiler('dist/profiler.js (ESM)', await loadEsm('profiler.js'));
 assertProfiler('dist/profiler.cjs (CJS)', loadCjs('profiler.cjs'));
 
+// 3b. The v1 names are documented as driving one shared instance, and the two
+//     entry points are independent bundles: each carries its own copy of the
+//     profiler module. A module-level instance made that promise false, and
+//     `timeLook()` from one entry after `timeLookStart()` from the other threw
+//     "Call start() before mark()".
+const rootProfiler = esm;
+const subpathProfiler = await loadEsm('profiler.js');
+
+check(
+  'the two ESM entry points really are separate module copies',
+  rootProfiler.timeLook !== subpathProfiler.timeLook,
+  'They resolved to the same function, so this check no longer proves anything.',
+);
+
+try {
+  rootProfiler.timeLookStart();
+  subpathProfiler.timeLook('from the subpath');
+  const report = subpathProfiler.timeLookReport();
+
+  check(
+    'timeLook* share one timeline across timesolver and timesolver/profiler',
+    report.marks.length === 1 && report.marks[0].label === 'from the subpath',
+    `Marks recorded: ${JSON.stringify(report.marks.map((mark) => mark.label))}.`,
+  );
+} catch (error) {
+  fail(
+    'timeLook* share one timeline across timesolver and timesolver/profiler',
+    `Marking from the subpath after starting from the root threw: ${error.message}`,
+  );
+}
+
 // 4. The <script> bundle, evaluated in a context that starts with no globals of
 //    ours, so a bundle that quietly relies on the caller's scope fails here.
 const sandbox = createContext({ console });
