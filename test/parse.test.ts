@@ -157,6 +157,15 @@ describe('parse', () => {
       expect(getString(parse(rendered, format), format)).toBe(rendered);
     }
   });
+
+  it('round-trips a literal bracket', () => {
+    const format = '[[]YYYY-MM-DD[]]]';
+
+    expect(getString(new Date(2024, 2, 17), format)).toBe('[2024-03-17]');
+    expect(getString(parse('[2024-03-17]', format), 'YYYY-MM-DD')).toBe('2024-03-17');
+    expect(isValid('[2024-03-17]', format)).toBe(true);
+    expect(isValid('2024-03-17', format)).toBe(false);
+  });
 });
 
 describe('isValid without a format', () => {
