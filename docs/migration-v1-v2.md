@@ -275,7 +275,10 @@ data, and console styling is applied only in a browser.
 
 - Every function name and argument order.
 - All unit abbreviations, including `'M'` for month and `'MIN'` for minute.
-- Every 1.x format name, in any case, including the ones where `MM` meant minutes.
+- Every 1.x format name, including the ones where `MM` meant minutes. Case does
+  not matter, except for `'HH:MM:SS'` and `'HH:MM:SS.SSS'`: written in lower
+  case those are valid token strings meaning 12-hour time, and are read that
+  way. Write them in upper case for the 1.x reading.
 - `getString`'s default format, `'YYYYMMDD'`.
 - `getQuarterByMonth` and `getFirstMonthByQuarter` returning `null` when out of range.
 - Local time as the only time zone, and English as the only language for names.

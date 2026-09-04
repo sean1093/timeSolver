@@ -80,9 +80,12 @@ getString(stamp, 'nope');   // throws: no tokens at all; use '[nope]'
 Note that single letters are tokens too: `'oops'` renders `'oop45'`, because `s`
 is the seconds token. Escape any literal text you did not mean as a token.
 
-Every format name 1.x accepted still works, in any case, so
+Every format name 1.x accepted still works, so
 `getString(stamp, 'YYYY-MM-DD HH:MM:SS')` keeps rendering
-`'2024-03-17 14:30:45'`.
+`'2024-03-17 14:30:45'`. Case does not matter for those names, unless what you
+wrote is a valid token string in its own right: `'hh:mm:ss'` is 12-hour,
+minute, second, so it renders `'02:30:45'` rather than the 24-hour reading the
+1.x name of that spelling had.
 
 ## Reading a date from a string
 

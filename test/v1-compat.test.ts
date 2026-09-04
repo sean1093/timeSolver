@@ -57,8 +57,38 @@ describe('v1 format names', () => {
     expect(getString(SAMPLE, format)).toBe(expected);
   });
 
-  it.each(V1_FORMATS)('accepts %s in lower case, as v1 did', (format, expected) => {
-    expect(getString(SAMPLE, format.toLowerCase())).toBe(expected);
+  /**
+   * The two time-only names are the only ones whose lower-case spelling is a v2
+   * format in its own right: `'hh:mm:ss'` is 12-hour, minute, second. The
+   * tokens win there, so those two are asserted separately below.
+   */
+  const LOWER_CASE_IS_A_V2_FORMAT = ['HH:MM:SS', 'HH:MM:SS.SSS'];
+
+  it.each(V1_FORMATS.filter(([format]) => !LOWER_CASE_IS_A_V2_FORMAT.includes(format)))(
+    'accepts %s in lower case, as v1 did',
+    (format, expected) => {
+      expect(getString(SAMPLE, format.toLowerCase())).toBe(expected);
+    },
+  );
+
+  it('reads a lower-case time-only name as the v2 tokens it is', () => {
+    // 14:30:45 is 02:30:45 on a 12-hour clock. Translating these two to the v1
+    // name instead made `getString(date, 'hh:mm:ss')` render 24-hour output,
+    // contradicting the token table, and made `isValid('13:45:07', 'hh:mm:ss')`
+    // true. The upper-case names still mean what v1 meant.
+    expect(getString(SAMPLE, 'hh:mm:ss')).toBe('02:30:45');
+    expect(getString(SAMPLE, 'HH:MM:SS')).toBe('14:30:45');
+    expect(getString(SAMPLE, 'YYYY-MM-DD hh:mm:ss')).toBe('2024-03-17 02:30:45');
+    expect(isValid('13:45:07', 'hh:mm:ss')).toBe(false);
+    expect(isValid('01:45:07', 'hh:mm:ss')).toBe(true);
+    expect(isValid('13:45:07', 'HH:MM:SS')).toBe(true);
+  });
+
+  it('reads a mixed-case month token as written', () => {
+    // 'YYYY-mm-DD' uppercases to the v1 name 'YYYY-MM-DD', but `mm` is the
+    // minute token, and that is what a v2 caller asking for it meant.
+    expect(getString(SAMPLE, 'YYYY-mm-DD')).toBe('2024-30-17');
+    expect(getString(SAMPLE, 'YYYY-MM-DD')).toBe('2024-03-17');
   });
 
   it('leaves canonical token strings alone', () => {

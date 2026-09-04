@@ -317,56 +317,52 @@ const V1_TIME_SEGMENT = /HH:MM:SS/g;
  * Every format name 1.x accepted, across the published 1.2.0 build and the
  * later repository state that added the `DD`-first family. 1.x uppercased the
  * whole string and used `MM` for both month and minute; v2 tokens are
- * case-sensitive, so these names are translated to canonical tokens on an exact
- * match. Anything else is treated as a canonical token string.
+ * case-sensitive, so these names are translated to canonical tokens when a
+ * format matches one and is not already a v2 format in its own right.
+ *
+ * One delimited string rather than a table: membership is the only question
+ * asked of it, `|` cannot occur in a name, and a substring search needs no
+ * `Object.hasOwn` guard against inherited keys. It is also a third of the size
+ * in the bundle, which for a compatibility shim most callers never touch is
+ * the difference worth having.
  */
-// Stryker disable BooleanLiteral: only key presence is read, through
-// Object.hasOwn, so the values cannot be observed by any test.
-const V1_FORMATS: Record<string, true> = {
-  YYYY: true,
-  YYYYMM: true,
-  YYYYMMDD: true,
-  'YYYY/MM/DD': true,
-  'YYYY-MM-DD': true,
-  'YYYY.MM.DD': true,
-  MMDDYYYY: true,
-  DDMMYYYY: true,
-  'MM/DD/YYYY': true,
-  'MM-DD-YYYY': true,
-  'MM.DD.YYYY': true,
-  'YYYY/MM/DD HH:MM:SS': true,
-  'YYYY/MM/DD HH:MM:SS.SSS': true,
-  'YYYY-MM-DD HH:MM:SS': true,
-  'YYYY-MM-DD HH:MM:SS.SSS': true,
-  'YYYY.MM.DD HH:MM:SS': true,
-  'YYYY.MM.DD HH:MM:SS.SSS': true,
-  'YYYYMMDD HH:MM:SS': true,
-  'YYYYMMDD HH:MM:SS.SSS': true,
-  'MM/DD/YYYY HH:MM:SS': true,
-  'MM/DD/YYYY HH:MM:SS.SSS': true,
-  'MM-DD-YYYY HH:MM:SS': true,
-  'MM-DD-YYYY HH:MM:SS.SSS': true,
-  'MM.DD.YYYY HH:MM:SS': true,
-  'MM.DD.YYYY HH:MM:SS.SSS': true,
-  'HH:MM:SS': true,
-  'HH:MM:SS.SSS': true,
-  'DD/MM/YYYY': true,
-  'DD-MM-YYYY': true,
-  'DD.MM.YYYY': true,
-  'DD/MM/YYYY HH:MM:SS': true,
-  'DD/MM/YYYY HH:MM:SS.SSS': true,
-  'DD-MM-YYYY HH:MM:SS': true,
-  'DD-MM-YYYY HH:MM:SS.SSS': true,
-  'DD.MM.YYYY HH:MM:SS': true,
-  'DD.MM.YYYY HH:MM:SS.SSS': true,
-};
-// Stryker restore BooleanLiteral
+const V1_FORMATS =
+  '|YYYY|YYYYMM|YYYYMMDD|YYYY/MM/DD|YYYY-MM-DD|YYYY.MM.DD|MMDDYYYY|DDMMYYYY' +
+  '|MM/DD/YYYY|MM-DD-YYYY|MM.DD.YYYY|YYYY/MM/DD HH:MM:SS|YYYY/MM/DD HH:MM:SS.SSS' +
+  '|YYYY-MM-DD HH:MM:SS|YYYY-MM-DD HH:MM:SS.SSS|YYYY.MM.DD HH:MM:SS' +
+  '|YYYY.MM.DD HH:MM:SS.SSS|YYYYMMDD HH:MM:SS|YYYYMMDD HH:MM:SS.SSS' +
+  '|MM/DD/YYYY HH:MM:SS|MM/DD/YYYY HH:MM:SS.SSS|MM-DD-YYYY HH:MM:SS' +
+  '|MM-DD-YYYY HH:MM:SS.SSS|MM.DD.YYYY HH:MM:SS|MM.DD.YYYY HH:MM:SS.SSS' +
+  '|HH:MM:SS|HH:MM:SS.SSS|DD/MM/YYYY|DD-MM-YYYY|DD.MM.YYYY|DD/MM/YYYY HH:MM:SS' +
+  '|DD/MM/YYYY HH:MM:SS.SSS|DD-MM-YYYY HH:MM:SS|DD-MM-YYYY HH:MM:SS.SSS' +
+  '|DD.MM.YYYY HH:MM:SS|DD.MM.YYYY HH:MM:SS.SSS|';
+
+/** A letter left over once tokens and escaped text are removed. */
+const STRAY_LETTER = /[A-Za-z]/;
+
+/**
+ * Whether a format is already canonical: every letter in it belongs to a token
+ * or to escaped literal text.
+ *
+ * This is what decides between the two readings a handful of strings have.
+ * `'hh:mm:ss'` is a v2 format meaning 12-hour, minute, second, and it is also
+ * the 1.x name `'HH:MM:SS'` in lower case, which meant 24-hour. The tokens win,
+ * because they are what the token table documents and what a v2 caller wrote.
+ * `'yyyy-mm-dd hh:mm:ss'` is not canonical -- `yyyy` and `dd` are not tokens at
+ * all -- so it can only have been meant as the 1.x name, and is still
+ * translated. No 1.x name loses its own meaning: every one of them writes
+ * seconds as `SS`, which is not a token in any case.
+ */
+function readsAsTokens(format: string): boolean {
+  return !STRAY_LETTER.test(format.replace(TOKEN_PATTERN, ''));
+}
 
 /**
  * Translate a v1 format name to canonical tokens.
  *
  * Case-insensitive on the v1 names, so `'yyyy-mm-dd hh:mm:ss'` keeps working;
- * every other string is returned untouched and tokenized as written.
+ * every other string, and every string that is already a v2 format, is returned
+ * untouched and tokenized as written.
  */
 export function normalizeFormat(format: string): string {
   if (typeof format !== 'string') {
@@ -376,9 +372,13 @@ export function normalizeFormat(format: string): string {
     );
   }
 
+  if (readsAsTokens(format)) {
+    return format;
+  }
+
   const upper = format.toUpperCase();
 
-  if (!Object.hasOwn(V1_FORMATS, upper)) {
+  if (!V1_FORMATS.includes(`|${upper}|`)) {
     return format;
   }
 
