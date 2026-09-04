@@ -165,6 +165,10 @@ export function createProfiler(): Profiler {
  * timeline is registered; `createProfiler` stays pure, and a caller who wants
  * isolation already has it.
  */
+// Stryker disable next-line StringLiteral: the key's text cannot be observed
+// from outside. Every copy of this module in a process reads the same one, so
+// any string behaves identically; it is namespaced so that another library
+// cannot collide with it, which is a property of the name and not of the code.
 const SHARED_KEY = Symbol.for('timesolver.profiler.shared');
 
 /**
