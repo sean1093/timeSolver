@@ -1,5 +1,112 @@
 # Changelog
 
+## 3.0.0
+
+### Major Changes
+
+- 25b652d: Refuse two classes of format string that `parse` and `isValid` could not handle safely.
+  
+  **A variable-width token may no longer touch a digit that arrives as literal text.** The tokenizer already refused `'YYYYMD'`, where two variable-width tokens run together; it now applies the same rule to a digit written as a literal, so `'M0M'`, `'D0'` and `'H:m:s9'` throw `INVALID_FORMAT` instead of compiling. Such a format built a matcher — `^(\d{1,2})0(\d{1,2})$` — in which every capture group has two viable widths at every position, so an input of digits that did not match cost exponential time: a 59-character format against a 90-character input took 11.5 seconds of synchronous CPU, and forty tokens was an indefinite hang. A digit next to a variable-width token is exactly as ambiguous as a numeric token next to one, and it is now reported the same way. Separate them (`'M-0'`), or use the fixed-width token (`'MM0'`).
+  
+  **A parseable format is limited to 512 tokens.** Past a few thousand capture groups the runtime refuses to compile the pattern and reports it as a raw `SyntaxError` — "Stack overflow" at a threshold that depends on the stack left, so it was not even deterministic, and "Too many captures" beyond about 32,000. That error carried none of this library's codes, so `parse` threw something callers could not branch on and `isValid` returned `false` for what is a caller bug. Both now throw `TimeSolverError` with `INVALID_FORMAT`. `getString` builds no matcher and is unchanged, so a long format still renders.
+  
+  **Migration.** Neither shape can appear in a format that was doing something useful: the first was ambiguous by construction and the second could not be parsed at all. If you generate formats programmatically, separate a variable-width token from a following digit with any non-digit character, and branch on `error.code === 'INVALID_FORMAT'` where you previously saw a `SyntaxError` or a silent `false`.
+- 0404d7c: Keep boundary arithmetic inside the range a `Date` can represent, and out of the 1900s.
+  
+  **`getISOWeek` and `getWeekOfYear` were wrong for years 0-99.** Both counted from a January anchor built with `new Date(year, 0, day)`, which maps years 0-99 into 1900-1999 — so `getISOWeek` of 4 January 0050 reported `-99136` instead of `1`, and `getWeekOfYear` the same. The anchors are now built the way `parse` and `daysInMonth` already built theirs, by setting the year on a date that is safely in range. Years 100 and above were never affected.
+  
+  **Both functions now name the anchor they cannot build.** Within a year of the minimum representable instant, 1 or 4 January does not exist, and the failure surfaced as `INVALID_DATE: Cannot read a date from an Invalid Date` — describing a perfectly readable input as unreadable. It is now `INVALID_ARGUMENT`, naming the January date that leaves the range.
+  
+  **`endOf` no longer refuses the last unit of the range.** It computed the end as the start of the next unit minus a millisecond, and at the top of the range that shift threw `INVALID_ARGUMENT: Shifting by 1 day(s) leaves the range a Date can represent` — an internal step the caller never asked for. Every unit containing the last representable instant now ends at that instant, which is what "last representable millisecond of the unit" always claimed.
+  
+  **`between` measures spans that reach the extremes.** For `'month'`, `'quarter'` and `'year'` it anchors on the start's day of month, which can overshoot the range even when both endpoints are inside it — 19 April -271821 plus 6,570,977 months is eight days past the last instant there is — and the whole call threw. It now steps back to the nearest anchor that exists and scales the remainder against a neighbouring month, so the full span is measurable and `between(a, b, unit) === -between(b, a, unit)` still holds exactly.
+  
+  **`daysInMonth` answers from the calendar instead of returning `NaN`.** It probed a `Date` for the last day of the month, so `daysInMonth(275761, 2)` was `NaN` — silently, then flowing into arithmetic and rendering as `'NaN'`. A month's length is a calendar fact, so it is now computed arithmetically and correct for any integer year. As a consequence `add(date, months, 'month')` also reaches months it previously refused, including the first month of the range.
+  
+  **Migration.** Every change either replaces a wrong number with the right one, an inaccurate error with an accurate one, or an error with the answer. If you special-cased any of them: results for years 0-99 from `getISOWeek`/`getWeekOfYear` change, `endOf` and `between` return where they threw at the extremes of the range, `getISOWeek`/`getWeekOfYear` throw `INVALID_ARGUMENT` rather than `INVALID_DATE` for the first year of the range, and `daysInMonth` returns a number where it returned `NaN`.
+- 81904e0: Read a format as tokens whenever it is a valid token string, rather than as a 1.x name.
+  
+  `normalizeFormat` uppercased the whole format string to look it up among the 36 names 1.x accepted, so a format that happened to spell one of them in lower case was translated — even when it was a perfectly good v2 format meaning something else. `hh` is documented as the 12-hour token, and `getString(date, 'hh:mm:ss')` rendered `'13:45:07'`, not `'01:45:07'`. `isValid('13:45:07', 'hh:mm:ss')` was `true`. `'YYYY-MM-DD hh:mm:ss'` was hijacked the same way, and so was `'YYYY-mm-DD'`, where `mm` is the minute token and month came out instead.
+  
+  A format is now translated only when it is *not* already a token string — that is, when some letter in it belongs to no token, as in `'yyyy-mm-dd hh:mm:ss'`, where `yyyy` and `dd` are not tokens at all. Every 1.x name keeps its own meaning, in any case, because all of them write seconds as `SS`, which is not a token in any case. What changes is the handful of spellings that are valid token strings:
+  
+  | format | before | after |
+  |---|---|---|
+  | `'hh:mm:ss'` | `'13:45:07'` (24-hour) | `'01:45:07'` (12-hour) |
+  | `'hh:mm:ss.sss'` | `'13:45:07.042'` | `'01:45:07.077'` |
+  | `'YYYY-MM-DD hh:mm:ss'` | `'2024-03-17 13:45:07'` | `'2024-03-17 01:45:07'` |
+  | `'YYYY-mm-DD'` | `'2024-03-17'` (month) | `'2024-45-17'` (minute) |
+  | `'HH:MM:SS'`, `'YYYY-MM-DD HH:MM:SS'`, and the other 34 names | unchanged | unchanged |
+  
+  **Migration.** If you passed a lower-case 1.x time name — `'hh:mm:ss'` or `'hh:mm:ss.sss'` — write it in upper case to keep the 1.x reading, or add `A`/`a` if you wanted a 12-hour clock all along. Anything written as canonical tokens now means exactly what the token table says.
+
+### Minor Changes
+
+- f6ab1d1: Accept an options object for `isBetween`, and plural unit abbreviations everywhere.
+  
+  **`isBetween(date, start, end, { unit, bounds, weekStartsOn })`.** The three optional settings were positional, so the two most useful combinations forced a placeholder: this repository's own documentation had to write `isBetween(row.createdAt, start, end, undefined, '[)')` — for the half-open range that the same recipe recommends. The object form is additive and the positional form is unchanged, so nothing needs rewriting; a new `BetweenOptions` type is exported for callers who want to name the settings.
+  
+  **Plural abbreviations.** The alias table accepted a plural for every full name and for none of the abbreviations, while the README invited readers to combine the two rules. `mills`, `msecs`, `secs`, `mins`, `hrs`, `mons` and `yrs` now resolve like their singulars. Single letters stay singular: `'d'` is a day, `'ds'` is not an alias.
+- 5d02ba7: Let a format render a literal `[` or `]`.
+  
+  Square brackets escape literal text, and there was no way to escape the delimiters themselves: `'[[]'` and `'[]]'` were both refused as unmatched brackets, so neither character could appear in output at all. Inside an escape, `]]` now means a literal `]`, and `[` needs no doubling because it cannot close one:
+  
+  ```ts
+  getString(date, '[[]YYYY[]]]'); // '[2024]'
+  getString(date, '[a]]b]');      // 'a]b'
+  parse('[2024-03-17]', '[[]YYYY-MM-DD[]]]'); // reads it back
+  ```
+  
+  A bracket outside an escape is still refused, so a genuine typo — `'YYYY]'`, `'[unclosed YYYY'` — still fails with `INVALID_FORMAT` rather than rendering something surprising. The escape body's two alternatives cannot match the same character, so the pattern stays linear however many brackets a caller passes.
+- db01289: Read `Z` and `ZZ` offsets, so an offset-bearing string parses to an exact instant.
+  
+  Both tokens rendered and neither parsed, on the grounds that reading an offset would mean modelling a zone. It does not: an offset says exactly how far the wall clock in the input sits from UTC, which is the whole of what is needed to pin the instant. No zone database, no rules, no ambiguity.
+  
+  ```ts
+  parse('2024-03-17T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZ'); // 2024-03-17T04:00:00Z
+  parse('2024-03-17T12:00:00+0800', 'YYYY-MM-DDTHH:mm:ssZZ'); // the same instant
+  isValid('2024-03-17T12:00:00+05:45', 'YYYY-MM-DDTHH:mm:ssZ'); // true
+  
+  const stamp = 'YYYY-MM-DD HH:mm:ss.SSS Z';
+  parse(getString(date, stamp), stamp).getTime() === date.getTime(); // true, in any host zone
+  ```
+  
+  With an offset in the format, the wall-clock fields belong to that offset: the date is built in UTC and shifted, and `parse`'s round-trip check — the one that rejects 31 February and a weekday that disagrees — runs in the parsed offset rather than the host zone. The returned value is still a plain `Date`, so reading it back gives the host zone's wall clock; what is exact is the instant, not the text.
+  
+  Each token matches only the shape it renders, `±HH:MM` for `Z` and `±HHMM` for `ZZ`. ISO-8601's bare `Z` designator is neither and is refused; a string already in ISO form can be handed to any function as it is, since `Date` parses it.
+  
+  Every token in the table now has a pattern, which made the "can be formatted but not parsed" branch in `buildMatcher` unreachable, along with the undefined-pattern check in `digitWidth` and the mutation-testing suppression that came with it. All three are gone.
+- 8f86a5d: Make the 1.x `timeLook` names share one timeline across both entry points.
+  
+  `timeLookStart`, `timeLook` and `timeLookReport` are documented in three places as driving one shared profiler instance, but the package ships `timesolver` and `timesolver/profiler` as independent bundles — each with its own copy of the profiler module, in ESM and in CommonJS alike. The instance was module-level, so it was one timeline per copy: starting a run through the root export and marking through the subpath threw `INVALID_ARGUMENT: Call start() before mark()`.
+  
+  The compatibility timeline now lives under a well-known symbol, so every copy resolves to the same object, across the subpath boundary and across the ESM/CommonJS one. It is created on first use, so importing the library still writes nothing to `globalThis` and a bundler can drop all of it for anyone who does not call the 1.x names. `createProfiler` is untouched and still returns an isolated timeline.
+  
+  `scripts/smoke.mjs` now proves this against the built bundles: it holds both ESM entry points at once, confirms they really are separate module copies, starts a run through one and marks through the other. Verified to fail before this change and pass after.
+
+### Patch Changes
+
+- e21ba0e: Tokenize a format once instead of on every call.
+  
+  `getString`, `parse` and `isValid` re-derived everything from the format string each time they were called: the same string was uppercased to check it against the 1.x names, scanned for tokens, checked for stray brackets and for an ambiguous adjacency, and — for `parse` and `isValid` — compiled into a fresh `RegExp`. Measured over 300,000 iterations of `'YYYY-MM-DD HH:mm:ss'`, that was around 40% of every call.
+  
+  A format now compiles once and is kept, up to 64 distinct formats, which covers any application that writes its formats as literals; past that the cache is cleared rather than evicting one entry, because a cache this small has nothing to gain from tracking use order. The matcher is built on the first `parse` of a format, so a format that is only ever rendered never compiles one.
+  
+  Same machine, same process, before and after:
+  
+  | call | before | after | |
+  |---|---|---|---|
+  | `getString(date, 'YYYY-MM-DD HH:mm:ss')` | 0.957 µs | 0.237 µs | 4.0x |
+  | `parse('2024-03-17 13:45:07', …)` | 2.044 µs | 0.591 µs | 3.5x |
+  | `isValid('2024-03-17', 'YYYY-MM-DD')` | 1.175 µs | 0.419 µs | 2.8x |
+  
+  Nothing observable changes: the same formats produce the same results and the same errors, and a malformed format is not cached, so it fails identically every time.
+- 865d3a8: Stop publishing the browser bundle's source map.
+  
+  `dist/timesolver.global.js.map` was 102 kB describing a 17.6 kB minified bundle — a fifth of everything an install downloaded, and unpkg and jsdelivr served it next to the script tag it belongs to. The ESM and CommonJS builds keep their maps, because those are the files a bundler consumer steps into; nobody debugs a minified browser global against the TypeScript sources.
+  
+  The published tarball goes from 130.8 kB packed and 510.5 kB unpacked to 112.7 kB and 440.2 kB, with no change to any bundle a consumer runs.
+
 ## 2.1.1
 
 ### Patch Changes
