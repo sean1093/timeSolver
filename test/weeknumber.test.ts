@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { TimeSolverError } from '../src/errors.js';
 import { getISOWeek, getISOWeekYear, getWeekOfYear } from '../src/weeknumber.js';
 
 /**
@@ -120,5 +121,61 @@ describe('getWeekOfYear', () => {
     expect(() => getWeekOfYear('2024-01-01T12:00', { weekStartsOn: 9 as 0 })).toThrowError(
       /weekStartsOn must be an integer/,
     );
+  });
+});
+
+/** Local noon on a date, for years the `Date` constructor would misread. */
+function localNoon(year: number, month: number, day: number): Date {
+  const date = new Date(2000, 0, 1, 12);
+
+  date.setFullYear(year, month - 1, day);
+
+  return date;
+}
+
+describe('week numbers outside the ordinary year range', () => {
+  it('handles years below 100 without mapping them into the 1900s', () => {
+    // `new Date(50, 0, 4)` would have meant 1950, which put the anchor 1900
+    // years away: getISOWeek reported -99136. 4 January is in ISO week 1 by
+    // definition, and 1 January 0050 was a Saturday, so the calendar week
+    // containing it is week 1 and 4 January falls in week 2.
+    expect(getISOWeek(localNoon(50, 1, 4))).toBe(1);
+    expect(getISOWeekYear(localNoon(50, 1, 4))).toBe(50);
+    expect(getWeekOfYear(localNoon(50, 1, 4))).toBe(2);
+  });
+
+  it('numbers a mid-year date in a two-digit year', () => {
+    expect(getISOWeek(localNoon(99, 6, 15))).toBe(25);
+    expect(getWeekOfYear(localNoon(99, 6, 15))).toBe(25);
+  });
+
+  it('treats year 100 the same way', () => {
+    expect(getISOWeek(localNoon(100, 1, 4))).toBe(1);
+    expect(getISOWeek(localNoon(1000, 1, 4))).toBe(1);
+  });
+
+  it('numbers the last representable instant', () => {
+    expect(getISOWeek(new Date(8.64e15))).toBe(37);
+    expect(getWeekOfYear(new Date(8.64e15))).toBe(37);
+  });
+
+  it('refuses the first year of the range by naming the anchor it needs', () => {
+    // The input is readable; 4 January -271821 is not, and it is what week
+    // numbering counts from. Reporting the input as unreadable, which is what
+    // the generic INVALID_DATE said, sent callers looking in the wrong place.
+    for (const [label, run] of [
+      ['getISOWeek', () => getISOWeek(new Date(-8.64e15))],
+      ['getWeekOfYear', () => getWeekOfYear(new Date(-8.64e15))],
+    ] as const) {
+      try {
+        run();
+        expect.unreachable(`${label} should have thrown`);
+      } catch (error) {
+        expect((error as TimeSolverError).code).toBe('INVALID_ARGUMENT');
+        expect((error as TimeSolverError).message).toMatch(
+          /January -271821, which leaves the range a Date can represent/,
+        );
+      }
+    }
   });
 });

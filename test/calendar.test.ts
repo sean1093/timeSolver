@@ -147,6 +147,23 @@ describe('daysInMonth', () => {
     expect(daysInMonth(48, 2)).toBe(29);
   });
 
+  it('answers for years outside the range a Date can represent', () => {
+    // The last day of February 275761 has no `Date`, but the length of the
+    // month is a calendar fact rather than a Date question. The probe this
+    // replaced returned NaN, which flowed into arithmetic and rendered as
+    // 'NaN' -- the failure mode v2 exists to remove.
+    expect(daysInMonth(275_761, 2)).toBe(28);
+    expect(daysInMonth(275_760, 9)).toBe(30);
+    expect(daysInMonth(-271_822, 1)).toBe(31);
+    expect(daysInMonth(1e21, 4)).toBe(30);
+  });
+
+  it('reports every month of a year', () => {
+    expect(Array.from({ length: 12 }, (_, index) => daysInMonth(2023, index + 1))).toStrictEqual([
+      31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    ]);
+  });
+
   it.each([0, 13, 1.5])('rejects month %s', (month) => {
     expect(() => daysInMonth(2024, month)).toThrowError(/month must be an integer from 1 to 12/);
   });

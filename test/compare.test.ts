@@ -200,3 +200,26 @@ describe('afterToday and beforeToday', () => {
     expect(beforeToday(now)).toBe(false);
   });
 });
+
+describe('between across the whole representable range', () => {
+  const MAX_TIME = 8.64e15;
+  const first = new Date(-MAX_TIME);
+  const last = new Date(MAX_TIME);
+
+  it.each(['month', 'quarter', 'year'])('measures the full span in %ss', (unit) => {
+    // The anchor carries the start's day of month, so it overshot the range
+    // even though both endpoints are inside it, and the whole call threw
+    // INVALID_ARGUMENT about a shift the caller never asked for.
+    const forward = between(first, last, unit);
+
+    expect(Number.isFinite(forward)).toBe(true);
+    expect(forward).toBeGreaterThan(0);
+    expect(between(last, first, unit)).toBe(-forward);
+  });
+
+  it('keeps the whole-month count of the full span', () => {
+    // 547,581 years and five months, give or take the fraction.
+    expect(between(first, last, 'month')).toBeGreaterThan(6_570_976);
+    expect(between(first, last, 'month')).toBeLessThan(6_570_978);
+  });
+});

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { TimeSolverError } from '../src/errors.js';
 import { getString } from '../src/format.js';
 import { add, endOf, startOf, subtract } from '../src/manipulate.js';
+import { UNITS } from '../src/units.js';
 
 const STAMP = 'YYYY-MM-DD HH:mm:ss.SSS';
 
@@ -134,6 +135,33 @@ describe('add range limits', () => {
     // the result shifts by an hour in a zone that observes daylight saving.
     expect(Number.isNaN(add(new Date(0), 99_999_999, 'day').getTime())).toBe(false);
     expect(Number.isNaN(add(new Date(0), -99_999_999, 'day').getTime())).toBe(false);
+  });
+});
+
+describe('the edges of the representable range', () => {
+  /** The last instant a `Date` can hold, 100,000,000 days after the epoch. */
+  const MAX_TIME = 8.64e15;
+
+  it('shifts months from the first representable instant', () => {
+    // Reaching the target month through `setDate(1)` first made this
+    // unanswerable: 1 April -271821 is already before the range begins.
+    const shifted = add(new Date(-MAX_TIME), 1, 'month');
+
+    expect(shifted.getTime()).toBeGreaterThan(-MAX_TIME);
+    expect(Number.isNaN(shifted.getTime())).toBe(false);
+  });
+
+  it.each(UNITS)('ends the last representable %s at the end of the range', (unit) => {
+    // A unit at the top of the range has no next unit to step back from. Asking
+    // for one threw INVALID_ARGUMENT about a shift the caller never requested;
+    // the unit ends where Date does, which is what endOf documents.
+    expect(endOf(new Date(MAX_TIME), unit).getTime()).toBe(MAX_TIME);
+  });
+
+  it('still ends an ordinary unit one millisecond before the next', () => {
+    expect(endOf('2024-02-10T12:00', 'month').getTime()).toBe(
+      startOf('2024-03-01T12:00', 'month').getTime() - 1,
+    );
   });
 });
 

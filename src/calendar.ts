@@ -152,12 +152,26 @@ export function isLeapYear(year: number): boolean {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
+// Stryker disable next-line BooleanLiteral: only key presence is read, through
+// Object.hasOwn, so the values cannot be observed by any test.
+/** Months with 30 days. */
+const SHORT_MONTHS: Record<number, true> = { 4: true, 6: true, 9: true, 11: true };
+
+const FEBRUARY = 2;
+
 /**
  * Number of days in a month.
  *
+ * Arithmetic, not a `Date` probe: the length of a month is a calendar fact, so
+ * it is the same answer for a year outside the range a `Date` can represent.
+ * The probe this replaced returned `NaN` there, and `add` clamped with it, so a
+ * shift into the last month of the range produced an Invalid Date by a longer
+ * route.
+ *
  * @param year - A full year number.
  * @param month - Month number, 1 through 12.
- * @throws {TimeSolverError} `INVALID_ARGUMENT` for a non-integer year or an out-of-range month.
+ * @throws {TimeSolverError} `INVALID_ARGUMENT` for a non-integer year or an
+ *   out-of-range month.
  */
 export function daysInMonth(year: number, month: number): number {
   if (!Number.isInteger(year)) {
@@ -170,10 +184,9 @@ export function daysInMonth(year: number, month: number): number {
     );
   }
 
-  // Day 0 of the following month is the last day of this one. setUTCFullYear
-  // avoids the Date constructor's mapping of years 0-99 into the 1900s.
-  const probe = new Date(0);
-  probe.setUTCFullYear(year, month, 0);
+  if (month === FEBRUARY) {
+    return isLeapYear(year) ? 29 : 28;
+  }
 
-  return probe.getUTCDate();
+  return Object.hasOwn(SHORT_MONTHS, month) ? 30 : 31;
 }

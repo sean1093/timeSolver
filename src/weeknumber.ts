@@ -1,4 +1,5 @@
 import { type DateInput, toDate } from './coerce.js';
+import { TimeSolverError } from './errors.js';
 import { startOf } from './manipulate.js';
 import { MS_PER_DAY } from './units.js';
 import { DAYS_PER_WEEK, daysSinceWeekStart, resolveWeekStart, type WeekOptions } from './week.js';
@@ -12,6 +13,35 @@ const ISO_ANCHOR_DAY = 4;
 /** Whole days between two local midnights, rounded so a DST shift cannot bias it. */
 function wholeDaysBetween(from: Date, to: Date): number {
   return Math.round((to.getTime() - from.getTime()) / MS_PER_DAY);
+}
+
+/**
+ * A day in January of a year, as the local start of that day.
+ *
+ * Both counts below are measured from a January anchor, and both need it built
+ * without the `Date` constructor's mapping of years 0-99 into the 1900s --
+ * `new Date(50, 0, 4)` is 1950, which made `getISOWeek` of 4 January 0050
+ * report -99136 instead of 1. `daysInMonth` and `parse` avoid the same trap the
+ * same way, by setting the year on an anchor that is already safely in range.
+ *
+ * @throws {TimeSolverError} `INVALID_ARGUMENT` when that January day is outside
+ *   the range a `Date` can represent, which is true for the first year of it.
+ *   The input is readable; it is this anchor that cannot exist, and saying so is
+ *   more use than reporting the input as unreadable.
+ */
+function januaryDay(year: number, day: number): Date {
+  const anchor = new Date(2000, 0, 1);
+
+  anchor.setFullYear(year, 0, day);
+
+  if (Number.isNaN(anchor.getTime())) {
+    throw new TimeSolverError(
+      'INVALID_ARGUMENT',
+      `Numbering the week needs ${day} January ${year}, which leaves the range a Date can represent.`,
+    );
+  }
+
+  return startOf(anchor, 'day');
 }
 
 /**
@@ -49,6 +79,10 @@ export function getISOWeekYear(date: DateInput): number {
  * Weeks start on Monday and week 1 is the week containing 4 January. Use
  * {@link getISOWeekYear} for the matching year.
  *
+ * @throws {TimeSolverError} `INVALID_ARGUMENT` when 4 January of the date's ISO
+ *   year is outside the range a `Date` can represent, which is only true within
+ *   a year of the minimum.
+ *
  * @example
  * getISOWeek('2024-01-01T12:00'); // 1
  * getISOWeek('2024-12-30T12:00'); // 1, of ISO year 2025
@@ -56,7 +90,7 @@ export function getISOWeekYear(date: DateInput): number {
  */
 export function getISOWeek(date: DateInput): number {
   const thursday = isoThursday(toDate(date));
-  const anchor = isoThursday(new Date(thursday.getFullYear(), 0, ISO_ANCHOR_DAY));
+  const anchor = isoThursday(januaryDay(thursday.getFullYear(), ISO_ANCHOR_DAY));
 
   return 1 + wholeDaysBetween(anchor, thursday) / DAYS_PER_WEEK;
 }
@@ -71,6 +105,9 @@ export function getISOWeek(date: DateInput): number {
  * is what `2024-W01` means, use {@link getISOWeek}.
  *
  * @param options - `weekStartsOn` moves the week boundary, defaulting to Sunday.
+ * @throws {TimeSolverError} `INVALID_ARGUMENT` when 1 January of the date's
+ *   calendar year is outside the range a `Date` can represent, which is only
+ *   true within a year of the minimum.
  *
  * @example
  * getWeekOfYear('2024-01-01T12:00');                      // 1
@@ -80,7 +117,7 @@ export function getISOWeek(date: DateInput): number {
 export function getWeekOfYear(date: DateInput, options?: WeekOptions): number {
   const weekStartsOn = resolveWeekStart(options);
   const target = startOf(date, 'day');
-  const januaryFirst = startOf(new Date(target.getFullYear(), 0, 1), 'day');
+  const januaryFirst = januaryDay(target.getFullYear(), 1);
   const daysIntoYear = wholeDaysBetween(januaryFirst, target);
   const offsetOfJanuaryFirst = daysSinceWeekStart(januaryFirst, weekStartsOn);
 

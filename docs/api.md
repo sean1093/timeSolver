@@ -471,6 +471,10 @@ getWeekOfYear('2024-01-07T12:00', { weekStartsOn: 1 }); // 1
 getWeekOfYear('2024-12-31T12:00');                      // 53
 ```
 
+Both count from a January anchor, so both throw `INVALID_ARGUMENT` within a
+year of the minimum a `Date` can represent, where 1 and 4 January -271821 do
+not exist. Every other year, including years 0-99, is answered normally.
+
 There are deliberately no `W` format tokens. A week number cannot be parsed back
 into a date on its own, and a token pair that renders `YYYY` next to a week
 number would be wrong at the year boundary — the composition above is explicit

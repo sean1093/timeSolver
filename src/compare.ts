@@ -1,5 +1,5 @@
 import { type DateInput, toDate } from './coerce.js';
-import { add, startOf } from './manipulate.js';
+import { shiftMonths, startOf } from './manipulate.js';
 import {
   MONTHS_PER_UNIT,
   MS_PER_DAY,
@@ -40,6 +40,26 @@ function daysBetween(from: Date, to: Date): number {
 }
 
 /**
+ * Length of the calendar month the remainder falls in, taken as the distance
+ * between the anchor and its neighbour on the side the target overshoots.
+ * Measured with real dates rather than a constant, so a daylight-saving shift
+ * inside the month is part of the length.
+ */
+function monthSpan(start: Date, wholeMonths: number, step: number, anchorTime: number): number {
+  const neighbour = shiftMonths(start, wholeMonths + step).getTime();
+  // Within a month of the extremes of the representable range the neighbour on
+  // the overshoot side does not exist. The month on the other side of the
+  // anchor is the same kind of quantity, and one of the two always exists --
+  // they straddle an anchor that is itself representable -- so the remainder is
+  // scaled by that rather than the question being refused.
+  const usable = Number.isNaN(neighbour)
+    ? shiftMonths(start, wholeMonths - step).getTime()
+    : neighbour;
+
+  return Math.abs(usable - anchorTime);
+}
+
+/**
  * Calendar months between two dates, with the fractional part scaled by the
  * length of the month the remainder falls in. January 1 to February 1 is
  * exactly 1, where v1's average-month constant reported 1.0184804928131417.
@@ -53,10 +73,18 @@ function monthsBetween(from: Date, to: Date): number {
   const reversed = to.getTime() < from.getTime();
   const start = reversed ? to : from;
   const end = reversed ? from : to;
-  const wholeMonths =
+  const calendarMonths =
     (end.getFullYear() - start.getFullYear()) * MONTHS_PER_UNIT.year +
     (end.getMonth() - start.getMonth());
-  const anchorTime = add(start, wholeMonths, 'month').getTime();
+  const shifted = shiftMonths(start, calendarMonths).getTime();
+  // The anchor carries `start`'s day of month, so it can overshoot the range a
+  // `Date` can represent even when `end` does not -- 19 April -271821 plus
+  // 6,570,977 months is 19 September 275760, eight days past the last instant
+  // there is. One month back is then the nearest anchor that exists, and the
+  // remainder below grows to cover the difference.
+  const overshoots = Number.isNaN(shifted);
+  const wholeMonths = overshoots ? calendarMonths - 1 : calendarMonths;
+  const anchorTime = overshoots ? shiftMonths(start, wholeMonths).getTime() : shifted;
   const endTime = end.getTime();
 
   // One formula covers every case. The neighbouring anchor is the next month
@@ -68,8 +96,8 @@ function monthsBetween(from: Date, to: Date): number {
   // Stryker disable next-line EqualityOperator: at equality the numerator is
   // zero, so either neighbour gives the same answer. Unkillable by construction.
   const step = endTime > anchorTime ? 1 : -1;
-  const neighbourTime = add(start, wholeMonths + step, 'month').getTime();
-  const months = wholeMonths + (endTime - anchorTime) / Math.abs(neighbourTime - anchorTime);
+  const months =
+    wholeMonths + (endTime - anchorTime) / monthSpan(start, wholeMonths, step, anchorTime);
 
   return reversed ? -months : months;
 }
