@@ -2,12 +2,11 @@ import { type DateInput, toDate } from './coerce.js';
 import { TimeSolverError } from './errors.js';
 import {
   buildMatcher,
+  compileFormat,
   fieldsOf,
   formatToken,
-  normalizeFormat,
   type ParseDraft,
   readToken,
-  tokenize,
 } from './tokens.js';
 
 const HOURS_PER_HALF_DAY = 12;
@@ -56,8 +55,12 @@ export function parse(input: string, format: string): Date {
     );
   }
 
-  const parts = tokenize(normalizeFormat(format));
-  const { matcher, tokens } = buildMatcher(parts);
+  const compiled = compileFormat(format);
+  // Built on the first parse of this format and kept with it: `getString` never
+  // needs a matcher, so a format that is only rendered never compiles one.
+  compiled.matcher ??= buildMatcher(compiled.parts);
+
+  const { matcher, tokens } = compiled.matcher;
   const match = matcher.exec(input);
 
   if (match === null) {
