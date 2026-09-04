@@ -145,24 +145,33 @@ describe('getString composition', () => {
     ['YYYY-M-DHH', 'D', 'HH'],
     ['sQ', 's', 'Q'],
     ['H:m:sSSS', 's', 'SSS'],
-  ])('rejects the ambiguous format %s, where %s runs into %s', (format) => {
+  ])('rejects the ambiguous format %s, where %s runs into %s', (format, first, second) => {
     // Rendering 12 January 2024 with 'YYYYMD' emits '2024112', which reads
     // equally well as month 11 day 2, so the format is refused outright rather
-    // than producing output the same grammar cannot read back.
-    expect(() => getString(SAMPLE, format)).toThrowError(/is ambiguous/);
+    // than producing output the same grammar cannot read back. The message has
+    // to name both sides: "is ambiguous" alone would not tell a caller which
+    // pair to separate.
+    expect(() => getString(SAMPLE, format)).toThrowError(
+      new RegExp(`"${first}" matches one or two digits and runs straight into "${second}"`),
+    );
   });
 
   it.each([
     ['M0M', 'M', '0'],
-    ['D0', 'D', '0'],
+    ['D01', 'D', '0'],
     ['H:m:s9', 's', '9'],
     ['M[0]D', 'M', '0'],
-  ])('rejects %s, where %s runs into the digit literal %s', (format) => {
+  ])('rejects %s, where %s runs into the digit literal %s', (format, token, digit) => {
     // `'M0M'` compiles to `^(\d{1,2})0(\d{1,2})$`: every group has two viable
     // widths at every position, so a run of digits that does not match costs
     // exponential time. A digit is a digit whether it arrives as a token or as
-    // literal text.
-    expect(() => getString(SAMPLE, format)).toThrowError(/is ambiguous/);
+    // literal text, and the message names the one that collided -- the first
+    // character of the literal, not the whole of it.
+    expect(() => getString(SAMPLE, format)).toThrowError(
+      new RegExp(
+        `"${token}" matches one or two digits and runs straight into the digit "${digit}"`,
+      ),
+    );
   });
 
   it.each([

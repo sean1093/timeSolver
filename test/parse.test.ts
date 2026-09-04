@@ -131,6 +131,33 @@ describe('parse', () => {
   });
 
   it.each([
+    ['2024-03-31', 1, 'March'],
+    ['2024-06-30', 2, 'June'],
+    ['2024-09-30', 3, 'September'],
+    ['2024-12-31', 4, 'December'],
+  ])('derives the quarter of %s under an offset as %i', (date, quarter, month) => {
+    // The last month of each quarter is where an off-by-one in the quarter
+    // arithmetic shows: for March, one too many rounds up to Q2.
+    const format = 'YYYY-MM-DD [Q]Q MMMM Z';
+
+    expect(isValid(`${date} Q${quarter} ${month} +08:00`, format)).toBe(true);
+    expect(isValid(`${date} Q${(quarter % 4) + 1} ${month} +08:00`, format)).toBe(false);
+  });
+
+  it('derives the quarter and the month name from the offset, not the host zone', () => {
+    // Every field the round trip checks has to be read in the parsed offset.
+    // A date near midnight is the case that separates the two: 2024-07-01
+    // 00:30 at +08:00 is still 2024-06-30 in a zone behind UTC, so a quarter or
+    // a month name read from the host clock would disagree with the input.
+    expect(isValid('2024-07-01 00:30 Q3 July +08:00', 'YYYY-MM-DD HH:mm [Q]Q MMMM Z')).toBe(true);
+    expect(isValid('2024-07-01 00:30 Q2 July +08:00', 'YYYY-MM-DD HH:mm [Q]Q MMMM Z')).toBe(false);
+    expect(isValid('2024-07-01 00:30 Q3 June +08:00', 'YYYY-MM-DD HH:mm [Q]Q MMMM Z')).toBe(false);
+    expect(
+      parse('2024-07-01 00:30 Q3 July +08:00', 'YYYY-MM-DD HH:mm [Q]Q MMMM Z').toISOString(),
+    ).toBe('2024-06-30T16:30:00.000Z');
+  });
+
+  it.each([
     ['2024-03-17T12:00:00+8:00', 'YYYY-MM-DDTHH:mm:ssZ', 'an unpadded offset hour'],
     ['2024-03-17T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZZ', 'a colon where ZZ expects none'],
     ['2024-03-17T12:00:00+0800', 'YYYY-MM-DDTHH:mm:ssZ', 'no colon where Z expects one'],

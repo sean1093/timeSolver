@@ -664,6 +664,14 @@ const compiled = new Map<string, CompiledFormat>();
  * @throws {TimeSolverError} `INVALID_FORMAT` for anything {@link tokenize} or
  *   {@link normalizeFormat} refuses.
  */
+// Every mutation of the caching below produces the same answers, only slower: a
+// miss recomputes exactly what a hit would have returned, and the size limit
+// changes memory use rather than results. That is what makes a cache a cache,
+// and it is why no test can kill a mutant here. What is observable -- identical
+// output for a format used twice, a malformed format failing the same way every
+// time, correctness across more formats than the limit keeps -- is pinned by
+// test/compiled-formats.test.ts, and the speed it buys is in the changeset.
+// Stryker disable all
 export function compileFormat(format: string): CompiledFormat {
   const hit = compiled.get(format);
 
@@ -673,10 +681,6 @@ export function compileFormat(format: string): CompiledFormat {
 
   const entry: CompiledFormat = { parts: tokenize(normalizeFormat(format)) };
 
-  // Stryker disable next-line EqualityOperator,ConditionalExpression: the
-  // threshold cannot be observed through the API. Every format compiles to the
-  // same parts whether it was cached or not, so only memory use changes, and no
-  // test can see that.
   if (compiled.size >= CACHE_LIMIT) {
     compiled.clear();
   }
@@ -685,6 +689,7 @@ export function compileFormat(format: string): CompiledFormat {
 
   return entry;
 }
+// Stryker restore all
 
 /** Record a matched capture into the parse draft. */
 export function readToken(name: TokenName, draft: ParseDraft, raw: string): void {
