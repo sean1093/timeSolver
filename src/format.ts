@@ -1,5 +1,5 @@
 import { type DateInput, toDate } from './coerce.js';
-import { fieldsOf, formatToken, normalizeFormat, tokenize } from './tokens.js';
+import { compileFormat, fieldsOf, formatToken } from './tokens.js';
 
 /** Format used when `getString` is called without one, as in v1. */
 export const DEFAULT_FORMAT = 'YYYYMMDD';
@@ -23,7 +23,7 @@ export const DEFAULT_FORMAT = 'YYYYMMDD';
  */
 export function getString(date: DateInput, format: string = DEFAULT_FORMAT): string {
   const fields = fieldsOf(toDate(date));
-  const parts = tokenize(normalizeFormat(format));
+  const { parts } = compileFormat(format);
   let output = '';
 
   for (const part of parts) {

@@ -3,10 +3,11 @@
  * the only one in this suite that is plausibly on a hot path (table rendering,
  * log lines, CSV export).
  *
- * All three libraries re-read the format string on every call; none of them
- * caches a compiled formatter, so the token count is part of what is measured.
- * The extra dayjs case reuses a wrapper built once, which isolates the cost of
- * `dayjs(date)` from the cost of `.format()`.
+ * timeSolver tokenizes a format once and keeps it, so what is measured here is
+ * rendering, not parsing the format string; dayjs and date-fns re-read theirs on
+ * every call, which is part of their number. The extra dayjs case reuses a
+ * wrapper built once, which isolates the cost of `dayjs(date)` from the cost of
+ * `.format()`.
  */
 
 import { format } from 'date-fns';
