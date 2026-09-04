@@ -38,6 +38,34 @@ export function fieldsOf(date: Date): DateFields {
   };
 }
 
+/**
+ * Read the components of a date as they read at a fixed offset east of UTC,
+ * rather than in the host zone.
+ *
+ * `parse` needs this to check its round trip on input that carried an offset:
+ * the instant is exact, but its wall clock belongs to that offset, and
+ * re-rendering it in the host zone would compare the wrong numbers. Shifting by
+ * the offset and reading UTC components is the same arithmetic every zone
+ * implementation performs, with no zone database involved.
+ */
+export function fieldsAtOffset(date: Date, offsetMinutes: number): DateFields {
+  const shifted = new Date(date.getTime() + offsetMinutes * MS_PER_MINUTE);
+  const month = shifted.getUTCMonth() + 1;
+
+  return {
+    year: shifted.getUTCFullYear(),
+    month,
+    day: shifted.getUTCDate(),
+    hour: shifted.getUTCHours(),
+    minute: shifted.getUTCMinutes(),
+    second: shifted.getUTCSeconds(),
+    millisecond: shifted.getUTCMilliseconds(),
+    weekday: shifted.getUTCDay(),
+    quarter: Math.floor((month - 1) / MONTHS_PER_UNIT.quarter) + 1,
+    offsetMinutes,
+  };
+}
+
 /** Components recovered while parsing, before a `Date` is constructed. */
 export interface ParseDraft {
   year?: number;
@@ -51,17 +79,28 @@ export interface ParseDraft {
   minute?: number;
   second?: number;
   millisecond?: number;
+  /**
+   * Minutes east of UTC, from a `Z` or `ZZ` token. Present only when the format
+   * carried one, and it changes what the other fields mean: they describe a
+   * wall clock in that offset rather than in the host zone.
+   */
+  offsetMinutes?: number;
 }
 
 interface TokenSpec {
   /** Render this token from a date's fields. */
   readonly format: (fields: DateFields) => string;
   /**
-   * Regular-expression source matching exactly what `format` can emit. Omitted
-   * for tokens that render but cannot be parsed back.
+   * Regular-expression source matching exactly what `format` can emit. Every
+   * token has one: that equivalence is what makes a rendered string parseable
+   * by the same format that produced it.
    */
-  readonly pattern?: string;
-  /** Record the matched text into the draft. */
+  readonly pattern: string;
+  /**
+   * Record the matched text into the draft. Omitted for the tokens that carry
+   * no value of their own -- a weekday name and a quarter are derived from the
+   * date, and the round trip in `parse` rejects one that disagrees.
+   */
   readonly read?: (draft: ParseDraft, raw: string) => void;
 }
 
@@ -78,12 +117,8 @@ const DIGIT_PATTERN = /^(?:\\d\{\d+(?:,\d+)?\}|\[\d-\d\])$/;
  * format ambiguous: `'YYYYMD'` renders 12 January 2024 as `'2024112'`, which
  * reads equally well as month 11 day 2. `tokenize` rejects those formats.
  */
-function digitWidth(pattern: string | undefined): 'none' | 'fixed' | 'variable' {
-  // Stryker disable next-line ConditionalExpression: reported as surviving, but
-  // applying the mutation by hand fails two tests with "Cannot read properties
-  // of undefined" -- the format-only tokens have no pattern. Stryker's Vitest
-  // runner does not attribute that failure back to the mutant.
-  if (pattern === undefined || !DIGIT_PATTERN.test(pattern)) {
+function digitWidth(pattern: string): 'none' | 'fixed' | 'variable' {
+  if (!DIGIT_PATTERN.test(pattern)) {
     return 'none';
   }
 
@@ -99,6 +134,7 @@ const HOURS_PER_HALF_DAY = 12;
 /** Two-digit years below this map to 2000+, the rest to 1900+, as POSIX does. */
 const TWO_DIGIT_YEAR_PIVOT = 69;
 const MINUTES_PER_HOUR = 60;
+const MS_PER_MINUTE = 60_000;
 
 function pad(value: number, width: number): string {
   // Years before 1 CE are negative. Padding the raw string would produce
@@ -115,6 +151,21 @@ function offset(fields: DateFields, separator: string): string {
   const sign = fields.offsetMinutes < 0 ? '-' : '+';
 
   return `${sign}${pad(Math.floor(total / MINUTES_PER_HOUR), PAIR)}${separator}${pad(total % MINUTES_PER_HOUR, PAIR)}`;
+}
+
+/**
+ * Minutes east of UTC from a rendered offset, in either shape `offset` emits:
+ * `+08:00` from `Z` and `+0800` from `ZZ`.
+ *
+ * The sign is read on its own rather than through `Number`, so `-00:30` is
+ * −30 and not +30 -- the half-hour offsets west of UTC would otherwise land on
+ * the wrong side.
+ */
+function readOffset(raw: string): number {
+  const sign = raw.startsWith('-') ? -1 : 1;
+  const digits = raw.slice(1).replace(':', '');
+
+  return sign * (Number(digits.slice(0, PAIR)) * MINUTES_PER_HOUR + Number(digits.slice(PAIR)));
 }
 
 // Stryker disable ArithmeticOperator: reported as surviving, but applying either
@@ -288,13 +339,24 @@ const TOKENS = {
     format: (fields) => String(fields.quarter),
     pattern: '[1-4]',
   },
-  // Offsets describe the host zone, so parsing one would have to shift the
-  // instant into a zone this library does not model. Format-only by design.
+  // An offset is not a zone: it says exactly how far the wall clock in the
+  // input sits from UTC, which is all that is needed to pin the instant. No
+  // zone database, no rules, no ambiguity -- so these are read as well as
+  // rendered. The offset is applied when the date is built, and `parse` checks
+  // its round trip in that offset rather than in the host zone.
   ZZ: {
     format: (fields) => offset(fields, ''),
+    pattern: '[+-]\\d{4}',
+    read: (draft, raw) => {
+      draft.offsetMinutes = readOffset(raw);
+    },
   },
   Z: {
     format: (fields) => offset(fields, ':'),
+    pattern: '[+-]\\d{2}:\\d{2}',
+    read: (draft, raw) => {
+      draft.offsetMinutes = readOffset(raw);
+    },
   },
 } as const satisfies Record<string, TokenSpec>;
 
@@ -548,13 +610,6 @@ export function buildMatcher(parts: readonly FormatPart[]): {
     }
 
     const spec: TokenSpec = TOKENS[part.name];
-
-    if (spec.pattern === undefined) {
-      throw new TimeSolverError(
-        'INVALID_FORMAT',
-        `Token "${part.name}" can be formatted but not parsed, because this library does not model time zones other than the host zone.`,
-      );
-    }
 
     source += `(${spec.pattern})`;
     tokens.push(part.name);

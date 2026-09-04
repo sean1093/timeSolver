@@ -260,6 +260,25 @@ for (const day of [days[0], days[120], days[250], days[365]]) {
     getString(day, 'ZZ') === sign + hours + rest,
     getString(day, 'ZZ') + ' for ' + minutes + ' minutes',
   );
+
+  // An offset pins the instant, whatever the host zone is: rendering one and
+  // reading it back has to land on the same millisecond in Kathmandu (+05:45)
+  // and Chatham (+12:45) as in UTC.
+  const stamp = 'YYYY-MM-DD HH:mm:ss.SSS Z';
+  const compact = 'YYYY-MM-DDTHH:mm:ss.SSSZZ';
+
+  check(
+    'Z round-trips the instant',
+    parse(getString(day, stamp), stamp).getTime() === day.getTime(),
+    getString(day, stamp) + ' read back as ' + parse(getString(day, stamp), stamp).toISOString(),
+  );
+  check(
+    'ZZ round-trips the instant',
+    parse(getString(day, compact), compact).getTime() === day.getTime(),
+    getString(day, compact) +
+      ' read back as ' +
+      parse(getString(day, compact), compact).toISOString(),
+  );
 }
 
 if (failures.length > 0) {
