@@ -93,7 +93,13 @@ export const FNS_PARSE_FORMAT = 'dd/MM/yyyy';
  */
 export const BUDGET = { time: 1000, warmupTime: 250 };
 
-function agree(operation: string, values: readonly unknown[]): void {
+/** One comparable operation and what each library answered for it. */
+export interface Comparison {
+  readonly operation: string;
+  readonly values: readonly unknown[];
+}
+
+function agree(operation: string, values: readonly unknown[]): Comparison {
   const [expected] = values;
 
   for (const value of values) {
@@ -103,77 +109,86 @@ function agree(operation: string, values: readonly unknown[]): void {
       );
     }
   }
+
+  return { operation, values };
 }
 
 /**
- * Proves the three libraries compute the same answer for every comparable
- * operation before any of them is timed.
+ * Runs every comparable operation in all three libraries and returns what each
+ * answered, throwing on the first disagreement.
+ *
+ * Called on import so nothing is ever timed against a library computing
+ * something else, and exported so `test/equivalence.test.ts` can run the same
+ * comparisons on every push -- benchmarks are not a CI gate, and this guard was
+ * the only place the three libraries were ever checked against each other.
  *
  * The two difference benchmarks are compared truncated, because dayjs `diff`
  * and date-fns `differenceIn*` return whole units while timeSolver's `between`
  * returns the signed fractional difference. That is a genuine behavioural
  * difference, not a rounding detail, and `docs/benchmarks.md` says so.
  */
-function assertLibrariesAgree(): void {
-  agree('format YYYY-MM-DD', [
-    getString(DATE, TS_DATE_FORMAT),
-    dayjs(DATE).format(DAYJS_DATE_FORMAT),
-    format(DATE, FNS_DATE_FORMAT),
-  ]);
+export function librariesAgree(): Comparison[] {
+  return [
+    agree('format YYYY-MM-DD', [
+      getString(DATE, TS_DATE_FORMAT),
+      dayjs(DATE).format(DAYJS_DATE_FORMAT),
+      format(DATE, FNS_DATE_FORMAT),
+    ]),
 
-  agree('format YYYY-MM-DD HH:mm:ss.SSS', [
-    getString(DATE, TS_STAMP_FORMAT),
-    dayjs(DATE).format(DAYJS_STAMP_FORMAT),
-    format(DATE, FNS_STAMP_FORMAT),
-  ]);
+    agree('format YYYY-MM-DD HH:mm:ss.SSS', [
+      getString(DATE, TS_STAMP_FORMAT),
+      dayjs(DATE).format(DAYJS_STAMP_FORMAT),
+      format(DATE, FNS_STAMP_FORMAT),
+    ]),
 
-  agree('parse DD/MM/YYYY', [
-    parse(DATE_TEXT, TS_PARSE_FORMAT).getTime(),
-    dayjs(DATE_TEXT, DAYJS_PARSE_FORMAT, true).toDate().getTime(),
-    fnsParse(DATE_TEXT, FNS_PARSE_FORMAT, FNS_REFERENCE).getTime(),
-  ]);
+    agree('parse DD/MM/YYYY', [
+      parse(DATE_TEXT, TS_PARSE_FORMAT).getTime(),
+      dayjs(DATE_TEXT, DAYJS_PARSE_FORMAT, true).toDate().getTime(),
+      fnsParse(DATE_TEXT, FNS_PARSE_FORMAT, FNS_REFERENCE).getTime(),
+    ]),
 
-  agree('isValid accepts a real date', [
-    isValid(DATE_TEXT, TS_PARSE_FORMAT),
-    dayjs(DATE_TEXT, DAYJS_PARSE_FORMAT, true).isValid(),
-    fnsIsValid(fnsParse(DATE_TEXT, FNS_PARSE_FORMAT, FNS_REFERENCE)),
-  ]);
+    agree('isValid accepts a real date', [
+      isValid(DATE_TEXT, TS_PARSE_FORMAT),
+      dayjs(DATE_TEXT, DAYJS_PARSE_FORMAT, true).isValid(),
+      fnsIsValid(fnsParse(DATE_TEXT, FNS_PARSE_FORMAT, FNS_REFERENCE)),
+    ]),
 
-  agree('isValid rejects February 31', [
-    isValid(IMPOSSIBLE_TEXT, TS_PARSE_FORMAT),
-    dayjs(IMPOSSIBLE_TEXT, DAYJS_PARSE_FORMAT, true).isValid(),
-    fnsIsValid(fnsParse(IMPOSSIBLE_TEXT, FNS_PARSE_FORMAT, FNS_REFERENCE)),
-  ]);
+    agree('isValid rejects February 31', [
+      isValid(IMPOSSIBLE_TEXT, TS_PARSE_FORMAT),
+      dayjs(IMPOSSIBLE_TEXT, DAYJS_PARSE_FORMAT, true).isValid(),
+      fnsIsValid(fnsParse(IMPOSSIBLE_TEXT, FNS_PARSE_FORMAT, FNS_REFERENCE)),
+    ]),
 
-  agree('add 1 day', [
-    add(DATE, 1, 'day').getTime(),
-    dayjs(DATE).add(1, 'day').toDate().getTime(),
-    addDays(DATE, 1).getTime(),
-  ]);
+    agree('add 1 day', [
+      add(DATE, 1, 'day').getTime(),
+      dayjs(DATE).add(1, 'day').toDate().getTime(),
+      addDays(DATE, 1).getTime(),
+    ]),
 
-  agree('add 1 month', [
-    add(DATE, 1, 'month').getTime(),
-    dayjs(DATE).add(1, 'month').toDate().getTime(),
-    addMonths(DATE, 1).getTime(),
-  ]);
+    agree('add 1 month', [
+      add(DATE, 1, 'month').getTime(),
+      dayjs(DATE).add(1, 'month').toDate().getTime(),
+      addMonths(DATE, 1).getTime(),
+    ]),
 
-  agree('startOf month', [
-    startOf(DATE, 'month').getTime(),
-    dayjs(DATE).startOf('month').toDate().getTime(),
-    startOfMonth(DATE).getTime(),
-  ]);
+    agree('startOf month', [
+      startOf(DATE, 'month').getTime(),
+      dayjs(DATE).startOf('month').toDate().getTime(),
+      startOfMonth(DATE).getTime(),
+    ]),
 
-  agree('difference in days, truncated', [
-    Math.trunc(between(DATE, LATER, 'day')),
-    dayjs(LATER).diff(dayjs(DATE), 'day'),
-    differenceInDays(LATER, DATE),
-  ]);
+    agree('difference in days, truncated', [
+      Math.trunc(between(DATE, LATER, 'day')),
+      dayjs(LATER).diff(dayjs(DATE), 'day'),
+      differenceInDays(LATER, DATE),
+    ]),
 
-  agree('difference in months, truncated', [
-    Math.trunc(between(DATE, LATER, 'month')),
-    dayjs(LATER).diff(dayjs(DATE), 'month'),
-    differenceInMonths(LATER, DATE),
-  ]);
+    agree('difference in months, truncated', [
+      Math.trunc(between(DATE, LATER, 'month')),
+      dayjs(LATER).diff(dayjs(DATE), 'month'),
+      differenceInMonths(LATER, DATE),
+    ]),
+  ];
 }
 
-assertLibrariesAgree();
+librariesAgree();

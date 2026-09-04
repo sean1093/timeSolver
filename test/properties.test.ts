@@ -329,6 +329,12 @@ describe('formatting and parsing', () => {
     'D MMM YYYY',
     'dddd, D MMMM YYYY',
     'hh:mm A',
+    // Q and the name tokens carry no value of their own: they are checked by
+    // the round trip rather than read back, so a format that combines them with
+    // the components they can be derived from is the case worth generating. A
+    // format carrying Q without a month would not round-trip, and should not:
+    // the quarter cannot be recovered from a year alone.
+    'dddd, MMMM D, YYYY [Q]Q hh:mm A',
   ] as const;
 
   it('every rendered string parses back to the same fields', () => {

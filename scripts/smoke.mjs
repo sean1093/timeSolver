@@ -28,8 +28,53 @@ const require = createRequire(import.meta.url);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 
-/** The exports a consumer is most likely to reach for first. */
-const CORE_EXPORTS = ['add', 'subtract', 'between', 'getString', 'isValid'];
+/**
+ * Every function the package advertises, so a bundling regression in any of
+ * them fails here rather than shipping. `check:api` compares declaration text
+ * and never executes JavaScript; the unit suite runs against `src/`. Before
+ * this list was widened, only eight of these were ever *called* against the
+ * built bundles -- which is exactly how a module-state defect in `timeLook*`
+ * reached a release.
+ */
+const CORE_EXPORTS = [
+  'add',
+  'after',
+  'afterToday',
+  'before',
+  'beforeToday',
+  'between',
+  'clamp',
+  'createProfiler',
+  'daysInMonth',
+  'endOf',
+  'equal',
+  'getAbbrMonth',
+  'getAbbrWeek',
+  'getFirstMonthByQuarter',
+  'getFullMonth',
+  'getFullWeek',
+  'getISOWeek',
+  'getISOWeekYear',
+  'getQuarter',
+  'getQuarterByMonth',
+  'getString',
+  'getWeekOfYear',
+  'isBetween',
+  'isLeapYear',
+  'isValid',
+  'max',
+  'min',
+  'monthAbbreviation',
+  'monthName',
+  'parse',
+  'startOf',
+  'subtract',
+  'timeLook',
+  'timeLookReport',
+  'timeLookStart',
+  'weekdayAbbreviation',
+  'weekdayName',
+];
 
 /** March 17 2024, local time. Formats to a value with no ambiguous digits. */
 const SAMPLE = new Date(2024, 2, 17);
@@ -144,6 +189,79 @@ function assertBehaviour(label, mod) {
     input.getTime() === 0,
     `The input moved to ${input.toISOString()}. v1 mutated its argument; v2 must not.`,
   );
+
+  // One call into each family that `getString` and `add` do not cover, so a
+  // bundling break outside the format and arithmetic paths fails here too.
+  // Values are fixed and zone-independent: 2024-03-17 is a Sunday in ISO week
+  // 11 of 2024, wherever the host clock is set.
+  const answers = [
+    [
+      'parse round trip',
+      () => mod.getString(mod.parse(SAMPLE_RENDERED, SAMPLE_FORMAT), SAMPLE_FORMAT),
+      SAMPLE_RENDERED,
+    ],
+    ['isValid', () => mod.isValid('31-02-2020', 'DD-MM-YYYY'), false],
+    ['between', () => mod.between('2020-01-01T00:00', '2020-02-01T00:00', 'month'), 1],
+    ['equal at a unit', () => mod.equal('2024-03-17T01:00', '2024-03-17T23:00', 'day'), true],
+    ['startOf', () => mod.getString(mod.startOf(SAMPLE, 'month'), SAMPLE_FORMAT), '2024-03-01'],
+    ['endOf', () => mod.getString(mod.endOf(SAMPLE, 'month'), SAMPLE_FORMAT), '2024-03-31'],
+    [
+      'isBetween with grouped options',
+      () =>
+        mod.isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', { bounds: '[)' }),
+      false,
+    ],
+    [
+      'clamp',
+      () =>
+        mod.getString(
+          mod.clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00'),
+          SAMPLE_FORMAT,
+        ),
+      '2024-03-01',
+    ],
+    [
+      'min and max',
+      () =>
+        mod.getString(
+          mod.max(mod.min(SAMPLE, '2024-01-01T00:00'), '2023-06-01T00:00'),
+          SAMPLE_FORMAT,
+        ),
+      '2024-01-01',
+    ],
+    ['getISOWeek', () => mod.getISOWeek(SAMPLE), 11],
+    ['getISOWeekYear', () => mod.getISOWeekYear(SAMPLE), 2024],
+    ['getWeekOfYear', () => mod.getWeekOfYear(SAMPLE), 12],
+    [
+      'calendar names',
+      () => `${mod.getFullWeek(SAMPLE)} ${mod.getAbbrMonth(SAMPLE)}`,
+      'Sunday Mar',
+    ],
+    [
+      'quarters',
+      () => `${mod.getQuarter(SAMPLE)}${mod.getQuarterByMonth(3)}${mod.getFirstMonthByQuarter(2)}`,
+      '114',
+    ],
+    [
+      'daysInMonth and isLeapYear',
+      () => `${mod.daysInMonth(2024, 2)}${mod.isLeapYear(2024)}`,
+      '29true',
+    ],
+  ];
+
+  for (const [name, run, expected] of answers) {
+    let actual;
+    try {
+      actual = run();
+    } catch (error) {
+      fail(`${label} ${name}`, `Threw: ${error.message}`);
+    }
+    check(
+      `${label} ${name}`,
+      actual === expected,
+      `Expected ${JSON.stringify(expected)}, received ${JSON.stringify(actual)}.`,
+    );
+  }
 }
 
 function assertProfiler(label, mod) {

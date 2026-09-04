@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { after, afterToday, before, beforeToday, between, equal } from '../src/compare.js';
 import { add } from '../src/manipulate.js';
 import { UNITS } from '../src/units.js';
@@ -186,18 +186,37 @@ describe('after and before', () => {
 });
 
 describe('afterToday and beforeToday', () => {
+  // Both functions read the clock themselves, so a test that also reads it is
+  // comparing two different instants and would flip if a tick crossed midnight
+  // between them. Pinning "now" makes the day boundary assertable instead.
+  const NOW = new Date(2024, 2, 17, 14, 30, 45, 123);
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('compares calendar days against now', () => {
-    expect(afterToday(add(new Date(), 1, 'day'))).toBe(true);
-    expect(afterToday(add(new Date(), -1, 'day'))).toBe(false);
-    expect(beforeToday(add(new Date(), -1, 'day'))).toBe(true);
-    expect(beforeToday(add(new Date(), 1, 'day'))).toBe(false);
+    expect(afterToday(add(NOW, 1, 'day'))).toBe(true);
+    expect(afterToday(add(NOW, -1, 'day'))).toBe(false);
+    expect(beforeToday(add(NOW, -1, 'day'))).toBe(true);
+    expect(beforeToday(add(NOW, 1, 'day'))).toBe(false);
   });
 
   it('treats any time today as neither before nor after today', () => {
-    const now = new Date();
+    for (const time of [NOW, new Date(2024, 2, 17), new Date(2024, 2, 17, 23, 59, 59, 999)]) {
+      expect(afterToday(time)).toBe(false);
+      expect(beforeToday(time)).toBe(false);
+    }
+  });
 
-    expect(afterToday(now)).toBe(false);
-    expect(beforeToday(now)).toBe(false);
+  it('turns over at midnight, not at the current time of day', () => {
+    expect(beforeToday(new Date(2024, 2, 16, 23, 59, 59, 999))).toBe(true);
+    expect(afterToday(new Date(2024, 2, 18, 0, 0, 0, 0))).toBe(true);
   });
 });
 
