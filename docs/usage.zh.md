@@ -174,7 +174,7 @@ const rows = all.filter((row) => isBetween(row.createdAt, monthStart, monthEnd))
 連續銜接的區間請改用半開區間，這樣既不會重疊，也不會留下空隙：
 
 ```ts
-isBetween(date, monthStart, add(monthStart, 1, 'month'), undefined, '[)');
+isBetween(date, monthStart, add(monthStart, 1, 'month'), { bounds: '[)' });
 ```
 
 ## 比較與計算差距
@@ -207,7 +207,7 @@ beforeToday(new Date());                              // false
 
 ```ts
 isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
-isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', { bounds: '[)' }); // false
 min('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-01-01
 max('2024-03-17T00:00', '2024-01-01T00:00');                                 // 2024-03-17
 clamp('2024-06-01T00:00', '2024-01-01T00:00', '2024-03-01T00:00');           // 2024-03-01

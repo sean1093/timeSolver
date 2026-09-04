@@ -31,6 +31,25 @@ describe('normalizeUnit', () => {
     expect(normalizeUnit(alias)).toBe(expected);
   });
 
+  it.each([
+    ['mills', 'millisecond'],
+    ['MSECS', 'millisecond'],
+    ['secs', 'second'],
+    ['MINS', 'minute'],
+    ['hrs', 'hour'],
+    ['mons', 'month'],
+    ['YRS', 'year'],
+  ])('resolves the plural abbreviation %s to %s', (alias, expected) => {
+    // The table accepted a plural for every full name and for none of the
+    // abbreviations, while the README invited readers to combine the two rules.
+    expect(normalizeUnit(alias)).toBe(expected);
+  });
+
+  it('still refuses a plural nobody writes', () => {
+    expect(() => normalizeUnit('ds')).toThrowError(TimeSolverError);
+    expect(() => normalizeUnit('ws')).toThrowError(TimeSolverError);
+  });
+
   it('is case-insensitive', () => {
     expect(normalizeUnit('Day')).toBe('day');
     expect(normalizeUnit('dAyS')).toBe('day');

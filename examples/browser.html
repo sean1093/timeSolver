@@ -60,8 +60,8 @@
         ["isValid('31-02-2020', 'DD-MM-YYYY')", timeSolver.isValid('31-02-2020', 'DD-MM-YYYY')],
         ['getFullWeek(stamp)', timeSolver.getFullWeek(stamp)],
         [
-          "isBetween('2024-04-01', '2024-03-01', '2024-04-01', undefined, '[)')",
-          timeSolver.isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'),
+          "isBetween('2024-04-01', '2024-03-01', '2024-04-01', { bounds: '[)' })",
+          timeSolver.isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', { bounds: '[)' }),
         ],
         // getISOWeek must be paired with getISOWeekYear: 2024-12-30 is week 1 of 2025.
         [

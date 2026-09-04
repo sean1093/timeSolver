@@ -56,6 +56,40 @@ describe('isBetween', () => {
     ).toBe(false);
   });
 
+  it('takes the same settings as one object', () => {
+    // Reaching `bounds` positionally means writing `undefined` first, which is
+    // what the docs' own examples had to do.
+    expect(isBetween(APRIL, MARCH, APRIL, { bounds: '[)' })).toBe(
+      isBetween(APRIL, MARCH, APRIL, undefined, '[)'),
+    );
+    expect(isBetween('2024-03-31T23:00', MARCH, '2024-03-15T00:00', { unit: 'month' })).toBe(true);
+    expect(
+      isBetween('2024-03-16T12:00', '2024-03-10T12:00', '2024-03-10T12:00', {
+        unit: 'week',
+        weekStartsOn: 1,
+      }),
+    ).toBe(false);
+    expect(isBetween('2024-03-15T12:00', MARCH, APRIL, {})).toBe(true);
+  });
+
+  it('combines bounds, unit and week start in the grouped form', () => {
+    // 2024-03-11 is a Monday, so with Monday starts its week runs to the 17th.
+    const settings = { unit: 'week', bounds: '()', weekStartsOn: 1 } as const;
+
+    expect(isBetween('2024-03-11T12:00', '2024-03-04T00:00', '2024-03-18T00:00', settings)).toBe(
+      true,
+    );
+    expect(isBetween('2024-03-18T12:00', '2024-03-04T00:00', '2024-03-18T00:00', settings)).toBe(
+      false,
+    );
+  });
+
+  it('rejects unrecognised bounds in the grouped form too', () => {
+    expect(() => isBetween(MARCH, MARCH, APRIL, { bounds: '><' as Bounds })).toThrowError(
+      /bounds must be one of/,
+    );
+  });
+
   it('reads the range as given rather than reordering it', () => {
     expect(isBetween('2024-03-15T12:00', APRIL, MARCH)).toBe(false);
   });

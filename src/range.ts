@@ -17,8 +17,22 @@ export type Bounds = '[]' | '[)' | '(]' | '()';
 // Object.hasOwn, so the values cannot be observed by any test.
 const BOUNDS: Record<Bounds, true> = { '[]': true, '[)': true, '(]': true, '()': true };
 
+const DEFAULT_BOUNDS: Bounds = '[]';
+
+/** Everything {@link isBetween} can be told, in one argument. */
+export interface BetweenOptions extends WeekOptions {
+  /** Compare at this granularity. Defaults to the exact instant. */
+  readonly unit?: UnitInput;
+  /** Which endpoints count as inside. Defaults to `'[]'`, both. */
+  readonly bounds?: Bounds;
+}
+
 /**
  * Whether a date falls between two others.
+ *
+ * Takes either an options object or the positional arguments below; the object
+ * exists because the useful combinations are `bounds` alone and `bounds` with a
+ * unit, and reaching `bounds` positionally means writing `undefined` first.
  *
  * @param date - The date to test.
  * @param start - Lower end of the range.
@@ -34,30 +48,51 @@ const BOUNDS: Record<Bounds, true> = { '[]': true, '[)': true, '(]': true, '()':
  *
  * @example
  * isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-04-01T00:00');       // true
- * isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', undefined, '[)'); // false
+ * isBetween('2024-04-01T00:00', '2024-03-01T00:00', '2024-04-01T00:00', { bounds: '[)' }); // false
  * isBetween('2024-03-15T12:00', '2024-03-01T00:00', '2024-03-31T00:00', 'month'); // true
  */
 export function isBetween(
   date: DateInput,
   start: DateInput,
   end: DateInput,
+  options?: BetweenOptions,
+): boolean;
+export function isBetween(
+  date: DateInput,
+  start: DateInput,
+  end: DateInput,
   unit?: UnitInput,
-  bounds: Bounds = '[]',
+  bounds?: Bounds,
+  options?: WeekOptions,
+): boolean;
+export function isBetween(
+  date: DateInput,
+  start: DateInput,
+  end: DateInput,
+  unit?: UnitInput | BetweenOptions,
+  bounds?: Bounds,
   options?: WeekOptions,
 ): boolean {
-  if (!Object.hasOwn(BOUNDS, bounds)) {
+  // One `typeof` decides both readings: an object is the grouped form, anything
+  // else is a unit name, since `UnitInput` is always a string.
+  const grouped = typeof unit === 'object' ? unit : undefined;
+  const name = typeof unit === 'object' ? unit.unit : unit;
+  const interval = grouped?.bounds ?? bounds ?? DEFAULT_BOUNDS;
+
+  if (!Object.hasOwn(BOUNDS, interval)) {
     throw new TimeSolverError(
       'INVALID_ARGUMENT',
-      `bounds must be one of '[]', '[)', '(]' or '()', received ${JSON.stringify(bounds)}.`,
+      `bounds must be one of '[]', '[)', '(]' or '()', received ${JSON.stringify(interval)}.`,
     );
   }
 
-  const resolved = normalizeUnit(unit);
-  const target = startOf(date, resolved, options).getTime();
-  const lower = startOf(start, resolved, options).getTime();
-  const upper = startOf(end, resolved, options).getTime();
-  const afterLower = bounds[0] === '[' ? target >= lower : target > lower;
-  const beforeUpper = bounds[1] === ']' ? target <= upper : target < upper;
+  const resolved = normalizeUnit(name);
+  const week = grouped ?? options;
+  const target = startOf(date, resolved, week).getTime();
+  const lower = startOf(start, resolved, week).getTime();
+  const upper = startOf(end, resolved, week).getTime();
+  const afterLower = interval[0] === '[' ? target >= lower : target > lower;
+  const beforeUpper = interval[1] === ']' ? target <= upper : target < upper;
 
   return afterLower && beforeUpper;
 }

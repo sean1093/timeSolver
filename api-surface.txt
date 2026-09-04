@@ -4,6 +4,9 @@
 #
 # Generated; do not edit by hand. After an intentional API change, run:
 #   npm run build && npm run check:api -- --update
+timesolver BetweenOptions  interface BetweenOptions extends WeekOptions { ... }
+timesolver BetweenOptions.bounds  readonly bounds?: Bounds
+timesolver BetweenOptions.unit  readonly unit?: UnitInput
 timesolver Bounds  type Bounds = '[]' | '[)' | '(]' | '()'
 timesolver DEFAULT_FORMAT  const DEFAULT_FORMAT = "YYYYMMDD"
 timesolver DateInput  type DateInput = Date | string | number
@@ -92,6 +95,7 @@ timesolver getQuarter  function getQuarter(date: DateInput): number
 timesolver getQuarterByMonth  function getQuarterByMonth(month: number): number | null
 timesolver getString  function getString(date: DateInput, format?: string): string
 timesolver getWeekOfYear  function getWeekOfYear(date: DateInput, options?: WeekOptions): number
+timesolver isBetween  function isBetween(date: DateInput, start: DateInput, end: DateInput, options?: BetweenOptions): boolean
 timesolver isBetween  function isBetween(date: DateInput, start: DateInput, end: DateInput, unit?: UnitInput, bounds?: Bounds, options?: WeekOptions): boolean
 timesolver isLeapYear  function isLeapYear(year: number): boolean
 timesolver isValid  function isValid(input: DateInput, format?: string): boolean
@@ -120,18 +124,23 @@ timesolver ~UNIT_ALIASES.h  readonly h: "hour"
 timesolver ~UNIT_ALIASES.hour  readonly hour: "hour"
 timesolver ~UNIT_ALIASES.hours  readonly hours: "hour"
 timesolver ~UNIT_ALIASES.hr  readonly hr: "hour"
+timesolver ~UNIT_ALIASES.hrs  readonly hrs: "hour"
 timesolver ~UNIT_ALIASES.m  readonly m: "month"
 timesolver ~UNIT_ALIASES.mill  readonly mill: "millisecond"
 timesolver ~UNIT_ALIASES.millisecond  readonly millisecond: "millisecond"
 timesolver ~UNIT_ALIASES.milliseconds  readonly milliseconds: "millisecond"
+timesolver ~UNIT_ALIASES.mills  readonly mills: "millisecond"
 timesolver ~UNIT_ALIASES.min  readonly min: "minute"
+timesolver ~UNIT_ALIASES.mins  readonly mins: "minute"
 timesolver ~UNIT_ALIASES.minute  readonly minute: "minute"
 timesolver ~UNIT_ALIASES.minutes  readonly minutes: "minute"
 timesolver ~UNIT_ALIASES.mon  readonly mon: "month"
+timesolver ~UNIT_ALIASES.mons  readonly mons: "month"
 timesolver ~UNIT_ALIASES.month  readonly month: "month"
 timesolver ~UNIT_ALIASES.months  readonly months: "month"
 timesolver ~UNIT_ALIASES.ms  readonly ms: "millisecond"
 timesolver ~UNIT_ALIASES.msec  readonly msec: "millisecond"
+timesolver ~UNIT_ALIASES.msecs  readonly msecs: "millisecond"
 timesolver ~UNIT_ALIASES.q  readonly q: "quarter"
 timesolver ~UNIT_ALIASES.quarter  readonly quarter: "quarter"
 timesolver ~UNIT_ALIASES.quarters  readonly quarters: "quarter"
@@ -139,6 +148,7 @@ timesolver ~UNIT_ALIASES.s  readonly s: "second"
 timesolver ~UNIT_ALIASES.sec  readonly sec: "second"
 timesolver ~UNIT_ALIASES.second  readonly second: "second"
 timesolver ~UNIT_ALIASES.seconds  readonly seconds: "second"
+timesolver ~UNIT_ALIASES.secs  readonly secs: "second"
 timesolver ~UNIT_ALIASES.w  readonly w: "week"
 timesolver ~UNIT_ALIASES.week  readonly week: "week"
 timesolver ~UNIT_ALIASES.weeks  readonly weeks: "week"
@@ -146,6 +156,7 @@ timesolver ~UNIT_ALIASES.y  readonly y: "year"
 timesolver ~UNIT_ALIASES.year  readonly year: "year"
 timesolver ~UNIT_ALIASES.years  readonly years: "year"
 timesolver ~UNIT_ALIASES.yr  readonly yr: "year"
+timesolver ~UNIT_ALIASES.yrs  readonly yrs: "year"
 timesolver/profiler ProfileMark  interface ProfileMark { ... }
 timesolver/profiler ProfileMark.label  readonly label: string
 timesolver/profiler ProfileMark.ms  readonly ms: number

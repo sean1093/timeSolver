@@ -43,7 +43,7 @@ export type { DateInput } from './coerce.js';
 export type { TimeSolverErrorCode } from './errors.js';
 export { TimeSolverError } from './errors.js';
 export type { ProfileMark, ProfileReport, Profiler } from './profiler.js';
-export type { Bounds } from './range.js';
+export type { BetweenOptions, Bounds } from './range.js';
 export type { ExactUnit, Unit, UnitAlias, UnitInput } from './units.js';
 export { UNITS } from './units.js';
 export type { WeekDay, WeekOptions } from './week.js';

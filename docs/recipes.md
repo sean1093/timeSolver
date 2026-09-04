@@ -29,7 +29,7 @@ import { add, isBetween, startOf } from 'timesolver';
 const start = startOf(new Date(), 'month');
 const end = add(start, 1, 'month');
 
-const thisMonth = rows.filter((row) => isBetween(row.createdAt, start, end, undefined, '[)'));
+const thisMonth = rows.filter((row) => isBetween(row.createdAt, start, end, { bounds: '[)' }));
 ```
 
 The alternative, `startOf`/`endOf` with inclusive bounds, is also correct:
