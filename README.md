@@ -21,14 +21,16 @@ parse('17/03/2024', 'DD/MM/YYYY');            // Date, or throws
 ```
 
 - **Immutable.** No function touches the `Date` you pass in.
-- **One grammar for three jobs.** `getString`, `parse` and `isValid` share a single token table, so any format that renders also parses and validates. dayjs needs a plugin for the same thing.
+- **One grammar for three jobs.** `getString`, `parse` and `isValid` share a single token table, so any format that renders also parses and validates, for every year from 1 to 9999. dayjs needs a plugin for the same thing.
 - **Calendar-correct.** Month and year differences are whole numbers where they should be; day arithmetic survives daylight saving.
 - **Typed at the source.** Declarations are generated from the TypeScript implementation, so they cannot drift.
-- **Small.** 4.8 kB minified and gzipped for the whole library, tree-shakable down to what you import, no dependencies.
+- **Small.** Under 6.5 kB minified and gzipped for the whole library, and tree-shakable: `import { getString }` alone bundles to 2.6 kB. No dependencies.
 - **Loud, not silent.** Bad input throws `TimeSolverError` with a `code`; nothing is written to the console, and nothing returns a sentinel you have to remember to check.
 
-Upgrading from 1.x? See the [migration guide](https://github.com/sean1093/timeSolver/blob/master/docs/migration-v1-v2.md) — most call
-sites need no changes, but the semantics they relied on were often wrong.
+Upgrading? The [2.x to 3.0 guide](https://github.com/sean1093/timeSolver/blob/master/docs/migration-v2-v3.md)
+covers the results that changed and the formats that are now refused; the
+[1.x to 2.0 guide](https://github.com/sean1093/timeSolver/blob/master/docs/migration-v1-v2.md)
+is still there for older call sites. Most need no changes.
 
 ## Installation
 

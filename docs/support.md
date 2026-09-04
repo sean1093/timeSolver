@@ -62,7 +62,8 @@ minor release. Error messages are not part of the API.
 
 | Version | Status |
 |---|---|
-| `2.x` | Supported. Fixes land here. |
+| `3.x` | Supported. Fixes land here. |
+| `2.x` | End of life on the release of 3.0. Everything 3.0 changed is either a wrong answer replaced by a right one or an input that could hang a process; see the [migration guide](migration-v2-v3.md). |
 | `1.x` | End of life. It is also not installable in practice: the published `1.2.0` tarball declares a `main` that the tarball does not contain, so `require('timesolver')` never worked. |
 
 There is no long-term-support branch. This is a single-maintainer library with
@@ -113,8 +114,9 @@ Two consequences worth planning around:
 ## Deprecations
 
 The 1.x names `timeLook`, `timeLookStart` and `timeLookReport` are kept
-indefinitely. They are three small wrappers around a shared profiler instance
-and cost nothing to carry, so there is no reason to make anyone rewrite working
+indefinitely. They are three small wrappers around one shared profiler
+instance — one per process, whichever entry point they are imported from — and
+cost nothing to carry, so there is no reason to make anyone rewrite working
 code. They are not deprecated, merely superseded by `createProfiler` for new
 code.
 

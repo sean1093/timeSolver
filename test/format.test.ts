@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { DEFAULT_FORMAT, getString } from '../src/format.js';
+import { isValid, parse } from '../src/parse.js';
 
 // Sunday, 17 March 2024, 14:30:45.123 local time. The pinned test zone is
 // America/New_York, which is on EDT (UTC-4) by that date.
@@ -92,6 +93,36 @@ describe('getString tokens', () => {
     far.setFullYear(12345);
 
     expect(getString(far, 'YYYY-MM-DD')).toBe('12345-01-05');
+  });
+
+  it.each([1, 999, 2024, 9999])(
+    'round-trips the year %i, which is the documented range',
+    (year) => {
+      // "A format that renders also parses and validates" holds for years 1 to
+      // 9999, and the documentation now says so rather than implying it holds
+      // everywhere. These four are the ends and two ordinary points between.
+      const date = new Date(2024, 2, 17);
+      date.setFullYear(year);
+
+      const rendered = getString(date, 'YYYY-MM-DD');
+
+      expect(isValid(rendered, 'YYYY-MM-DD')).toBe(true);
+      expect(getString(parse(rendered, 'YYYY-MM-DD'), 'YYYY-MM-DD')).toBe(rendered);
+    },
+  );
+
+  it.each([
+    [12345, '12345-03-17'],
+    [-5, '-0005-03-17'],
+  ])('renders the year %i as %s but cannot read it back', (year, rendered) => {
+    // `YYYY` renders what it has; no pattern matches five digits or a leading
+    // minus. The asymmetry is real, and pinning it here is what keeps the
+    // documented range honest.
+    const date = new Date(2024, 2, 17);
+    date.setFullYear(year);
+
+    expect(getString(date, 'YYYY-MM-DD')).toBe(rendered);
+    expect(isValid(rendered, 'YYYY-MM-DD')).toBe(false);
   });
 });
 

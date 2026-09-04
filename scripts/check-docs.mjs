@@ -340,6 +340,49 @@ for (const document of documents) {
   }
 }
 
+/**
+ * The Scripts table in CONTRIBUTING.md against the scripts that exist.
+ *
+ * Prose drifts silently: the table lost `dev` and the Node matrix went stale
+ * while every other gate stayed green, because nothing compared the document
+ * to the thing it describes. Lifecycle hooks and the release entry are
+ * maintainer-only and covered in prose, so they are not expected as rows.
+ */
+const SCRIPTS_DOC = 'CONTRIBUTING.md';
+const UNDOCUMENTED_SCRIPTS = new Set(['prepublishOnly', 'release']);
+
+function checkScriptsTable() {
+  const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+  const document = documents.find((entry) => entry.name === SCRIPTS_DOC);
+
+  if (document === undefined) return;
+
+  const source = readFileSync(document.absolute, 'utf8');
+  const documented = new Set(
+    [...source.matchAll(/^\|\s*`(npm (?:run )?[\w:]+)`\s*\|/gm)].map(([, command]) =>
+      command.replace(/^npm (?:run )?/, ''),
+    ),
+  );
+
+  for (const name of Object.keys(manifest.scripts)) {
+    if (UNDOCUMENTED_SCRIPTS.has(name) || documented.has(name)) continue;
+
+    report(
+      SCRIPTS_DOC,
+      0,
+      `the Scripts table has no row for 'npm run ${name}', which package.json defines`,
+    );
+  }
+
+  for (const name of documented) {
+    if (Object.hasOwn(manifest.scripts, name)) continue;
+
+    report(SCRIPTS_DOC, 0, `the Scripts table documents 'npm run ${name}', which no longer exists`);
+  }
+}
+
+checkScriptsTable();
+
 const width = Math.max(...documents.map((document) => document.name.length));
 const failing = new Set(problems.map((problem) => problem.file));
 const totals = { headings: 0, links: 0, internal: 0, external: 0, blocks: 0 };

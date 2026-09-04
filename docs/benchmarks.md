@@ -8,10 +8,10 @@ The point of this page is not to claim a winner. It is to make the cost of each
 operation checkable, so that a performance argument in an issue can be settled
 by rerunning a command rather than by assertion. Nine operations are measured
 across twenty head-to-head comparisons, and on the recorded run timeSolver is
-behind in four of them; those four are in the tables and again in
+behind in five of them — two by under 2%, which is noise on this hardware.
+All five are in the tables and again in
 [Where timeSolver is slower](#where-timesolver-is-slower), in the same place
-as everything else. A fifth comparison reverses on a rerun, which is noted
-under the table it belongs to rather than left for a reader to discover.
+as everything else.
 
 ## Running it
 
@@ -90,7 +90,7 @@ averaged across runs.
 |---|---|
 | CPU | Apple M4, 10 cores (4 performance + 6 efficiency) |
 | Memory | 16 GB |
-| OS | macOS 26.5 (build 25F71), Darwin 25.5.0 arm64 |
+| OS | macOS 26.6.2 (build 25G83), Darwin 25.6.0 arm64 |
 | Node.js | v24.14.0 |
 | npm | 11.9.0 |
 | Vitest | 4.1.11 |
@@ -113,85 +113,81 @@ of error Vitest reports for that row; treat any gap of the same order as noise.
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `getString` | 989,647 | 1.00x | ±0.17% |
-| dayjs `.format()` | 506,732 | 0.51x | ±1.63% |
-| dayjs `.format()`, wrapper reused | 498,531 | 0.50x | ±0.33% |
-| date-fns `format` | 549,601 | 0.56x | ±1.17% |
+| timeSolver `getString` | 4,317,646 | 1.00x | ±0.24% |
+| dayjs `.format()` | 990,138 | 0.23x | ±0.09% |
+| dayjs `.format()`, wrapper reused | 1,198,890 | 0.28x | ±0.08% |
+| date-fns `format` | 1,544,545 | 0.36x | ±0.10% |
 
 ### Format to `'YYYY-MM-DD HH:mm:ss.SSS'`
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `getString` | 507,190 | 1.00x | ±0.21% |
-| dayjs `.format()` | 470,250 | 0.93x | ±0.56% |
-| dayjs `.format()`, wrapper reused | 551,909 | **1.09x** | ±0.40% |
-| date-fns `format` | 467,126 | 0.92x | ±1.10% |
+| timeSolver `getString` | 2,880,419 | 1.00x | ±0.10% |
+| dayjs `.format()` | 726,737 | 0.25x | ±1.31% |
+| dayjs `.format()`, wrapper reused | 805,733 | 0.28x | ±0.10% |
+| date-fns `format` | 754,027 | 0.26x | ±1.03% |
 
 ### Parse `'17/03/2024'` with an explicit format
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `parse` | 639,247 | 1.00x | ±0.28% |
-| dayjs + `customParseFormat`, strict | 584,850 | 0.91x | ±0.48% |
-| date-fns `parse` | 494,678 | 0.77x | ±0.80% |
+| timeSolver `parse` | 1,625,541 | 1.00x | ±0.80% |
+| dayjs + `customParseFormat`, strict | 601,665 | 0.37x | ±0.29% |
+| date-fns `parse` | 515,123 | 0.32x | ±0.24% |
 
 ### Validate a string against a format
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `isValid` | 633,316 | 1.00x | ±1.01% |
-| dayjs strict `.isValid()` | 290,108 | 0.46x | ±0.47% |
-| date-fns `isValid(parse(...))` | 328,266 | 0.52x | ±0.42% |
+| timeSolver `isValid` | 1,678,690 | 1.00x | ±0.20% |
+| dayjs strict `.isValid()` | 489,199 | 0.29x | ±0.04% |
+| date-fns `isValid(parse(...))` | 506,131 | 0.30x | ±0.10% |
 
 ### Add 1 day
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `add` | 3,491,583 | 1.00x | ±0.47% |
-| dayjs `.add()` | 804,830 | 0.23x | ±0.21% |
-| date-fns `addDays` | 3,822,248 | **1.09x** | ±0.05% |
+| timeSolver `add` | 5,300,101 | 1.00x | ±0.32% |
+| dayjs `.add()` | 1,348,645 | 0.25x | ±0.12% |
+| date-fns `addDays` | 6,977,315 | **1.32x** | ±0.02% |
 
 ### Add 1 month
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `add` | 1,119,856 | 1.00x | ±1.17% |
-| dayjs `.add()` | 200,450 | 0.18x | ±3.35% |
-| date-fns `addMonths` | 2,256,828 | **2.02x** | ±3.02% |
+| timeSolver `add` | 3,763,085 | 1.00x | ±0.09% |
+| dayjs `.add()` | 537,024 | 0.14x | ±0.13% |
+| date-fns `addMonths` | 3,801,704 | **1.01x** | ±0.09% |
 
 ### `startOf('month')`
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `startOf` | 2,534,056 | 1.00x | ±0.15% |
-| dayjs `.startOf()` | 1,448,041 | 0.57x | ±0.19% |
-| date-fns `startOfMonth` | 2,850,879 | **1.13x** | ±0.14% |
+| timeSolver `startOf` | 695,479 | 1.00x | ±0.10% |
+| dayjs `.startOf()` | 2,347,750 | **3.38x** | ±0.10% |
+| date-fns `startOfMonth` | 4,772,788 | **6.86x** | ±0.02% |
 
 ### Difference in days
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `between` | 1,078,666 | 1.00x | ±0.18% |
-| dayjs `.diff()` | 929,503 | 0.86x | ±0.69% |
-| date-fns `differenceInDays` | 468,016 | 0.43x | ±1.77% |
+| timeSolver `between` | 1,720,946 | 1.00x | ±0.02% |
+| dayjs `.diff()` | 1,756,580 | **1.02x** | ±0.85% |
+| date-fns `differenceInDays` | 918,352 | 0.53x | ±0.03% |
 
 ### Difference in months
 
 | Implementation | ops/sec | Relative | rme |
 |---|---:|---:|---:|
-| timeSolver `between` | 386,801 | 1.00x | ±1.08% |
-| dayjs `.diff()` | 83,010 | 0.21x | ±0.99% |
-| date-fns `differenceInMonths` | 257,071 | 0.66x | ±7.00% |
+| timeSolver `between` | 2,018,838 | 1.00x | ±0.05% |
+| dayjs `.diff()` | 210,764 | 0.10x | ±0.10% |
+| date-fns `differenceInMonths` | 1,061,515 | 0.53x | ±0.08% |
 
-**Do not rely on this table.** It is the least stable in the suite, and the
-`date-fns` row carries the worst margin of error on the page. Re-running
-`bench/compare.bench.ts` on its own, on the same machine minutes later, put
-`differenceInMonths` at 379,021 ops/sec instead of 257,071 — a 47% swing that
-reverses the comparison, from date-fns 0.66x to date-fns 1.04x. Running one
-file alone rather than the whole suite changes the JIT and GC state it
-inherits, and that is apparently enough. The only claim this table supports is
-that dayjs `.diff()` is several times slower than both of the others here,
-which is the one gap far larger than the noise.
+This table used to be the least stable in the suite, with a `date-fns` row that
+swung 47% between runs and reversed the comparison. It is steady on the recorded
+run — three consecutive whole-suite runs agreed within 2.4% on every row — but a
+month difference does more work than any other case here, so treat a small gap
+in it with the same suspicion as anywhere else.
 
 ## Where timeSolver is slower
 
@@ -199,34 +195,38 @@ Four cases, with the reason for each. None of them is a bug and none of them is
 worth changing the library's behaviour for, but pretending they are not there
 would make the rest of this page untrustworthy.
 
-- **`startOf('month')` — date-fns is 1.13x faster.** `startOfMonth` truncates
-  the date directly, while `startOf` first copies the input through `toDate`,
-  then lowercases and resolves the unit alias, then dispatches through a
-  lookup table. That indirection is the price of one function accepting nine
-  units in any spelling.
-- **`add(date, 1, 'day')` — date-fns is 1.09x faster.** `addDays` does one
+- **`startOf('month')` — date-fns is 6.86x faster and dayjs 3.38x.** This is
+  the one large gap, and it is not indirection: it is daylight saving. The
+  benchmark date is 17 March 2024, and the pinned zone is `America/New_York`,
+  where the clocks moved on 10 March. So the start of that month sits at a
+  different UTC offset from the date itself, and `startOf` takes the path that
+  exists for exactly this case — it bisects for the instant the label actually
+  began, because a zone can jump clean over the start of a unit (Pacific/Chatham
+  moves 02:45 to 03:45, so local 03:00 never happens there) and a wall clock can
+  leave a unit and come back. `startOfMonth` does `setDate(1)` and
+  `setHours(0, 0, 0, 0)` and stops.
+
+  Measured directly, `startOf(date, 'month')` costs 1.43 µs in
+  `America/New_York` against 0.135 µs in `UTC`, and `startOf(date, 'day')` — no
+  shift inside the unit — costs 0.13 µs in either. Ten of twelve months a year
+  are the cheap path even in a DST zone; the benchmark happens to sit in one of
+  the two that are not, which is worth knowing before quoting this row.
+- **`add(date, 1, 'day')` — date-fns is 1.32x faster.** `addDays` does one
   `setDate`. `add` also resolves the unit alias, rejects a non-finite amount,
   rejects a fractional calendar amount, and rechecks that the result is still
   a representable `Date` so an overflow throws instead of returning
   `Invalid Date`.
-- **`add(date, 1, 'month')` — date-fns is 2.02x faster.** Both clamp February
-  31 to February 29, but timeSolver reaches the clamp through `daysInMonth`,
-  which validates both arguments and allocates a third `Date` as a probe, on
-  top of the copies made by `toDate` and `shiftMonths`. `addMonths` gets the
-  same bound from `setMonth(month + 1, 0)` on a clone it already had, and has
-  no unit alias to resolve and no amount to validate.
-- **Formatting `'YYYY-MM-DD HH:mm:ss.SSS'` — dayjs is 1.09x faster, but only
-  when the caller already holds a `Dayjs`.** `getString` allocates a parts
-  array and makes one call per part, and this format tokenises to thirteen
-  parts — seven tokens and six literals — which costs more than dayjs's
-  single regex pass over the format string. Starting from a `Date`, as the
-  other rows in that table do, dayjs is 0.93x and timeSolver is still ahead.
+- **`add(date, 1, 'month')` — date-fns is 1.01x faster**, which is inside the
+  noise on this hardware. It was 2.02x until `daysInMonth` stopped probing a
+  third `Date` for the length of a month and answered from the calendar
+  instead.
+- **Difference in days — dayjs is 1.02x faster**, also inside the noise, and on
+  a row where `dayjs` carries the largest margin of error in that table.
 
-Three of the four losses are against date-fns's single-purpose functions,
-where the gap buys a wider accepted input or a thrown error in place of an
-`Invalid Date`. The fourth is a genuine algorithmic difference — a parts loop
-against a regex pass — and it only appears on long formats, for a dayjs caller
-who is already holding a wrapper.
+The two gaps that are real — `startOf` in a month containing a clock shift, and
+`add 1 day` — are both cases where the extra work is the point: correctness
+across a daylight-saving boundary in the first, and a thrown error in place of
+an `Invalid Date` in the second.
 
 ## Reading these numbers
 
@@ -238,23 +238,27 @@ Please read this section before quoting anything above.
   they are not a promise about your hardware.
 - **Shared CI runners vary by more than several of these gaps.** A hosted
   runner with a noisy neighbour routinely swings throughput by tens of
-  percent — far more than the 1.09x on `add 1 day` or the 1.13x on
-  `startOf('month')`. That is why `npm run bench` is not a CI gate: it would
-  fail on scheduling noise, not on code.
-- **This harness has visible resolution limits.** In the first formatting
-  table, reusing a dayjs wrapper measured *slower* than building one per call
-  (498,531 against 506,732), which cannot be true — constructing an object is
-  not free. The 1.6% gap sits inside that row's ±1.63% margin of error. Treat
-  it as the noise floor for this page: differences under a few percent mean
-  nothing, whichever direction they point.
-- **Even on this machine, a rerun moved one figure by 47%.** Re-running
-  `bench/compare.bench.ts` alone put `date-fns differenceInMonths` at 379,021
-  ops/sec against the 257,071 in the table above, which is enough to reverse
-  that comparison. The margin of error Vitest prints describes the spread
-  *within* one measurement window; it says nothing about the spread between
-  windows, and on that row the between-window spread is an order of magnitude
-  larger. If a decision turns on a figure here, run the suite several times
-  first.
+  percent — far more than the 1.32x on `add 1 day`, let alone the 1.01x on
+  `add 1 month`. That is why `npm run bench` is not a CI gate: it would fail on
+  scheduling noise, not on code.
+- **Two rows are inside the noise floor.** `add 1 month` (1.01x) and difference
+  in days (1.02x) are smaller than the run-to-run spread on this machine, and
+  the second sits on the row with the largest margin of error in its table.
+  Differences under a few percent mean nothing here, whichever direction they
+  point.
+- **The margin of error describes one window, not the gap between windows.** An
+  earlier recorded run had a `date-fns differenceInMonths` figure that moved 47%
+  when its file was run alone, enough to reverse that comparison. Three
+  consecutive whole-suite runs of the current code agreed within 2.4% on every
+  row, but the earlier case is why the advice stands: if a decision turns on a
+  figure here, run the suite several times first.
+- **These numbers are not comparable with an earlier revision of this page.**
+  Every row moved when the machine's OS and the toolchain moved, including
+  dayjs's and date-fns's. Two rows moved for reasons in this repository — a
+  format is now tokenized once per format rather than per call, and month
+  arithmetic no longer probes a `Date` for the length of a month — and the rest
+  moved because the environment did. Compare rows within one run, never across
+  runs.
 - **The libraries are not feature-equivalent, and the return types differ.**
   dayjs returns its own wrapper objects, which is why it can be cheap on
   arithmetic and then charge you at `.toDate()`; timeSolver and date-fns both

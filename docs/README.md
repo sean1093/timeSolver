@@ -10,6 +10,7 @@ what you are doing.
 | **[Usage guide](usage.md)** | A task-oriented tour: formatting, parsing, validating, arithmetic, ranges, comparison, profiling. Start here if you are new. |
 | **[Recipes](recipes.md)** | Complete answers to specific jobs — date range queries, relative labels, month-to-date reports, validating user input, week-numbered periods. |
 | **[API reference](api.md)** | Every function, signature, option, error and edge case. The place to settle an argument about behaviour. |
+| **[Migration from 2.x](migration-v2-v3.md)** | What changed in 3.0: the answers that were wrong, the formats that are now refused, and a six-step checklist. |
 | **[Migration from 1.x](migration-v1-v2.md)** | What changed in 2.0, why, and the six-step checklist. Most call sites need no edits; the semantics behind them did change. |
 | **[Support policy](support.md)** | Which versions get fixes, which Node versions are supported, and what this project treats as a breaking change. |
 | **[Benchmarks](benchmarks.md)** | Measured throughput against dayjs and date-fns, including the operations where timeSolver is slower, and what the numbers are worth. |
