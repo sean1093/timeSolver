@@ -24,6 +24,11 @@ export default defineConfig([
     outDir: 'dist',
     outExtension: () => ({ js: '.global.js' }),
     minify: true,
-    sourcemap: true,
+    // No source map for this one. It was 102 kB against a 17 kB bundle -- a
+    // fifth of everything an install downloads, and unpkg and jsdelivr serve it
+    // next to the script tag it describes. The ESM and CJS builds keep theirs,
+    // because a bundler consumer really does step into this code; nobody
+    // debugs a minified browser global against the TypeScript sources.
+    sourcemap: false,
   },
 ]);
