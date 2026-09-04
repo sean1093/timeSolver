@@ -346,6 +346,12 @@ Three rules the tokenizer enforces, all as `INVALID_FORMAT`:
 `Z` and `ZZ` render but cannot be parsed: reading an offset would mean
 representing an instant in a zone this library does not model.
 
+The 36 format names 1.x accepted are also understood, and are translated to
+tokens. A string that is already a valid token string is never translated,
+which is what decides the two spellings that could be either: `'HH:MM:SS'`
+means 24-hour time, minutes and seconds, as it did in 1.x, while `'hh:mm:ss'`
+is the token string for a 12-hour clock and means that.
+
 ### `getString(date, format?): string`
 
 Renders `date`. `format` defaults to `'YYYYMMDD'`, as in 1.x.

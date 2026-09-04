@@ -126,9 +126,12 @@ table is in the [API reference](https://github.com/sean1093/timeSolver/blob/mast
 | `HH` `H` | `13` `13` | `Z` `ZZ` | `+08:00` `+0800` |
 | `hh` `h` | `01` `1` | `[text]` | literal `text` |
 
-Every format name 1.x accepted still works, in any case, including the ones
-where `MM` meant minutes. The tokenizer recognises 36 such names: the 27 that
+Every format name 1.x accepted still works, including the ones where `MM` meant
+minutes. The tokenizer recognises 36 such names: the 27 that
 `timesolver@1.2.0` shipped, plus the nine `DD`-first names added afterwards.
+Case does not matter, unless the format you wrote is itself a valid token
+string — `'hh:mm:ss'` is 12-hour, minute, second, and means that rather than
+the 1.x name of the same spelling.
 
 ### How `between` measures each unit
 
