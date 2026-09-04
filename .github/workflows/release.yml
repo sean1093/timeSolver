@@ -20,8 +20,50 @@ permissions:
   contents: read
 
 jobs:
+  # Nothing is published from a commit that has not passed the gates. CI runs on
+  # the same push, but nothing connected the two workflows, so a red build still
+  # published as long as `tsup` exited zero. These are the gates ci.yml's
+  # quality job runs, in the same order: a gate added there belongs here too.
+  #
+  # This job holds no secrets and checks out without credentials, which is also
+  # where the whole devDependency tree -- and its install scripts -- executes.
+  verify:
+    name: Verify the commit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run the release gates
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run check:docs
+          npm run test:coverage
+          npm run build
+          npm run check:exports
+          npm run check:api
+          npm run size
+          npm run smoke
+          npm run test:zones
+          npm run test:built
+
   release:
     name: Version or publish
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: write # commit the version bump, push tags, create the GitHub release
@@ -33,6 +75,9 @@ jobs:
       # Every action in this workflow is pinned to a commit, not a tag: this job
       # holds a publish token, and a mutable tag lets upstream change what runs
       # with it. Dependabot's github-actions updates keep the pins current.
+      #
+      # Credentials are persisted here, unlike in the verify job: changesets
+      # pushes the version commit and its tags over them.
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -47,8 +92,13 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
+      # --ignore-scripts because this is the one job in the repository that holds
+      # a publish token and a push credential, and an install script is
+      # third-party code running beside them. Nothing here needs one: the
+      # toolchain is only used through its JavaScript API, and `npm run build`
+      # under this install is exercised by the verify job above.
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       # `changeset publish` uploads whatever is on disk. Build first so the
       # tarball carries real dist output rather than an empty directory.
