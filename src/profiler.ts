@@ -149,16 +149,52 @@ export function createProfiler(): Profiler {
   return { start, mark, report, print };
 }
 
-const SHARED = createProfiler();
+/**
+ * Where the one v1 timeline lives.
+ *
+ * The three v1 names are documented, in three places, as driving one shared
+ * instance -- and the package ships two entry points, `timesolver` and
+ * `timesolver/profiler`, built as independent bundles in both ESM and CommonJS.
+ * A module-level instance is therefore one timeline per copy of this module:
+ * `timeLookStart()` from the root export followed by `timeLook()` from the
+ * subpath threw "Call start() before mark()", because the second copy had never
+ * been started.
+ *
+ * A well-known symbol makes every copy resolve to the same object, across the
+ * subpath boundary and across the ESM/CommonJS one. Only this compatibility
+ * timeline is registered; `createProfiler` stays pure, and a caller who wants
+ * isolation already has it.
+ */
+const SHARED_KEY = Symbol.for('timesolver.profiler.shared');
+
+/**
+ * Resolved on first use rather than at module load, so importing the library
+ * writes nothing to `globalThis` -- which is what lets a bundler drop all of
+ * this for anyone who does not call the v1 names.
+ */
+function shared(): Profiler {
+  const registry = globalThis as unknown as Record<symbol, Profiler | undefined>;
+  const existing = registry[SHARED_KEY];
+
+  if (existing !== undefined) {
+    return existing;
+  }
+
+  const created = createProfiler();
+
+  registry[SHARED_KEY] = created;
+
+  return created;
+}
 
 /** v1 compatibility: begin a run on the shared profiler. */
 export function timeLookStart(): void {
-  SHARED.start();
+  shared().start();
 }
 
 /** v1 compatibility: mark a checkpoint on the shared profiler. */
 export function timeLook(label: string): void {
-  SHARED.mark(label);
+  shared().mark(label);
 }
 
 /**
@@ -167,5 +203,5 @@ export function timeLook(label: string): void {
  * Returns the report as well, which v1 did not.
  */
 export function timeLookReport(): ProfileReport {
-  return SHARED.print();
+  return shared().print();
 }

@@ -227,4 +227,28 @@ describe('v1 timeLook compatibility', () => {
     expect(report.marks.map((mark) => mark.label)).toEqual(['step one', 'step two']);
     expect(logged[0]).toContain('2 mark(s)');
   });
+
+  it('shares one timeline across separate copies of the module', async () => {
+    // The published package builds `timesolver` and `timesolver/profiler` as
+    // independent bundles, so a caller can hold two copies of this module at
+    // once. Resetting the module registry reproduces that: `second` is a fresh
+    // instance with its own closures, and it must still see the run `first`
+    // started, which is what the docs promise in three places.
+    scriptClock(0, 40, 100, 100, 100);
+
+    const first = await import('../src/profiler.js');
+    vi.resetModules();
+    const second = await import('../src/profiler.js');
+
+    expect(second.timeLook).not.toBe(first.timeLook);
+
+    first.timeLookStart();
+    second.timeLook('step one');
+    first.timeLook('step two');
+
+    expect(second.timeLookReport().marks.map((mark) => mark.label)).toEqual([
+      'step one',
+      'step two',
+    ]);
+  });
 });
