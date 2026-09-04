@@ -337,7 +337,7 @@ validates.
 | `Q` | quarter | `1` |
 | `Z` | UTC offset with a colon | `+08:00` |
 | `ZZ` | UTC offset | `+0800` |
-| `[…]` | literal text | `[at]` renders `at` |
+| `[…]` | literal text | `[at]` renders `at`; `]]` inside is a literal `]`, so `[[]` renders `[` and `[a]]b]` renders `a]b` |
 
 Three rules the tokenizer enforces, all as `INVALID_FORMAT`:
 

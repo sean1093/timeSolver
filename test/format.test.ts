@@ -114,6 +114,26 @@ describe('getString composition', () => {
     expect(getString(SAMPLE, 'YYYY[]MM')).toBe('202403');
   });
 
+  it.each([
+    ['YYYY[[]', '2024['],
+    ['[[]YYYY', '[2024'],
+    ['YYYY[]]]', '2024]'],
+    ['[a]]b]', 'a]b'],
+    ['[[]]]', '[]'],
+    ['[[]YYYY[]]]', '[2024]'],
+  ])('renders the escaped brackets in %s as %s', (format, expected) => {
+    // Inside an escape `]]` is a literal `]`, and `[` needs no doubling because
+    // it cannot close one. Before that rule there was no way to render either
+    // delimiter at all.
+    expect(getString(SAMPLE, format)).toBe(expected);
+  });
+
+  it('still refuses a bracket that opens or closes nothing', () => {
+    for (const format of ['YYYY]', 'YYYY[MM', '[unclosed YYYY', 'YYYY]]']) {
+      expect(() => getString(SAMPLE, format)).toThrowError(/unmatched square bracket/);
+    }
+  });
+
   it('accepts any date input', () => {
     expect(getString('2024-03-17T18:30:45.123Z', 'YYYY-MM-DD HH:mm')).toBe('2024-03-17 14:30');
     expect(getString(SAMPLE.getTime(), 'YYYY')).toBe('2024');

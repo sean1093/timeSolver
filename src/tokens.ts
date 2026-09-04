@@ -308,8 +308,14 @@ export type FormatPart =
 
 // Alternatives are ordered longest-first within each letter group so that, for
 // example, `MMMM` wins over `MMM` and `MM`.
+//
+// Inside an escape, `]]` is a literal `]` and a lone `]` closes the escape, so
+// the grammar can express both delimiters: `'[[]'` renders `[` and `'[a]]b]'`
+// renders `a]b`. The two alternatives in the body cannot both match the same
+// character -- one excludes `]`, the other requires it -- so the repetition
+// stays linear no matter how many brackets a caller passes.
 const TOKEN_PATTERN =
-  /\[([^\]]*)\]|(YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|DD|D|HH|H|hh|h|mm|m|SSS|ss|s|A|a|Q|ZZ|Z)/g;
+  /\[((?:[^\]]|\]\])*)\]|(YYYY|YY|MMMM|MMM|MM|M|dddd|ddd|DD|D|HH|H|hh|h|mm|m|SSS|ss|s|A|a|Q|ZZ|Z)/g;
 
 const V1_TIME_SEGMENT = /HH:MM:SS/g;
 
@@ -426,11 +432,27 @@ export function tokenize(format: string): FormatPart[] {
   let sawToken = false;
   let sawEscape = false;
 
+  /**
+   * Text that arrived outside an escape. A bracket here is a typo -- an escape
+   * that was never opened or never closed -- so it is refused rather than
+   * rendered; the escaped form checked below is where a literal bracket goes.
+   */
+  const pushText = (text: string): void => {
+    if (/[[\]]/.test(text)) {
+      throw new TimeSolverError(
+        'INVALID_FORMAT',
+        `${JSON.stringify(format)} has an unmatched square bracket.`,
+      );
+    }
+
+    parts.push({ kind: 'literal', text });
+  };
+
   for (const match of format.matchAll(TOKEN_PATTERN)) {
     const [raw, escaped, token] = match;
 
     if (match.index > cursor) {
-      parts.push({ kind: 'literal', text: format.slice(cursor, match.index) });
+      pushText(format.slice(cursor, match.index));
     }
 
     if (escaped === undefined) {
@@ -445,7 +467,7 @@ export function tokenize(format: string): FormatPart[] {
       // empty escape would push a literal of empty text, which renders and
       // matches as nothing, so skipping it is unobservable.
       if (escaped.length > 0) {
-        parts.push({ kind: 'literal', text: escaped });
+        parts.push({ kind: 'literal', text: escaped.replaceAll(']]', ']') });
       }
     }
 
@@ -455,7 +477,7 @@ export function tokenize(format: string): FormatPart[] {
   // Stryker disable next-line EqualityOperator,ConditionalExpression: as above,
   // a trailing literal of empty text is unobservable.
   if (cursor < format.length) {
-    parts.push({ kind: 'literal', text: format.slice(cursor) });
+    pushText(format.slice(cursor));
   }
 
   if (!sawToken && !sawEscape) {
@@ -468,16 +490,6 @@ export function tokenize(format: string): FormatPart[] {
   let previous: FormatPart | undefined;
 
   for (const part of parts) {
-    // Stryker disable next-line ConditionalExpression: reported as surviving,
-    // but applying the mutation by hand fails 254 tests. Stryker's Vitest runner
-    // does not attribute failures that happen while a module is loading.
-    if (part.kind === 'literal' && /[[\]]/.test(part.text)) {
-      throw new TimeSolverError(
-        'INVALID_FORMAT',
-        `${JSON.stringify(format)} has an unmatched square bracket.`,
-      );
-    }
-
     // One rule, whether the digit arrives as a token or as literal text.
     if (previous?.kind === 'token') {
       const before: TokenSpec = TOKENS[previous.name];
