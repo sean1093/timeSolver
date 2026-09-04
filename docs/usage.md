@@ -320,6 +320,12 @@ the instant is exact — but no zone name is understood. For zone-aware work use
 reading names two instants, and `parse` resolves to the earlier one. Store
 instants rather than wall-clock strings when the difference matters.
 
+**A skipped hour is rejected.** When the clocks go forward, an hour never
+happens, so `parse('2024-03-10 02:30', 'YYYY-MM-DD HH:mm')` throws
+`INVALID_DATE` in `America/New_York` and succeeds in `UTC`. `isValid` for such a
+string therefore depends on the host zone. Include an offset token when the
+answer must not.
+
 **Weeks start on Sunday by default**, matching `Date#getDay`. Pass
 `{ weekStartsOn: 1 }` for ISO-8601 weeks, or any day from `0` to `6`, to
 `startOf`, `endOf`, `equal`, `after` and `before`:

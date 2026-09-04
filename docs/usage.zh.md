@@ -317,6 +317,12 @@ profiler.print();
 而 `parse` 會解析成較早的那一個。這個差別若會影響結果，
 請儲存時間點本身，而不是時鐘讀數的字串。
 
+**被跳過的那一小時不存在。** 時鐘往前調時，那一小時根本沒有發生，
+`parse` 因此會拒絕它：`parse('2024-03-10 02:30', 'YYYY-MM-DD HH:mm')`
+在 `America/New_York` 會拋出 `INVALID_DATE`，在 `UTC` 則正常解析。
+也就是說，時鐘讀數字串的 `isValid` 結果會隨主機時區而異；
+若不希望如此，請在格式中加入時差符號。
+
 **一週預設從星期日開始**，與 `Date#getDay` 一致。想要 ISO-8601 的一週，
 請把 `{ weekStartsOn: 1 }`，或是 `0` 到 `6` 之間的任何一天，傳給
 `startOf`、`endOf`、`equal`、`after` 與 `before`：

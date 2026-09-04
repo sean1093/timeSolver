@@ -10,8 +10,8 @@ Security problems go through [SECURITY.md](SECURITY.md), never a public issue.
 ## Prerequisites
 
 - **Node.js >= 20.** The package declares `engines.node: ">=20"` and CI runs
-  20, 22, and 24. `.nvmrc` pins 22 (the active LTS) for local work, so
-  `nvm use` picks the right version.
+  20, 22, 24 and 26 on Linux, plus 24 on Windows and macOS. `.nvmrc` pins 22
+  (the active LTS) for local work, so `nvm use` picks the right version.
 - **npm.** The lockfile is `package-lock.json` and is committed; please do not
   swap in another package manager or commit a second lockfile.
 - Nothing else. The library has **zero runtime dependencies** and the toolchain
@@ -34,6 +34,7 @@ loudly if `package.json` and the lockfile disagree, which is what CI does.
 | Script | Command | What it checks |
 |---|---|---|
 | `npm run build` | `tsup` | Produces `dist/` — ESM, CJS, IIFE global, and generated `.d.ts` — from the TypeScript sources. |
+| `npm run dev` | `tsup --watch` | Rebuilds `dist/` on save, for iterating against the built output. |
 | `npm test` | `vitest run` | Runs the suite once and exits. This is the command CI runs. |
 | `npm run test:watch` | `vitest` | Same suite in watch mode while you edit. |
 | `npm run test:coverage` | `vitest run --coverage` | Runs the suite and fails if coverage drops below the thresholds below. |
@@ -53,8 +54,9 @@ loudly if `package.json` and the lockfile disagree, which is what CI does.
 ## Project layout
 
 Each module under `src/` is independently testable and has one reason to
-change. The dependency direction is one-way — `errors` <- `units`/`coerce` <-
-`tokens` <- everything else — and there are no cycles.
+change. The dependency direction is one-way and there are no cycles: `errors`
+is the base, `units`, `coerce` and `week` sit directly on it, `calendar` and
+`tokens` sit on those, and every remaining module composes the ones below it.
 
 | File | Responsibility |
 |---|---|
@@ -139,30 +141,32 @@ The **quality** job runs once, on Node 22, in this order:
 
 1. `lint` — Biome formatting and rules.
 2. `typecheck` — `tsc --noEmit` clean.
-3. `test:coverage` — the suite plus coverage thresholds: **95% lines, 95%
+3. `check:docs` — links, anchors, code fences. It runs here, before the build,
+   because it needs nothing built.
+4. `test:coverage` — the suite plus coverage thresholds: **95% lines, 95%
    functions, 95% statements, 90% branches**. Below any of those, the job fails.
    The suite currently sits at 100% of all four, so a drop means something new
    is untested rather than that the bar is tight.
-4. `build` — `tsup` produces all four outputs.
-5. `check:exports` — `attw` and `publint` agree the packed tarball resolves for
+5. `build` — `tsup` produces all four outputs.
+6. `check:exports` — `attw` and `publint` agree the packed tarball resolves for
    ESM, CJS, and TypeScript.
-6. `check:api` — the built declarations describe the same public API surface as
+7. `check:api` — the built declarations describe the same public API surface as
    the committed `api-surface.txt`. A deliberate change is approved by running
    `npm run check:api -- --update` and committing the snapshot with it.
-7. `size` — the bundle is within budget.
-8. `smoke` — the built ESM, CJS, and IIFE bundles load, resolve by package
-   name through the `exports` map, and compute correctly.
-9. `test:zones` — the calendar invariants hold over 366 days in seven zones,
-   including ones whose clocks shift at midnight and at a quarter past the hour.
-10. `test:built` — the release gates still fail when they should, and no format
+8. `size` — the whole bundle and a single-import bundle are both within budget.
+9. `smoke` — every exported function loads and computes correctly through the
+   built ESM, CJS, and IIFE bundles, and through the `exports` map by package
+   name.
+10. `test:zones` — the calendar invariants hold over 366 days in seven zones,
+    including ones whose clocks shift at midnight and at a quarter past the hour.
+11. `test:built` — the release gates still fail when they should, and no format
     string can make the parser backtrack.
 
-`check:docs` runs third, before the build, since it needs nothing built.
-
-The **test** job runs `test`, `build`, and `smoke` on Node 20, 22, and 24, which
-is what proves the published artifacts work on every supported runtime. Lint,
+The **test** job runs `test`, `build`, `smoke` and `test:zones` on Node 20, 22,
+24 and 26 on Linux, and on Node 24 on Windows and macOS — which is what proves
+the published artifacts work on every supported runtime and platform. Lint,
 typechecking, coverage, packaging and size are runtime-independent, so they run
-once rather than three times.
+once rather than six times.
 
 You can run the same sequence locally. The fast pre-push check is:
 

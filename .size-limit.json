@@ -6,6 +6,13 @@
     "gzip": true
   },
   {
+    "name": "timesolver (single import, gzipped)",
+    "path": "dist/index.js",
+    "import": "{ getString }",
+    "limit": "3 kB",
+    "gzip": true
+  },
+  {
     "name": "timesolver/profiler (ESM, gzipped)",
     "path": "dist/profiler.js",
     "limit": "1 kB",

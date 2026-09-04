@@ -31,15 +31,18 @@ and credit you in the advisory unless you ask us not to.
 
 `timesolver` has **zero runtime dependencies**, performs **no I/O**, and makes
 **no network access**. It reads and writes plain values and native `Date`
-objects. There is no file system, child process, `eval`, or prototype-extension
-surface to attack, and the library never writes to `console`.
+objects. There is no file system, child process, or prototype-extension surface
+to attack. Errors are thrown, never logged; the only console output in the
+package is the profiler's `print()` and its 1.x shim `timeLookReport()`, which
+a caller opts into.
 
-The realistic attack surface is therefore untrusted strings reaching the
-format/parse layer:
+The realistic attack surface is untrusted strings reaching the format/parse
+layer, where `parse` and `isValid` compile the caller's format string into a
+`RegExp`:
 
 - `getString(date, format)` — an attacker-controlled *format* string.
 - `parse(input, format)` and `isValid(input, format?)` — an attacker-controlled
-  *date* string.
+  *date* string, an attacker-controlled *format* string, or both.
 
 Reports in scope include, for such inputs: catastrophic backtracking or other
 denial of service, unbounded memory growth, a crash that is not a

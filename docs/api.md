@@ -307,14 +307,17 @@ caller's mistake.
 ## Formatting, parsing and validation
 
 These three share one token table, so a format that renders also parses and
-validates.
+validates — for years 1 through 9999. Outside that range `YYYY` renders what it
+has, five digits or a leading minus, and no pattern matches it: `getString`
+produces `'12345-03-17'` and `parse` refuses it. `YY` is lossy in the same
+place, rendering `'-05'` for 5 BCE. Both are noted in the token table.
 
 ### Tokens
 
 | Token | Meaning | Example |
 |---|---|---|
-| `YYYY` | year, 4 digits | `2026` |
-| `YY` | year, 2 digits | `26` |
+| `YYYY` | year, 4 digits; renders more outside 1–9999, which cannot be parsed back | `2026` |
+| `YY` | year, 2 digits, the last two of the year | `26` |
 | `MMMM` | month name | `January` |
 | `MMM` | month name, short | `Jan` |
 | `MM` | month, 2 digits | `01` |
@@ -406,6 +409,7 @@ Details worth knowing:
 - Throws `INVALID_ARGUMENT` if `input` is not a string.
 - A wall-clock string can be **ambiguous**. When the clocks go back, an hour repeats, so one local reading names two instants — `America/New_York` read `01:59` twice on 1946-09-29. `parse` resolves to the earlier of the two. The text always round-trips; the instant does not, in that hour.
 - With `Z` or `ZZ` in the format the ambiguity disappears: the offset in the input decides the instant, and the same string parses to the same millisecond in every host zone. What no longer round-trips is the *text*, unless the host offset matches the parsed one.
+- A wall clock the host zone **skipped** is rejected with `INVALID_DATE`. When the clocks go forward an hour never happens: `parse('2024-03-10 02:30', 'YYYY-MM-DD HH:mm')` throws in `America/New_York` and succeeds in `UTC`. `isValid` therefore depends on the host zone for those strings — the same input can be valid on one machine and not on another. Store instants, or parse with an offset token, when that matters.
 
 ### `isValid(input, format?): boolean`
 

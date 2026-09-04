@@ -305,5 +305,12 @@ behaves this way.
 reading names two instants, and `parse` resolves to the earlier one. Store
 instants, not wall-clock strings, when the difference matters.
 
+**A skipped hour does not exist.** When the clocks go forward, an hour never
+happens, and `parse` rejects it: `parse('2024-03-10 02:30', 'YYYY-MM-DD HH:mm')`
+throws `INVALID_DATE` in `America/New_York` and succeeds in `UTC`. So `isValid`
+for a wall-clock string depends on the host zone — the same input can be valid
+on your laptop and invalid on the server. An offset in the format removes the
+question: `'YYYY-MM-DD HH:mmZ'` names an instant outright.
+
 **`between` returns fractions.** `between(a, b, 'day')` is `1.5` for 36 hours.
 Truncate if you want whole units, or ask for a finer unit.
