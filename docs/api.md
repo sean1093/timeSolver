@@ -352,8 +352,13 @@ Three rules the tokenizer enforces, all as `INVALID_FORMAT`:
   matcher cannot be compiled. `getString` builds no matcher, so it renders a
   longer format happily; `parse` and `isValid` refuse one.
 
-`Z` and `ZZ` render but cannot be parsed: reading an offset would mean
-representing an instant in a zone this library does not model.
+`Z` and `ZZ` also parse. An offset is not a zone — it says exactly how far the
+wall clock in the input sits from UTC, which is all that is needed to pin the
+instant — so `parse('2024-03-17T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZ')` is
+`2024-03-17T04:00:00Z`. Each matches only the shape it renders: `±HH:MM` for
+`Z` and `±HHMM` for `ZZ`. ISO-8601's bare `Z` designator is neither, and is
+refused; hand an ISO string to any function directly instead, since `Date`
+parses it.
 
 The 36 format names 1.x accepted are also understood, and are translated to
 tokens. A string that is already a valid token string is never translated,
@@ -400,6 +405,7 @@ Details worth knowing:
 - `hh`/`h` without `A`/`a` are read as morning hours, so `parse('12:30', 'hh:mm')` is 00:30, not noon.
 - Throws `INVALID_ARGUMENT` if `input` is not a string.
 - A wall-clock string can be **ambiguous**. When the clocks go back, an hour repeats, so one local reading names two instants — `America/New_York` read `01:59` twice on 1946-09-29. `parse` resolves to the earlier of the two. The text always round-trips; the instant does not, in that hour.
+- With `Z` or `ZZ` in the format the ambiguity disappears: the offset in the input decides the instant, and the same string parses to the same millisecond in every host zone. What no longer round-trips is the *text*, unless the host offset matches the parsed one.
 
 ### `isValid(input, format?): boolean`
 

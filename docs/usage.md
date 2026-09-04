@@ -312,8 +312,9 @@ midnight; `new Date('2024-03-10T00:00')` is local. This library hands strings to
 with an explicit format when it matters.
 
 **There are no time zones.** Everything is host-local. `Z` and `ZZ` render the
-current offset but cannot be parsed. For zone-aware work use `Temporal` or
-`Intl.DateTimeFormat`.
+current offset, and `parse` reads one back — that is arithmetic, not a zone, so
+the instant is exact — but no zone name is understood. For zone-aware work use
+`Temporal` or `Intl.DateTimeFormat`.
 
 **A repeated hour is ambiguous.** When the clocks go back, one wall-clock
 reading names two instants, and `parse` resolves to the earlier one. Store

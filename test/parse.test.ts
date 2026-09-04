@@ -106,14 +106,55 @@ describe('parse', () => {
     }
   });
 
-  it('rejects offset tokens, which describe a zone this library does not model', () => {
-    try {
-      parse('2024-03-17 -04:00', 'YYYY-MM-DD Z');
-      expect.unreachable('should have thrown');
-    } catch (error) {
-      expect((error as TimeSolverError).code).toBe('INVALID_FORMAT');
-      expect((error as TimeSolverError).message).toMatch(/formatted but not parsed/);
-    }
+  it.each([
+    ['2024-03-17T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZ', '2024-03-17T04:00:00.000Z'],
+    ['2024-03-17T12:00:00+0800', 'YYYY-MM-DDTHH:mm:ssZZ', '2024-03-17T04:00:00.000Z'],
+    ['2024-03-17T12:00:00-04:00', 'YYYY-MM-DDTHH:mm:ssZ', '2024-03-17T16:00:00.000Z'],
+    ['2024-03-17T12:00:00+00:00', 'YYYY-MM-DDTHH:mm:ssZ', '2024-03-17T12:00:00.000Z'],
+    // Offsets that are not whole hours, and one west of UTC by less than an
+    // hour, where reading the sign off the number would flip it.
+    ['2024-03-17T12:00:00+05:45', 'YYYY-MM-DDTHH:mm:ssZ', '2024-03-17T06:15:00.000Z'],
+    ['2024-03-17T12:00:00+12:45', 'YYYY-MM-DDTHH:mm:ssZ', '2024-03-16T23:15:00.000Z'],
+    ['2024-03-17T12:00:00-00:30', 'YYYY-MM-DDTHH:mm:ssZ', '2024-03-17T12:30:00.000Z'],
+    ['2024-03-17 02:30 PM +08:00', 'YYYY-MM-DD hh:mm A Z', '2024-03-17T06:30:00.000Z'],
+  ])('reads %s against %s as the instant %s', (input, format, instant) => {
+    // The offset in the input decides the instant, so the answer is the same
+    // wherever the host clock is set -- no zone is modelled, the offset is
+    // arithmetic.
+    expect(parse(input, format).toISOString()).toBe(instant);
+  });
+
+  it('checks an impossible date and a disagreeing weekday against the parsed offset', () => {
+    expect(isValid('2021-02-29T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZ')).toBe(false);
+    expect(isValid('Sunday 2024-03-17 +08:00', 'dddd YYYY-MM-DD Z')).toBe(true);
+    expect(isValid('Monday 2024-03-17 +08:00', 'dddd YYYY-MM-DD Z')).toBe(false);
+  });
+
+  it.each([
+    ['2024-03-17T12:00:00+8:00', 'YYYY-MM-DDTHH:mm:ssZ', 'an unpadded offset hour'],
+    ['2024-03-17T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZZ', 'a colon where ZZ expects none'],
+    ['2024-03-17T12:00:00+0800', 'YYYY-MM-DDTHH:mm:ssZ', 'no colon where Z expects one'],
+    ['2024-03-17T12:00:00Z', 'YYYY-MM-DDTHH:mm:ssZ', 'the ISO UTC designator'],
+    ['2024-03-17T12:00:0008:00', 'YYYY-MM-DDTHH:mm:ssZ', 'an offset with no sign'],
+  ])('rejects %s against %s (%s)', (input, format) => {
+    // Every token matches exactly what it renders, and `Z` renders a signed
+    // ±HH:MM. A bare 'Z' is ISO-8601's UTC designator, not that shape; an ISO
+    // string can be handed to any function directly, since `Date` parses it.
+    expect(isValid(input, format)).toBe(false);
+  });
+
+  it('reads an offset-only format against the epoch date', () => {
+    expect(parse('+08:00', 'Z').toISOString()).toBe('1969-12-31T16:00:00.000Z');
+  });
+
+  it('round-trips its own rendering, offset included', () => {
+    const format = 'YYYY-MM-DD HH:mm:ss.SSS Z';
+    const rendered = getString(new Date(2024, 2, 17, 14, 30, 45, 123), format);
+
+    expect(parse(rendered, format).getTime()).toBe(
+      new Date(2024, 2, 17, 14, 30, 45, 123).getTime(),
+    );
+    expect(getString(parse(rendered, format), format)).toBe(rendered);
   });
 
   it('compiles a format at the 512-token limit', () => {

@@ -60,7 +60,7 @@ describe('INVALID_FORMAT', () => {
     ['an unmatched opening bracket', () => getString(new Date(), '[oops YYYY')],
     ['an unmatched closing bracket', () => getString(new Date(), 'YYYY]')],
     ['adjacent variable-width tokens', () => getString(new Date(), 'YYYYMD')],
-    ['a format-only token in parse', () => parse('2024-03-17 -04:00', 'YYYY-MM-DD Z')],
+    ['more tokens than a matcher holds', () => parse('2024', 'YYYY'.repeat(513))],
     ['a malformed format in isValid', () => isValid('anything', '###')],
   ])('is the code for %s', (_label, run) => {
     expect(codeOf(run)).toBe('INVALID_FORMAT');

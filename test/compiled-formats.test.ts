@@ -31,20 +31,23 @@ describe('a format used more than once', () => {
   });
 
   it('keeps refusing a format that renders but cannot be parsed', () => {
-    // `Z` has no pattern, so the parts compile and the matcher never does.
-    expect(getString(SAMPLE, 'YYYY Z')).toMatch(/^2024 [+-]\d\d:\d\d$/);
+    // Over the matcher's token limit: the parts compile and are cached, and the
+    // matcher never does, so the entry has to stay usable for rendering.
+    const long = 'YYYY'.repeat(513);
+
+    expect(getString(SAMPLE, long)).toHaveLength(2052);
 
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
-        parse('2024 -04:00', 'YYYY Z');
+        parse('2024'.repeat(513), long);
         expect.unreachable('should have thrown');
       } catch (error) {
         expect((error as TimeSolverError).code).toBe('INVALID_FORMAT');
-        expect((error as TimeSolverError).message).toMatch(/formatted but not parsed/);
+        expect((error as TimeSolverError).message).toMatch(/limited to 512 tokens/);
       }
     }
 
-    expect(getString(SAMPLE, 'YYYY Z')).toMatch(/^2024 [+-]\d\d:\d\d$/);
+    expect(getString(SAMPLE, long)).toHaveLength(2052);
   });
 
   it('keeps refusing a malformed format', () => {

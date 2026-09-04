@@ -192,7 +192,8 @@ Deliberately absent, because `Temporal` and `Intl` already do them better and
 matching them would cost the size advantage:
 
 - **Time zones.** Every function reads the host time zone. `Z` and `ZZ` render
-  the current offset but cannot be parsed.
+  the current offset, and `parse` reads one back — an offset is arithmetic, so
+  the instant is exact — but no zone is modelled and no zone name is understood.
 - **Locales.** Month and weekday names are English. For localised output use
   `Intl.DateTimeFormat`.
 - **Durations and humanisers.** No `fromNow()`, no `humanize()`.

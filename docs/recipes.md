@@ -173,10 +173,20 @@ getString(new Date(), 'YYYY-MM-DD HH:mm:ss.SSS Z'); // '2026-08-28 14:30:45.123 
 getString(new Date(), 'YYYY-MM-DDTHH:mm:ssZZ');     // '2026-08-28T14:30:45-0400'
 ```
 
-`Z` and `ZZ` render the host offset but cannot be parsed back, because reading an
-offset would mean representing an instant in a zone this library does not model.
-For a machine-readable timestamp that round-trips anywhere, use
-`date.toISOString()` — that is what it is for.
+Both parse back, and the offset in the string is what decides the instant:
+
+```ts
+import { getString, parse } from 'timesolver';
+
+const stamp = 'YYYY-MM-DD HH:mm:ss.SSS Z';
+
+parse(getString(date, stamp), stamp).getTime() === date.getTime(); // true, in any zone
+parse('2024-03-17T12:00:00+08:00', 'YYYY-MM-DDTHH:mm:ssZ');        // 2024-03-17T04:00:00Z
+```
+
+Each token matches the shape it renders — `±HH:MM` for `Z`, `±HHMM` for `ZZ` —
+so ISO-8601's bare `Z` designator is refused. For a string already in ISO form,
+`Date` parses it, so hand it to any function as it is: `getString(iso, stamp)`.
 
 ## Convert between a form value and storage
 
