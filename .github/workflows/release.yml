@@ -39,7 +39,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Node.js 22
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: 'npm'
@@ -86,7 +86,7 @@ jobs:
       # registry-url writes the .npmrc that reads NODE_AUTH_TOKEN; without it
       # the publish step authenticates as an anonymous user and is rejected.
       - name: Set up Node.js 22
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: 'npm'
@@ -132,7 +132,7 @@ jobs:
       # mutable major tag lets upstream change what runs with it.
       - name: Create version pull request or publish to npm
         if: steps.credentials.outputs.ready == 'true'
-        uses: changesets/action@8488615a623b1b9c987934bb89eae8af6a946ac1 # v2.1.1
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
           # v2 renamed these from publish/title/commit.
           publish-script: npm run release
